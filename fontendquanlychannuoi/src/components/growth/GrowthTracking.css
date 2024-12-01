@@ -1,0 +1,52 @@
+.growth-tracking {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  .growth-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  .growth-title h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-light);
+  }
+  
+  .growth-title p {
+    margin: 0.5rem 0 0;
+    color: var(--text-light);
+    opacity: 0.7;
+  }
+  
+  .growth-charts {
+    margin: 2rem 0;
+  }
+  
+  .chart-container {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .chart-container h2 {
+    font-size: 1.25rem;
+    margin: 0 0 1.5rem;
+    color: var(--text-light);
+  }
+  
+  .growth-details {
+    margin-top: 2rem;
+  }
+  
+  .growth-details h2 {
+    font-size: 1.25rem;
+    margin: 0 0 1.5rem;
+    color: var(--text-light);
+  }

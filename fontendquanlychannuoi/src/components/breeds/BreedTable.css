@@ -1,63 +1,38 @@
-.livestock-table-container {
+.breed-table-container {
     background: white;
     border-radius: 0.75rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     overflow-x: auto;
     margin-bottom: 1.5rem;
-    scrollbar-width: none;
   }
   
-  .livestock-table {
+  .breed-table {
     width: 100%;
     border-collapse: collapse;
     min-width: 1000px;
   }
   
-  .livestock-table th {
+  .breed-table th {
     background: #f8fafc;
     padding: 1rem;
     text-align: left;
     font-weight: 600;
     color: #475569;
-    cursor: pointer;
-    transition: background-color 0.2s;
     white-space: nowrap;
   }
   
-  .livestock-table th:hover {
-    background: #f1f5f9;
-  }
-  
-  .livestock-table td {
+  .breed-table td {
     padding: 1rem;
     border-top: 1px solid #e2e8f0;
     color: #1e293b;
   }
   
-  .livestock-table tbody tr {
+  .breed-table tbody tr {
     transition: background-color 0.2s;
   }
   
-  .livestock-table tbody tr:hover {
+  .breed-table tbody tr:hover {
     background: #f8fafc;
-  }
-  
-  .status {
-    padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-  
-  .status.healthy {
-    background: #dcfce7;
-    color: #15803d;
-  }
-  
-  .status.treatment {
-    background: #fee2e2;
-    color: #b91c1c;
   }
   
   .action-buttons {

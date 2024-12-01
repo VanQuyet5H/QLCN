@@ -33,7 +33,7 @@
   position: relative;
   padding-top: var(--header-height);
   overflow-x: hidden;
-
+  justify-content: space-between;
 }
 
 .main-content.expanded {
@@ -81,4 +81,9 @@
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  width: 100%;
+  height: calc(100vh - var(--header-height)); /* Chiều cao trừ đi phần header */
+  overflow: auto; /* Thêm cuộn nếu nội dung quá dài */
+  box-sizing: border-box;
+  margin-left: var(--sidebar-collapsed-width);
 }

@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaSave, FaTimes } from 'react-icons/fa';
-import './AddLivestock.css';
+import './EditLivestock.css';
 
-function AddLivestock({ onClose, onSubmit }) {
+function EditLivestock({ onClose, onSubmit, livestockData }) {
   const [formData, setFormData] = useState({
+    id: '',
     name: '',
     type: '',
     gender: '',
@@ -11,56 +12,78 @@ function AddLivestock({ onClose, onSubmit }) {
     status: '',
     weight: '',
     breed: '',
-    createdAt: new Date().toISOString(),
+    createdAt: '',
   });
 
   const [errors, setErrors] = useState({});
 
+  // Khi có dữ liệu vật nuôi, sẽ set vào formData
+  useEffect(() => {
+    if (livestockData) {
+      setFormData({
+        id: livestockData.id,
+        name: livestockData.name,
+        type: livestockData.type,
+        gender: livestockData.gender,
+        birthDate: livestockData.birthDate,
+        status: livestockData.status,
+        weight: livestockData.weight,
+        breed: livestockData.breed,
+        createdAt: livestockData.createdAt,
+      });
+    }
+  }, [livestockData]);
+
+  // Kiểm tra lỗi các trường
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name) newErrors.name = 'Vui lòng nhập tên vật nuôi';
     if (!formData.type) newErrors.type = 'Vui lòng chọn loại vật nuôi';
-    if (!formData.breed) newErrors.breed = 'Vui lòng chọn giống';
+    if (!formData.gender) newErrors.gender = 'Vui lòng chọn giới tính';
     if (!formData.birthDate) newErrors.birthDate = 'Vui lòng nhập ngày sinh';
     if (!formData.weight) newErrors.weight = 'Vui lòng nhập cân nặng';
-    if (!formData.status) newErrors.status = 'Vui lòng nhập tình trạng';
+    if (!formData.status) newErrors.status = 'Vui lòng chọn trạng thái';
+    if (!formData.breed) newErrors.breed = 'Vui lòng chọn giống';
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors).length === 0; // Trả về true nếu không có lỗi
   };
 
-  const handleSubmit = (e) => {
+  // Xử lý khi submit form
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
       onSubmit(formData);
     }
   };
 
+  // Xử lý thay đổi giá trị của các trường trong form
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    // Clear error when user starts typing
+
+    // Xóa lỗi tương ứng nếu có khi thay đổi
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
-        [name]: ''
+        [name]: '',
       }));
     }
   };
 
   return (
-    <div className="add-livestock-container">
-      <div className="add-livestock-header">
-        <h2>Thêm Vật Nuôi Mới</h2>
+    <div className="edit-livestock-container">
+      <div className="edit-livestock-header">
+        <h2>Cập Nhật Thông Tin Vật Nuôi</h2>
         <button className="close-button" onClick={onClose}>
           <FaTimes />
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="add-livestock-form">
+      <form onSubmit={handleSubmit} className="edit-livestock-form">
         <div className="form-grid">
           <div className="form-group">
             <label htmlFor="name">Tên vật nuôi *</label>
@@ -102,8 +125,9 @@ function AddLivestock({ onClose, onSubmit }) {
               onChange={handleChange}
               className={errors.gender ? 'error' : ''}
             >
-              <option value="Male">Đực</option>
-              <option value="Female">Cái</option>
+              <option value="">Chọn giới tính</option>
+              <option value="Male">Nam</option>
+              <option value="Female">Nữ</option>
             </select>
             {errors.gender && <span className="error-message">{errors.gender}</span>}
           </div>
@@ -122,19 +146,6 @@ function AddLivestock({ onClose, onSubmit }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="status">Tình trạng *</label>
-            <input
-              type="text"
-              id="status"
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className={errors.status ? 'error' : ''}
-            />
-            {errors.status && <span className="error-message">{errors.status}</span>}
-          </div>
-
-          <div className="form-group">
             <label htmlFor="weight">Cân nặng (kg) *</label>
             <input
               type="number"
@@ -147,6 +158,23 @@ function AddLivestock({ onClose, onSubmit }) {
               className={errors.weight ? 'error' : ''}
             />
             {errors.weight && <span className="error-message">{errors.weight}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="status">Trạng thái *</label>
+            <select
+              id="status"
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className={errors.status ? 'error' : ''}
+            >
+              <option value="">Chọn trạng thái</option>
+              <option value="healthy">Khỏe mạnh</option>
+              <option value="sick">Đang điều trị</option>
+              <option value="quarantine">Cách ly</option>
+            </select>
+            {errors.status && <span className="error-message">{errors.status}</span>}
           </div>
 
           <div className="form-group">
@@ -166,18 +194,6 @@ function AddLivestock({ onClose, onSubmit }) {
             </select>
             {errors.breed && <span className="error-message">{errors.breed}</span>}
           </div>
-
-          <div className="form-group">
-            <label htmlFor="createdAt">Ngày tạo *</label>
-            <input
-              type="text"
-              id="createdAt"
-              name="createdAt"
-              value={formData.createdAt}
-              readOnly
-              onChange={handleChange}
-            />
-          </div>
         </div>
 
         <div className="form-actions">
@@ -193,4 +209,4 @@ function AddLivestock({ onClose, onSubmit }) {
   );
 }
 
-export default AddLivestock;
+export default EditLivestock;

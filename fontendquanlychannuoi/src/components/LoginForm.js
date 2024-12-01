@@ -25,9 +25,10 @@ const LoginForm = () => {
         setError(message || "Đăng nhập thất bại.");
         return;
       }else{
-          navigate('/Home');
+          
           // Lưu token vào localStorage
           localStorage.setItem("token", data.token);
+          navigate('/home');
           
       }
     } catch (err) {

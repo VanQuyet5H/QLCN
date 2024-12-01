@@ -3,65 +3,53 @@ import { FaPlus, FaSearch, FaFilter, FaSort } from 'react-icons/fa';
 import LivestockTable from './LivestockTable';
 import LivestockFilter from './LivestockFilter';
 import Pagination from './Pagination';
-import './LivestockList.css';
-import axios from 'axios';
 import AddLivestock from './AddLivestock';
 import ViewLivestock from './ViewLivestock';
 import DeleteConfirmation from './DeleteConfirmation';
-
+import './LivestockList.css';
+import axios from 'axios';
+import Notification from '../utils/Notification';
+import EditLivestock from './EditLivestock';
 function LivestockList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [showFilter, setShowFilter] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
-  const [isLoading, setIsLoading] = useState(true); // Trạng thái tải dữ liệu
-  const [error, setError] = useState(null);
-  const [livestock, setLivestock] = useState([]);
   const [selectedLivestock, setSelectedLivestock] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
+  const [livestock, setLivestock] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [notification, setNotification] = useState({ message: '', type: '' });
+  
+  // Mock data - trong thực tế sẽ lấy từ API
   const fetchLivestock = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('https://localhost:7185/api/Animal'); // Đổi URL thành endpoint của bạn
-      return response.data.data;
+      const params = { page: currentPage, pageSize: itemsPerPage, search: searchTerm };
+      const response = await axios.get('https://localhost:7185/api/Animal', { params });
+      console.log('Response data:', response.data);
+      const { data, totalRecords } = response.data;
+      setLivestock(data);
+      setTotalRecords(totalRecords);
     } catch (err) {
       setError(err.message);
+      setNotification({ message: 'Lỗi khi tải dữ liệu!', type: 'error' });
     } finally {
       setIsLoading(false);
     }
   };
-  const loadData = async () => {
-    
-    const dataList = await fetchLivestock();
-    if (dataList && dataList.length > 0) {
-      const formattedData = dataList.map((item) => ({
-        id: item.id,
-        name: item.name,
-        type: item.type,
-        gender: item.gender,
-        birthDate: item.birthDate,
-        status: item.status,
-        weight: item.weight,
-        breed: item.breed,
-        createdAt: item.createdAt
-      }));
 
-      setLivestock(formattedData); // Cập nhật dữ liệu thức ăn
-
-    } else {
-      setLivestock([]); // Không có dữ liệu
-    }
-    
-  };
+  // Gọi fetchLivestock khi thay đổi currentPage, itemsPerPage, hoặc searchTerm
   useEffect(() => {
-    loadData();
-  }, []);
-
-
-
+    fetchLivestock();
+  }, [currentPage, itemsPerPage, searchTerm]);
+  
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1);
@@ -77,57 +65,150 @@ function LivestockList() {
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
-  const handleAddLivestock = (data) => {
-    setLivestock(prev => [...prev, { ...data, id: `L${prev.length + 1}`.padStart(4, '0') }]);
-    setShowAddForm(false);
-  };
 
-  const handleView = (animal) => {
-    setSelectedLivestock(animal);
-    setShowViewModal(true);
+  const handleAddLivestock = async (data) => {
+    try {
+      // Tạo dữ liệu cần gửi
+      const payload = {
+        name: data.name,
+        type: data.type,
+        gender: data.gender,
+        birthDate: data.birthDate,
+        status: data.status,
+        weight: data.weight,
+        breed: data.breed,
+        createdAt: new Date().toISOString(), // Thời gian hiện tại
+      };
+  
+      // Gọi API để thêm vật nuôi mới
+      const response = await fetch('https://localhost:7185/api/Animal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      // Kiểm tra phản hồi từ API
+      if (response.ok) {
+        const result = await response.json(); // Giả sử API trả về đối tượng vật nuôi vừa thêm
+        setLivestock(prev => [...prev, result]); // Cập nhật danh sách vật nuôi trong state
+  
+        setShowAddForm(false); // Đóng form thêm vật nuôi
+        setNotification({ message: 'Thêm vật nuôi thành công!', type: 'success' });
+      } else {
+        throw new Error('Không thể thêm vật nuôi');
+      }
+    } catch (error) {
+      setNotification({ message: `Lỗi: ${error.message}`, type: 'error' });
+    }
   };
-
-  const handleEdit = (animal) => {
-    setSelectedLivestock(animal);
-    setShowAddForm(true);
+  
+  const handleView = async (id) => {
+    try {
+      const response = await axios.get('https://localhost:7185/api/Animal/${id}');
+      if (!response.ok) {
+        throw new Error('Không thể lấy dữ liệu vật nuôi.');
+      }
+      const data = await response.json();
+      setLivestock(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSelectedLivestock(id);
+      setShowViewModal(true);
+    }
   };
+  const handleSubmit = async (data,id) => {
+    try {
+      // Tạo dữ liệu cần gửi
+      const payload = {
+        name: data.name,
+        type: data.type,
+        gender: data.gender,
+        birthDate: data.birthDate,
+        status: data.status,
+        weight: data.weight,
+        breed: data.breed,
+        createdAt: new Date().toISOString(), // Thời gian hiện tại
+      };
+      
+      // Gọi API để thêm vật nuôi mới
+      const response = await fetch('https://localhost:7185/api/Animal/${id}', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      // Kiểm tra phản hồi từ API
+      if (response.ok) {
+        const result = await response.json(); 
+        setLivestock(prev => prev.filter(item => item.id !== id)); 
+        setShowAddForm(false); 
+        setNotification({ message: 'Cập nhật vật nuôi thành công!', type: 'success' });
+      } else {
+        throw new Error('Không thể cập nhật vật nuôi');
+      }
+    } catch (error) {
+      setNotification({ message: `Lỗi: ${error.message}`, type: 'error' });
+    }
+  };
+ 
+ 
 
   const handleDelete = (animal) => {
     setSelectedLivestock(animal);
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = (id) => {
-    setLivestock(prev => prev.filter(item => item.id !== id));
-    setShowDeleteModal(false);
-    setSelectedLivestock(null);
+  const confirmDelete = async (id) => {
+    try {
+      const response = await axios.delete(`https://localhost:7185/api/Animal/${id}`); // Sửa lại dấu nháy đơn ' và ' thành dấu nháy backtick `
+      setLivestock(prev => prev.filter(item => item.id !== id));
+      setNotification({ message: 'Xóa vật nuôi thành công!', type: 'success' });
+    } catch (err) {
+      setNotification({ message: 'Lỗi khi xóa vật nuôi!', type: 'error' });
+    } finally {
+      setShowDeleteModal(false);
+      setSelectedLivestock(null);
+    }
   };
+  
+
   const filteredLivestock = livestock.filter(animal =>
-    Object.values(animal).some(value =>
-      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    animal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    animal.type.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const sortedLivestock = [...filteredLivestock].sort((a, b) => {
+  const sortedLivestock = [...livestock].sort((a, b) => {
     if (sortConfig.direction === 'asc') {
       return a[sortConfig.key] > b[sortConfig.key] ? 1 : -1;
     }
     return a[sortConfig.key] < b[sortConfig.key] ? 1 : -1;
   });
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = sortedLivestock.slice(indexOfFirstItem, indexOfLastItem);
+
+
+  const currentItems = sortedLivestock;
+
 
   return (
     <div className="livestock-list">
       <div className="livestock-header">
-        <h1>Danh Sách Vật Nuôi</h1>
-        <button className="btn-add">
+        <h1>Quản lý vật nuôi</h1>
+        <button className="btn-add" onClick={() => setShowAddForm(true)}>
           <FaPlus /> Thêm mới
         </button>
       </div>
-
+      {notification.message && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification({ message: '', type: '' })}
+        />
+      )}
       <div className="livestock-tools">
         <div className="search-box">
           <FaSearch className="search-icon" />
@@ -153,6 +234,7 @@ function LivestockList() {
       </div>
 
       {showFilter && <LivestockFilter />}
+
       {showAddForm && (
         <AddLivestock
           livestock={selectedLivestock}
@@ -161,6 +243,16 @@ function LivestockList() {
             setSelectedLivestock(null);
           }}
           onSubmit={handleAddLivestock}
+        />
+      )}
+      {showEditForm && (
+        <EditLivestock
+          livestockId={selectedLivestock}
+          onClose={() => {
+            setShowEditForm(false);
+            setSelectedLivestock(null);
+          }}
+          onSubmit={handleSubmit}
         />
       )}
 
@@ -184,27 +276,22 @@ function LivestockList() {
           }}
         />
       )}
-      {isLoading ? (
-        <p>Đang tải dữ liệu...</p>
-      ) : error ? (
-        <p className="error">Lỗi: {error}</p>
-      ) : (<>
-        <LivestockTable
-          livestock={currentItems}
-          onSort={handleSort}
-          sortConfig={sortConfig}
-          onView={handleView}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
 
-        <Pagination
-          itemsPerPage={itemsPerPage}
-          totalItems={filteredLivestock.length}
-          currentPage={currentPage}
-          onPageChange={handlePageChange}
-        />
-      </>)}
+      <LivestockTable
+        livestock={currentItems}
+        onSort={handleSort}
+        sortConfig={sortConfig}
+        onView={handleView}
+        onEdit={handleSubmit}
+        onDelete={handleDelete}
+      />
+
+      <Pagination
+        itemsPerPage={itemsPerPage}
+        totalItems={totalRecords}
+        currentPage={currentPage}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 }
