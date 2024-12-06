@@ -11,6 +11,7 @@ namespace QuanLyChanNuoi.Models
         [Required(ErrorMessage = "Tên người dùng là bắt buộc.")]
         [StringLength(50, ErrorMessage = "Tên người dùng không được vượt quá 50 ký tự.")]
         public string Username { get; set; }
+        public string Image { get; set; }
         public string PasswordHash { get; set; }  // Lưu mật khẩu đã mã hóa
         public string? FullName { get; set; }
         [Required(ErrorMessage = "Email là bắt buộc.")]
