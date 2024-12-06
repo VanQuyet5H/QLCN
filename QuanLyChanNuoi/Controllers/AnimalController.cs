@@ -68,7 +68,7 @@ namespace QuanLyChanNuoi.Controllers
 
             return Ok(new { Message = "Con vật và dữ liệu liên quan đã được thêm thành công." });
         }
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> GetAnimals([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var query = _context.Animal.AsQueryable();
@@ -146,7 +146,7 @@ namespace QuanLyChanNuoi.Controllers
             animal.Weight = updatedAnimal.Weight;
 
             await _context.SaveChangesAsync();
-            return NoContent();
+            return Ok();
         }
 
         // Xóa vật nuôi
@@ -161,7 +161,7 @@ namespace QuanLyChanNuoi.Controllers
 
             _context.Animal.Remove(animal);
             await _context.SaveChangesAsync();
-            return NoContent();
+            return Ok();
         }
     }
 }

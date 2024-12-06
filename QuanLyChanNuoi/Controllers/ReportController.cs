@@ -7,6 +7,8 @@ using QuanLyChanNuoi.Models;
 
 namespace QuanLyChanNuoi.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class ReportController : Controller
     {
         private readonly AppDbContext _context;
@@ -16,6 +18,173 @@ namespace QuanLyChanNuoi.Controllers
             _context = context;
         }
 
+        [HttpGet("GetStatictics")]
+        public async Task<IActionResult> GetStatistics()
+        {
+            try
+            {
+                // Kế hoạch (mục tiêu) và các giá trị tham chiếu
+                const int targetTimeToMarket = 30; // Kế hoạch xuất chuồng là 30 ngày
+                const double targetGrowthRate = 0.1; // Mục tiêu tăng trưởng là 0.1 kg/ngày
+
+                // Lấy tổng số vật nuôi trong tháng hiện tại và tháng trước
+                int totalLivestockCurrent = await _context.Animal.CountAsync();
+                int totalLivestockPrevious = await _context.Animal
+                    .Where(a => a.CreatedAt.Month == DateTime.Now.AddMonths(-1).Month)
+                    .CountAsync();
+
+                // Tính sự thay đổi (trend) cho tổng đàn
+                string totalLivestockTrend = CalculatePercentageChange(totalLivestockPrevious, totalLivestockCurrent);
+
+                // Tính khối lượng trung bình tháng hiện tại và tháng trước
+                double averageWeightCurrent =(double) await _context.Animal.AverageAsync(a => a.Weight);
+                double averageWeightPrevious =(double) await _context.Animal
+                    .Where(a => a.CreatedAt.Month == DateTime.Now.AddMonths(-1).Month)
+                    .AverageAsync(a => a.Weight);
+
+                // Tính sự thay đổi (trend) cho khối lượng trung bình
+                string averageWeightTrend = CalculateWeightChange(averageWeightPrevious, averageWeightCurrent);
+
+                // Tính chi tiết về khối lượng trung bình so với tháng trước
+                string averageWeightDetails = CalculatePercentageChange(averageWeightPrevious, averageWeightCurrent);
+                var currentMonth = DateTime.Now.Month;
+                var previousMonth = DateTime.Now.AddMonths(-1).Month;
+                // Tính tốc độ tăng trưởng từ bảng HealthRecord
+                var growthDataCurrent = from a in _context.HealthRecord
+                                        join b in _context.Animal on a.AnimalId equals b.Id
+                                        where a.CheckupDate.Month == currentMonth && a.CheckupDate.Year == DateTime.Now.Year
+                                        group b by b.Id into g
+                                        select new
+                                        {
+                                            AnimalId = g.Key,
+                                            InitialWeight = g.Min(x => x.Weight), // Trọng lượng nhỏ nhất (ban đầu)
+                                            LatestWeight = g.Max(x => x.Weight), // Trọng lượng lớn nhất (cuối cùng)
+                                            GrowthRate = (g.Max(x => x.Weight) - g.Min(x => x.Weight)) / g.Count() // Tốc độ tăng trưởng trung bình
+                                        };
+                var result = await growthDataCurrent.ToListAsync();
+                var growthDataPrevious = from a in _context.Animal
+                                         join b in _context.HealthRecord on a.Id equals b.AnimalId
+                                         where b.CheckupDate.Month == previousMonth && b.CheckupDate.Year == DateTime.Now.Year
+                                         group a by a.Id into g
+                                         select new
+                                         {
+                                             AnimalId = g.Key,
+                                             InitialWeight = g.Min(x => x.Weight), // Trọng lượng nhỏ nhất (ban đầu)
+                                             LatestWeight = g.Max(x => x.Weight), // Trọng lượng lớn nhất (cuối cùng)
+                                             GrowthRate = (g.Max(x => x.Weight) - g.Min(x => x.Weight)) / g.Count() // Tốc độ tăng trưởng trung bình
+                                         };
+
+                var resultPrevious = await growthDataPrevious.ToListAsync();
+                double averageGrowthRateCurrent =result.Any()? (double) result.Average(g => g.GrowthRate):0;
+                double averageGrowthRatePrevious =resultPrevious.Any()? (double)resultPrevious.Average(g => g.GrowthRate):0;
+
+                // Tính sự thay đổi (trend) cho tốc độ tăng trưởng
+                string growthRateTrend = CalculateGrowthRateChange(averageGrowthRatePrevious, averageGrowthRateCurrent);
+
+                // Tính chi tiết về tốc độ tăng trưởng so với mục tiêu
+                string growthRateDetails = CalculatePercentageChange(targetGrowthRate, averageGrowthRateCurrent);
+
+                // Tính thời gian xuất chuồng trung bình từ bảng Animal
+                var timeToMarketDataCurrent = await _context.Animal
+                    .Where(a => a.CreatedAt.Month == DateTime.Now.Month && a.CreatedAt.Year == DateTime.Now.Year && a.Status=="Đã Bán")
+                    .Select(a => new
+                    {
+                        AnimalId = a.Id,
+                        AgeAtMarket = (DateTime.Now - a.CreatedAt).Days
+                    })
+                    .ToListAsync();
+
+                var timeToMarketDataPrevious = await _context.Animal
+                    .Where(a => a.CreatedAt.Month == DateTime.Now.AddMonths(-1).Month && a.CreatedAt.Year == DateTime.Now.Year && a.Status=="Đã Bán")
+                    .Select(a => new
+                    {
+                        AnimalId = a.Id,
+                        AgeAtMarket = (DateTime.Now - a.CreatedAt).Days
+                    })
+                    .ToListAsync();
+
+                double averageTimeToMarketCurrent = timeToMarketDataCurrent.Average(t => t.AgeAtMarket);
+                double averageTimeToMarketPrevious = timeToMarketDataPrevious.Average(t => t.AgeAtMarket);
+
+                // Tính sự thay đổi (trend) cho thời gian xuất chuồng
+                string timeToMarketTrend = CalculateTimeToMarketChange(averageTimeToMarketPrevious, averageTimeToMarketCurrent);
+
+                // Tính chi tiết về thời gian xuất chuồng so với kế hoạch
+                string timeToMarketDetails = CalculatePercentageChange(targetTimeToMarket, averageTimeToMarketCurrent);
+
+                // Kết quả trả về
+                var statistics = new
+                {
+                    totalLivestock = new
+                    {
+                        title = "Tổng đàn",
+                        value = totalLivestockCurrent.ToString(),
+                        trend = totalLivestockTrend,
+                        icon = "FaPiggyBank",
+                        details = $"Tổng: {totalLivestockCurrent}, Bò: {totalLivestockCurrent - totalLivestockPrevious}, Heo: {totalLivestockCurrent - totalLivestockPrevious}"
+                    },
+                    averageWeight = new
+                    {
+                        title = "Khối lượng TB",
+                        value = $"{averageWeightCurrent:0.##} kg",
+                        trend = averageWeightTrend,
+                        icon = "FaWeight",
+                        details = averageWeightDetails // Lấy thông tin chi tiết về khối lượng trung bình
+                    },
+                    growthRate = new
+                    {
+                        title = "Tốc độ tăng trưởng",
+                        value = $"{averageGrowthRateCurrent:0.##} kg/ngày",
+                        trend = growthRateTrend,
+                        icon = "FaChartLine",
+                        details = growthRateDetails // Lấy thông tin chi tiết về tốc độ tăng trưởng
+                    },
+                    timeToMarket = new
+                    {
+                        title = "Thời gian xuất chuồng",
+                        value = $"{averageTimeToMarketCurrent} ngày",
+                        trend = timeToMarketTrend,
+                        icon = "FaCalendarAlt",
+                        details = timeToMarketDetails // Lấy thông tin chi tiết về thời gian xuất chuồng
+                    }
+                };
+
+                return Ok(statistics);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        // Tính sự thay đổi theo phần trăm
+        private string CalculatePercentageChange(double previous, double current)
+        {
+            if (previous == 0) return "+0%"; // Nếu không có dữ liệu trước đó
+            double change = ((current - previous) / previous) * 100;
+            return $"{(change > 0 ? "+" : "")}{change:0.##}%";
+        }
+
+        // Tính sự thay đổi khối lượng
+        private string CalculateWeightChange(double previous, double current)
+        {
+            double change = current - previous;
+            return $"{(change > 0 ? "+" : "")}{change:0.##}kg";
+        }
+
+        // Tính sự thay đổi tốc độ tăng trưởng
+        private string CalculateGrowthRateChange(double previous, double current)
+        {
+            double change = current - previous;
+            return $"{(change > 0 ? "+" : "")}{change:0.##}kg/ngày";
+        }
+
+        // Tính sự thay đổi thời gian xuất chuồng
+        private string CalculateTimeToMarketChange(double previous, double current)
+        {
+            double change = current - previous;
+            return $"{(change > 0 ? "+" : "")}{change:0.##} ngày";
+        }
         [HttpGet("system-report")]
         public async Task<IActionResult> GetSystemReport()
         {

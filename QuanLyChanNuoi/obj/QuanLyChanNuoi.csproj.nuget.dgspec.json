@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Admin\\Downloads\\QuanLyChanNuoi\\QLCN\\QuanLyChanNuoi\\QuanLyChanNuoi.csproj": {}
+    "E:\\XayDungPTPM\\QuanLyChanNuoi\\QuanLyChanNuoi\\QuanLyChanNuoi.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Admin\\Downloads\\QuanLyChanNuoi\\QLCN\\QuanLyChanNuoi\\QuanLyChanNuoi.csproj": {
+    "E:\\XayDungPTPM\\QuanLyChanNuoi\\QuanLyChanNuoi\\QuanLyChanNuoi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Admin\\Downloads\\QuanLyChanNuoi\\QLCN\\QuanLyChanNuoi\\QuanLyChanNuoi.csproj",
+        "projectUniqueName": "E:\\XayDungPTPM\\QuanLyChanNuoi\\QuanLyChanNuoi\\QuanLyChanNuoi.csproj",
         "projectName": "QuanLyChanNuoi",
-        "projectPath": "C:\\Users\\Admin\\Downloads\\QuanLyChanNuoi\\QLCN\\QuanLyChanNuoi\\QuanLyChanNuoi.csproj",
+        "projectPath": "E:\\XayDungPTPM\\QuanLyChanNuoi\\QuanLyChanNuoi\\QuanLyChanNuoi.csproj",
         "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Admin\\Downloads\\QuanLyChanNuoi\\QLCN\\QuanLyChanNuoi\\obj\\",
+        "outputPath": "E:\\XayDungPTPM\\QuanLyChanNuoi\\QuanLyChanNuoi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config",

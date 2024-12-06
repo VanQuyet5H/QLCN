@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLyChanNuoi.Extensions;
 using QuanLyChanNuoi.Models;
 using QuanLyChanNuoi.Models.Request;
 using QuanLyChanNuoi.Services;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace QuanLyChanNuoi.Controllers
 {
@@ -43,6 +45,7 @@ namespace QuanLyChanNuoi.Controllers
             return Ok(new
             {
                 Token = token,
+                Id=user.Id,
                 Username = user.Username,
                 Role = user.Role
             });
@@ -50,6 +53,7 @@ namespace QuanLyChanNuoi.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
+           
             // Kiểm tra nếu email đã tồn tại
             if (await _context.User.AnyAsync(u => u.Email == request.Email))
             {
@@ -73,7 +77,8 @@ namespace QuanLyChanNuoi.Controllers
                 FullName = request.FullName,
                 PasswordHash = passwordHash,
                 PhoneNumber = request.PhoneNumber,
-                Role = request.Role ?? "User", // Mặc định là User nếu không chỉ định
+                Role = request.Role ?? "User",// Mặc định là User nếu không chỉ định
+                Image = request.Image,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -87,6 +92,7 @@ namespace QuanLyChanNuoi.Controllers
                 userId = newUser.Id
             });
         }
+        
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
         {
@@ -138,19 +144,26 @@ namespace QuanLyChanNuoi.Controllers
             return Ok("Đặt lại mật khẩu thành công.");
         }
         //api lấy thông tin user
-        [HttpGet]
-        public IActionResult GetUsers([FromQuery] string? search, [FromQuery] string? role)
+        [HttpGet("Profile")]
+        public async Task<IActionResult> GetUsers(int? id)
         {
-            var query = _context.User.AsQueryable();
-            if (!string.IsNullOrEmpty(search))
-                query = query.Where(u => u.Username.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                                         u.Email.Contains(search, StringComparison.OrdinalIgnoreCase));
-            if (!string.IsNullOrEmpty(role))
-                query = query.Where(u => u.Role.Equals(role, StringComparison.OrdinalIgnoreCase));
+            try
+            {
+                var user = await _context.User.FirstOrDefaultAsync(u => u.Id == id);
+                if (user == null)
+                {
+                    return NotFound(new { message = "User not found" });
+                }
 
-            return Ok(query.ToList());
+                // Trả về đối tượng người dùng
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
-        [HttpPost]
+        [HttpPost("UpdateInfor")]
         public async Task<IActionResult> AddUser(UserDto users)
         {
             var userDto = _mapper.Map<User>(users);
@@ -170,7 +183,8 @@ namespace QuanLyChanNuoi.Controllers
             {
                 Username = userDto.Username,
                 Email = userDto.Email,
-                Role = userDto.Role
+                Role = userDto.Role,
+                Image= userDto.Image,
             };
 
             _context.User.Add(user);
@@ -179,18 +193,24 @@ namespace QuanLyChanNuoi.Controllers
             return Ok(new { message = "User added successfully", user });
         }
         [HttpPut("{id}")]
-        public IActionResult UpdateUser(int id, UserDto users)
+        public async Task<IActionResult> UpdateUser(int id, [Bind("Username", "Email", "FullName", "PhoneNumber", "Image")] UserDto users)
         {
-            var usermap = _mapper.Map<User>(users);
-            var user = _context.User.FirstOrDefault(u => u.Id == id);
-            if (user == null)
-                return NotFound();
-
-            user.Username = usermap.Username;
-            user.Email = usermap.Email;
-            user.Role = usermap.Role;
-
-            return Ok(user);
+            try
+            { 
+                var user = _context.User.FirstOrDefault(u => u.Id == id);
+                if (user == null)
+                    return NotFound();
+                user.Username = users.Username ?? user.Username;
+                user.FullName = users.Fullname ?? user.FullName;
+                user.Email = users.Email ?? user.Email;
+                user.Image = users.Image ?? user.Image;
+                user.PhoneNumber = users.PhoneNumber ?? user.PhoneNumber;
+                _context.Update(user);
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
+            
         }
         [HttpDelete("{id}")]
         public IActionResult DeleteUser(int id)
