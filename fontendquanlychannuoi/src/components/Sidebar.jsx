@@ -7,7 +7,6 @@ import {
   FaMedkit,
   FaUser,
   FaCaretDown,
-  FaLeaf,
   FaSignOutAlt,
 } from 'react-icons/fa';
 import './Sidebar.css';
@@ -23,7 +22,7 @@ function Sidebar({ isOpen, toggleSidebar }) {
     {
       icon: <FaHome />,
       text: 'Trang chủ',
-      path: '/',
+      path: '/home',
     },
     {
       icon: <FaPiggyBank />,
@@ -41,6 +40,7 @@ function Sidebar({ isOpen, toggleSidebar }) {
         { text: 'Lịch tiêm phòng', path: '/vaccinations' },
         { text: 'Bệnh lý', path: '/diseases' },
         { text: 'Thuốc và vật tư', path: '/medicines' },
+        { text: 'Cách điều trị', path: '/treatmentguids' },
       ],
     },
     {
@@ -61,8 +61,9 @@ function Sidebar({ isOpen, toggleSidebar }) {
       text: 'Tài khoản',
       submenu: [
         { text: 'Thông tin cá nhân', path: '/profile' },
-        { text: 'Đổi mật khẩu', path: '/ResetPass' },
+        { text: 'Đổi mật khẩu', path: '/forgot-password' },
         { text: 'Đăng xuất', path: '/Login', icon: <FaSignOutAlt /> },
+        
       ],
     },
   ];
@@ -97,7 +98,7 @@ function Sidebar({ isOpen, toggleSidebar }) {
           <div key={index} className="nav-item-container">
             <div
               className={`nav-item ${item.submenu ? 'has-submenu' : ''}`}
-              onClick={() => item.submenu && toggleSubmenu(index)}
+              onClick={() => item.submenu?toggleSubmenu(index): navigate(item.path)}
             >
               <span className="icon">{item.icon}</span>
               {isOpen && (

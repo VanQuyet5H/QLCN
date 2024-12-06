@@ -1,0 +1,71 @@
+.account-status {
+    background-color: white;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .status-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 1rem;
+  }
+  
+  .status-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+  }
+  
+  .status-container.active {
+    background-color: #ecfdf5;
+  }
+  
+  .status-container.inactive {
+    background-color: #fef2f2;
+  }
+  
+  .status-icon {
+    width: 2rem;
+    height: 2rem;
+  }
+  
+  .status-icon.active {
+    color: #059669;
+  }
+  
+  .status-icon.inactive {
+    color: #dc2626;
+  }
+  
+  .status-text {
+    flex: 1;
+  }
+  
+  .status-label {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+  
+  .status-label.active {
+    color: #065f46;
+  }
+  
+  .status-label.inactive {
+    color: #991b1b;
+  }
+  
+  .status-message {
+    font-size: 0.875rem;
+  }
+  
+  .status-message.active {
+    color: #059669;
+  }
+  
+  .status-message.inactive {
+    color: #dc2626;
+  }

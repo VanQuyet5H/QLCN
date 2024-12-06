@@ -1,0 +1,66 @@
+.treatment-guide {
+    padding: 2rem;
+  }
+  
+  .guide-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  .guide-header h2 {
+    font-size: 1.8rem;
+    color: var(--text-light);
+    margin: 0;
+  }
+  
+  .guide-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .guide-card {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .guide-card h3 {
+    margin: 0 0 1.5rem;
+    color: var(--primary-color);
+    font-size: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--primary-color);
+  }
+  
+  .guide-section {
+    margin-bottom: 1.5rem;
+  }
+  
+  .guide-section:last-child {
+    margin-bottom: 0;
+  }
+  
+  .guide-section h4 {
+    color: var(--text-light);
+    margin: 0 0 0.75rem;
+    font-size: 1.1rem;
+  }
+  
+  .guide-section ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: var(--text-light);
+  }
+  
+  .guide-section li {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+  
+  .guide-section li:last-child {
+    margin-bottom: 0;
+  }

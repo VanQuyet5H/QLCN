@@ -1,7 +1,7 @@
 import { FaEdit, FaTrash, FaEye } from 'react-icons/fa';
 import './LivestockTable.css';
 
-function LivestockTable({ livestock, onSort, sortConfig }) {
+function LivestockTable({ livestock, onSort, sortConfig, onView, onEdit, onDelete }) {
   const getSortIcon = (key) => {
     if (sortConfig.key === key) {
       return sortConfig.direction === 'asc' ? '↑' : '↓';
@@ -15,7 +15,6 @@ function LivestockTable({ livestock, onSort, sortConfig }) {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
-  
   return (
     <div className="livestock-table-container">
       <table className="livestock-table">
@@ -65,13 +64,25 @@ function LivestockTable({ livestock, onSort, sortConfig }) {
               <td>{animal.breed}</td>
               <td>
                 <div className="action-buttons">
-                  <button className="btn-view" title="Xem chi tiết">
+                  <button
+                    className="btn-view"
+                    title="Xem chi tiết"
+                    onClick={() => onView(animal)}
+                  >
                     <FaEye />
                   </button>
-                  <button className="btn-edit" title="Chỉnh sửa">
+                  <button
+                    className="btn-edit"
+                    title="Chỉnh sửa"
+                    onClick={() => onEdit(animal)}
+                  >
                     <FaEdit />
                   </button>
-                  <button className="btn-delete" title="Xóa">
+                  <button
+                    className="btn-delete"
+                    title="Xóa"
+                    onClick={() => onDelete(animal)}
+                  >
                     <FaTrash />
                   </button>
                 </div>

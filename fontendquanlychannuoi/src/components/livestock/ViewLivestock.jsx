@@ -21,6 +21,11 @@ function ViewLivestock({ livestock, onClose }) {
           </div>
 
           <div className="info-group">
+            <label>Tên vật nuôi</label>
+            <p>{livestock.name}</p>
+          </div>
+
+          <div className="info-group">
             <label>Loại vật nuôi</label>
             <p>{livestock.type}</p>
           </div>
@@ -28,6 +33,11 @@ function ViewLivestock({ livestock, onClose }) {
           <div className="info-group">
             <label>Giống</label>
             <p>{livestock.breed}</p>
+          </div>
+
+          <div className="info-group">
+            <label>Giới tính</label>
+            <p>{livestock.gender === 'Male' ? 'Đực' : 'Cái'}</p>
           </div>
 
           <div className="info-group">
@@ -41,43 +51,16 @@ function ViewLivestock({ livestock, onClose }) {
           </div>
 
           <div className="info-group">
-            <label>Nguồn gốc</label>
-            <p>{livestock.source || 'Không có'}</p>
-          </div>
-
-          <div className="info-group">
-            <label>Vị trí chuồng</label>
-            <p>{livestock.location}</p>
-          </div>
-
-          <div className="info-group">
-            <label>Tình trạng sức khỏe</label>
-            <p className={`status ${livestock.health}`}>
-              {livestock.health === 'healthy' ? 'Khỏe mạnh' : 
-               livestock.health === 'sick' ? 'Đang điều trị' : 'Cách ly'}
+            <label>Trạng thái</label>
+            <p className={`status ${livestock.status.toLowerCase()}`}>
+              {livestock.status === 'Healthy' ? 'Khỏe mạnh' : 'Khác'}
             </p>
           </div>
-        </div>
 
-        <div className="info-section">
-          <label>Tiêm phòng</label>
-          <div className="vaccination-list">
-            {livestock.vaccinations?.length > 0 ? (
-              livestock.vaccinations.map((vac, index) => (
-                <span key={index} className="vaccination-tag">
-                  {vac === 'fmd' ? 'Lở mồm long móng' :
-                   vac === 'prrs' ? 'PRRS' : 'Ký sinh trùng'}
-                </span>
-              ))
-            ) : (
-              <p className="no-data">Chưa có thông tin tiêm phòng</p>
-            )}
+          <div className="info-group">
+            <label>Ngày tạo</label>
+            <p>{new Date(livestock.createdAt).toLocaleDateString('vi-VN')}</p>
           </div>
-        </div>
-
-        <div className="info-section">
-          <label>Ghi chú</label>
-          <p className="notes">{livestock.notes || 'Không có ghi chú'}</p>
         </div>
       </div>
     </div>

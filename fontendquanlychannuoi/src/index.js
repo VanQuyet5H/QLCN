@@ -2,16 +2,16 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
-import { BrowserRouter } from 'react-router-dom';
-import Login from './components/LoginForm';
-
-
+import App from './App';
+import { ThemeProvider } from 'styled-components';
+import { theme, GlobalStyle } from './pages/Theme';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-    <Login/>
-    </BrowserRouter>
+    <ThemeProvider theme={theme}>
+    <GlobalStyle />
+      <App />
+      </ThemeProvider>
   </React.StrictMode>
 );
 

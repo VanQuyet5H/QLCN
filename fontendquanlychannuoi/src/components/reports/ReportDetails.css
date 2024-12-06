@@ -1,0 +1,73 @@
+.report-details {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .details-header h2 {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    margin: 0;
+  }
+  
+  .tab-buttons {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .tab-button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    background: white;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .tab-button:hover {
+    background: #f8fafc;
+  }
+  
+  .tab-button.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .details-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+  }
+  
+  .details-table th {
+    background: #f8fafc;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-light);
+    white-space: nowrap;
+  }
+  
+  .details-table td {
+    padding: 1rem;
+    border-top: 1px solid #e2e8f0;
+    color: var(--text-light);
+  }
+  
+  .details-table tbody tr:hover {
+    background: #f8fafc;
+  }

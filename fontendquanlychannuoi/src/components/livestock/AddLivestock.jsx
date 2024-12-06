@@ -4,28 +4,26 @@ import './AddLivestock.css';
 
 function AddLivestock({ onClose, onSubmit }) {
   const [formData, setFormData] = useState({
-    id: '',
+    name: '',
     type: '',
-    breed: '',
+    gender: '',
     birthDate: '',
+    status: '',
     weight: '',
-    source: '',
-    location: '',
-    health: 'healthy',
-    notes: '',
-    vaccinations: [],
+    breed: '',
+    createdAt: new Date().toISOString(),
   });
 
   const [errors, setErrors] = useState({});
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.id) newErrors.id = 'Vui lòng nhập mã số vật nuôi';
+    if (!formData.name) newErrors.name = 'Vui lòng nhập tên vật nuôi';
     if (!formData.type) newErrors.type = 'Vui lòng chọn loại vật nuôi';
     if (!formData.breed) newErrors.breed = 'Vui lòng chọn giống';
     if (!formData.birthDate) newErrors.birthDate = 'Vui lòng nhập ngày sinh';
     if (!formData.weight) newErrors.weight = 'Vui lòng nhập cân nặng';
-    if (!formData.location) newErrors.location = 'Vui lòng chọn vị trí chuồng';
+    if (!formData.status) newErrors.status = 'Vui lòng nhập tình trạng';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -53,16 +51,6 @@ function AddLivestock({ onClose, onSubmit }) {
     }
   };
 
-  const handleVaccinationChange = (e) => {
-    const { checked, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      vaccinations: checked 
-        ? [...prev.vaccinations, value]
-        : prev.vaccinations.filter(v => v !== value)
-    }));
-  };
-
   return (
     <div className="add-livestock-container">
       <div className="add-livestock-header">
@@ -75,16 +63,16 @@ function AddLivestock({ onClose, onSubmit }) {
       <form onSubmit={handleSubmit} className="add-livestock-form">
         <div className="form-grid">
           <div className="form-group">
-            <label htmlFor="id">Mã số vật nuôi *</label>
+            <label htmlFor="name">Tên vật nuôi *</label>
             <input
               type="text"
-              id="id"
-              name="id"
-              value={formData.id}
+              id="name"
+              name="name"
+              value={formData.name}
               onChange={handleChange}
-              className={errors.id ? 'error' : ''}
+              className={errors.name ? 'error' : ''}
             />
-            {errors.id && <span className="error-message">{errors.id}</span>}
+            {errors.name && <span className="error-message">{errors.name}</span>}
           </div>
 
           <div className="form-group">
@@ -106,21 +94,18 @@ function AddLivestock({ onClose, onSubmit }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="breed">Giống *</label>
+            <label htmlFor="gender">Giới tính *</label>
             <select
-              id="breed"
-              name="breed"
-              value={formData.breed}
+              id="gender"
+              name="gender"
+              value={formData.gender}
               onChange={handleChange}
-              className={errors.breed ? 'error' : ''}
+              className={errors.gender ? 'error' : ''}
             >
-              <option value="">Chọn giống</option>
-              <option value="brahman">Brahman</option>
-              <option value="holstein">Holstein Friesian</option>
-              <option value="duroc">Duroc</option>
-              <option value="landrace">Landrace</option>
+              <option value="Male">Đực</option>
+              <option value="Female">Cái</option>
             </select>
-            {errors.breed && <span className="error-message">{errors.breed}</span>}
+            {errors.gender && <span className="error-message">{errors.gender}</span>}
           </div>
 
           <div className="form-group">
@@ -134,6 +119,19 @@ function AddLivestock({ onClose, onSubmit }) {
               className={errors.birthDate ? 'error' : ''}
             />
             {errors.birthDate && <span className="error-message">{errors.birthDate}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="status">Tình trạng *</label>
+            <input
+              type="text"
+              id="status"
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className={errors.status ? 'error' : ''}
+            />
+            {errors.status && <span className="error-message">{errors.status}</span>}
           </div>
 
           <div className="form-group">
@@ -152,93 +150,34 @@ function AddLivestock({ onClose, onSubmit }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="source">Nguồn gốc</label>
+            <label htmlFor="breed">Giống *</label>
+            <select
+              id="breed"
+              name="breed"
+              value={formData.breed}
+              onChange={handleChange}
+              className={errors.breed ? 'error' : ''}
+            >
+              <option value="">Chọn giống</option>
+              <option value="brahman">Brahman</option>
+              <option value="holstein">Holstein Friesian</option>
+              <option value="duroc">Duroc</option>
+              <option value="landrace">Landrace</option>
+            </select>
+            {errors.breed && <span className="error-message">{errors.breed}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="createdAt">Ngày tạo *</label>
             <input
               type="text"
-              id="source"
-              name="source"
-              value={formData.source}
+              id="createdAt"
+              name="createdAt"
+              value={formData.createdAt}
+              readOnly
               onChange={handleChange}
-              placeholder="Nhập nguồn gốc xuất xứ"
             />
           </div>
-
-          <div className="form-group">
-            <label htmlFor="location">Vị trí chuồng *</label>
-            <select
-              id="location"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              className={errors.location ? 'error' : ''}
-            >
-              <option value="">Chọn vị trí</option>
-              <option value="A1">Khu A - Chuồng 1</option>
-              <option value="A2">Khu A - Chuồng 2</option>
-              <option value="B1">Khu B - Chuồng 1</option>
-              <option value="B2">Khu B - Chuồng 2</option>
-            </select>
-            {errors.location && <span className="error-message">{errors.location}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="health">Tình trạng sức khỏe</label>
-            <select
-              id="health"
-              name="health"
-              value={formData.health}
-              onChange={handleChange}
-            >
-              <option value="healthy">Khỏe mạnh</option>
-              <option value="sick">Đang điều trị</option>
-              <option value="quarantine">Cách ly</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="form-group full-width">
-          <label>Tiêm phòng</label>
-          <div className="vaccination-checkboxes">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                value="fmd"
-                checked={formData.vaccinations.includes('fmd')}
-                onChange={handleVaccinationChange}
-              />
-              Lở mồm long móng
-            </label>
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                value="prrs"
-                checked={formData.vaccinations.includes('prrs')}
-                onChange={handleVaccinationChange}
-              />
-              PRRS
-            </label>
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                value="parasites"
-                checked={formData.vaccinations.includes('parasites')}
-                onChange={handleVaccinationChange}
-              />
-              Ký sinh trùng
-            </label>
-          </div>
-        </div>
-
-        <div className="form-group full-width">
-          <label htmlFor="notes">Ghi chú</label>
-          <textarea
-            id="notes"
-            name="notes"
-            value={formData.notes}
-            onChange={handleChange}
-            rows="3"
-            placeholder="Nhập ghi chú bổ sung"
-          />
         </div>
 
         <div className="form-actions">
