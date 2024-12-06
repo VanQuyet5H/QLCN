@@ -1,0 +1,72 @@
+/* user-container CSS */
+.user-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+  min-height: 100vh;
+  box-sizing: border-box; /* Đảm bảo các phần tử tính padding vào kích thước */
+  margin: 0 auto;
+  max-width: 1200px;
+  
+}
+
+/* user-wrapper CSS */
+.user-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1000px; /* Đặt chiều rộng tối đa cho form */
+  padding: 2rem; /* Tăng padding để form có nhiều không gian */
+  background-color: #fff;
+  border-radius: 10px; /* Bo góc cho form */
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Thêm bóng đổ */
+  box-sizing: border-box; /* Đảm bảo padding tính vào kích thước */
+  overflow-y: auto;
+  max-height: calc(100vh - 60px);
+  scrollbar-width: none;
+}
+
+/* ProfileHeader CSS */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 1.5rem; /* Tăng kích thước font chữ */
+}
+
+.profile-header img {
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+}
+
+/* ProfileInfo CSS */
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-size: 1.2rem; /* Tăng kích thước font chữ */
+}
+
+.profile-info p {
+  margin: 0;
+  color: #555;
+}
+
+/* AccountStatus CSS */
+.account-status {
+  font-size: 1.2rem; /* Tăng kích thước font chữ */
+}
+
+/* Đảm bảo form không bị tràn lên top */
+.ContentWrapper {
+  margin-top: 2rem; /* Thêm khoảng cách trên để tránh bị tràn lên top */
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  min-height: calc(100vh - var(--header-height));
+  overflow: auto;
+}
+

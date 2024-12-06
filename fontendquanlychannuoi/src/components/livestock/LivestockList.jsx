@@ -26,7 +26,8 @@ function LivestockList() {
   const [error, setError] = useState(null);
   const [totalRecords, setTotalRecords] = useState(0);
   const [notification, setNotification] = useState({ message: '', type: '' });
-  
+ 
+
   // Mock data - trong thực tế sẽ lấy từ API
   const fetchLivestock = async () => {
     try {
@@ -93,7 +94,6 @@ function LivestockList() {
       if (response.ok) {
         const result = await response.json(); // Giả sử API trả về đối tượng vật nuôi vừa thêm
         setLivestock(prev => [...prev, result]); // Cập nhật danh sách vật nuôi trong state
-  
         setShowAddForm(false); // Đóng form thêm vật nuôi
         setNotification({ message: 'Thêm vật nuôi thành công!', type: 'success' });
       } else {
@@ -115,49 +115,43 @@ function LivestockList() {
     } catch (err) {
       setError(err.message);
     } finally {
+      
       setSelectedLivestock(id);
       setShowViewModal(true);
     }
   };
-  const handleSubmit = async (data,id) => {
+  const handleSubmit = async (id) => {
     try {
       // Tạo dữ liệu cần gửi
       const payload = {
-        name: data.name,
-        type: data.type,
-        gender: data.gender,
-        birthDate: data.birthDate,
-        status: data.status,
-        weight: data.weight,
-        breed: data.breed,
+        name: '',
+        type: '',
+        gender: '',
+        birthDate: '',
+        status: '',
+        weight: '',
+        breed: '',
         createdAt: new Date().toISOString(), // Thời gian hiện tại
       };
-      
-      // Gọi API để thêm vật nuôi mới
-      const response = await fetch('https://localhost:7185/api/Animal/${id}', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
   
-      // Kiểm tra phản hồi từ API
-      if (response.ok) {
-        const result = await response.json(); 
-        setLivestock(prev => prev.filter(item => item.id !== id)); 
-        setShowAddForm(false); 
-        setNotification({ message: 'Cập nhật vật nuôi thành công!', type: 'success' });
-      } else {
-        throw new Error('Không thể cập nhật vật nuôi');
-      }
+      // Gọi API để cập nhật vật nuôi
+      const response = await axios.put(`https://localhost:7185/api/Animal/${id}`, payload);
+  
+      // Cập nhật danh sách vật nuôi trong state
+      setLivestock((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, ...payload } : item))
+      );
+  
+      setShowAddForm(false); // Đóng form cập nhật
+      setNotification({ message: 'Cập nhật vật nuôi thành công!', type: 'success' });
     } catch (error) {
-      setNotification({ message: `Lỗi: ${error.message}`, type: 'error' });
+      setNotification({
+        message: `Lỗi: ${error.response?.data || error.message}`,
+        type: 'error',
+      });
     }
   };
- 
- 
-
+  
   const handleDelete = (animal) => {
     setSelectedLivestock(animal);
     setShowDeleteModal(true);
@@ -176,7 +170,7 @@ function LivestockList() {
     }
   };
   
-
+  
   const filteredLivestock = livestock.filter(animal =>
     animal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     animal.type.toLowerCase().includes(searchTerm.toLowerCase())
@@ -188,11 +182,38 @@ function LivestockList() {
     }
     return a[sortConfig.key] < b[sortConfig.key] ? 1 : -1;
   });
-
-
-
   const currentItems = sortedLivestock;
-
+  const handleEditClick = async (id) => {
+    try {
+      // Tạo dữ liệu cần gửi
+      const payload = {
+        name: '',
+        type: '',
+        gender: '',
+        birthDate: '',
+        status: '',
+        weight: '',
+        breed: '',
+        createdAt: new Date().toISOString(), // Thời gian hiện tại
+      };
+  
+      // Gọi API để cập nhật vật nuôi
+      const response = await axios.put(`https://localhost:7185/api/Animal/${id}`, payload);
+  
+      // Cập nhật danh sách vật nuôi trong state
+      setLivestock((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, ...payload } : item))
+      );
+  
+      setShowAddForm(false); // Đóng form cập nhật
+      setNotification({ message: 'Cập nhật vật nuôi thành công!', type: 'success' });
+    } catch (error) {
+      setNotification({
+        message: `Lỗi: ${error.response?.data || error.message}`,
+        type: 'error',
+      });
+    }
+  };
 
   return (
     <div className="livestock-list">
@@ -247,12 +268,12 @@ function LivestockList() {
       )}
       {showEditForm && (
         <EditLivestock
-          livestockId={selectedLivestock}
+          livestock={selectedLivestock}
           onClose={() => {
             setShowEditForm(false);
             setSelectedLivestock(null);
           }}
-          onSubmit={handleSubmit}
+          onSubmit={handleEditClick}
         />
       )}
 
@@ -282,7 +303,7 @@ function LivestockList() {
         onSort={handleSort}
         sortConfig={sortConfig}
         onView={handleView}
-        onEdit={handleSubmit}
+        onEdit={handleEditClick}
         onDelete={handleDelete}
       />
 

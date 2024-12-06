@@ -1,124 +1,65 @@
 .livestock-list {
-    padding: 2rem;
-    background: var(--background-light);
-  }
-  
-  .livestock-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-  }
-  
-  .livestock-header h1 {
-    font-size: 1.8rem;
-    color: var(--text-light);
-    margin: 0;
-  }
-  
-  .btn-add {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s;
-  }
-  
-  .btn-add:hover {
-    background: var(--secondary-color);
-    transform: translateY(-2px);
-  }
-  
-  .livestock-tools {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    gap: 1rem;
-  }
-  
-  .search-box {
-    flex: 1;
-    max-width: 400px;
-    position: relative;
-  }
-  
-  .search-icon {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #64748b;
-  }
-  
-  .search-box input {
-    width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.5rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
-    font-size: 0.95rem;
-    transition: all 0.2s;
-  }
-  
-  .search-box input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  }
-  
-  .tool-buttons {
-    display: flex;
-    gap: 1rem;
-  }
-  
-  .btn-filter,
-  .btn-sort {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s;
-  }
-  
-  .btn-filter:hover,
-  .btn-sort:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-  }
-  
-  .btn-filter.active {
-    background: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-  }
-  
-  @media (max-width: 768px) {
-    .livestock-tools {
-      flex-direction: column;
-    }
-  
-    .search-box {
-      max-width: 100%;
-    }
-  
-    .tool-buttons {
-      width: 100%;
-    }
-  
-    .btn-filter,
-    .btn-sort {
-      flex: 1;
-      justify-content: center;
-    }
-  }
+  margin: 20px;
+  overflow: auto;
+}
+
+.livestock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.livestock-header h1 {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.btn-add {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-add:hover {
+  background-color: #45a049;
+}
+
+.livestock-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+}
+
+.search-box input {
+  padding: 8px;
+  margin-left: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.btn-filter {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-filter:hover {
+  background-color: #0b7dda;
+}
+
+.btn-filter.active {
+  background-color: #0b7dda;
+}

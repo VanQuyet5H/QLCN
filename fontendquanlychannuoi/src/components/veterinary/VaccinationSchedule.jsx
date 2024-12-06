@@ -1,30 +1,31 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { format } from 'date-fns';
 import { FaPlus, FaEdit, FaTrash, FaCheck } from 'react-icons/fa';
 import './VaccinationSchedule.css';
-
+import axios from 'axios';
 function VaccinationSchedule() {
-  const [schedules] = useState([
-    {
-      id: 'VAC001',
-      animalId: 'B001',
-      type: 'Bò thịt',
-      vaccine: 'Lở mồm long móng',
-      dueDate: '2023-12-15',
-      status: 'pending',
-      notes: 'Tiêm phòng định kỳ 6 tháng'
-    },
-    {
-      id: 'VAC002',
-      animalId: 'H001',
-      type: 'Heo thịt',
-      vaccine: 'PRRS',
-      dueDate: '2023-12-20',
-      status: 'completed',
-      notes: 'Đã tiêm ngày 20/12/2023'
-    }
-  ]);
+  const [schedules, setSchedules] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  useEffect(() => {
+    // Gọi API để lấy danh sách lịch tiêm phòng
+    const fetchSchedules = async () => {
+      try {
+        const response = await axios.get('https://localhost:7185/api/TiemChung'); // URL của API
+        setSchedules(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to fetch schedules');
+        setLoading(false);
+      }
+    };
+
+    fetchSchedules();
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
   return (
     <div className="vaccination-schedule">
       <div className="schedule-header">
@@ -51,11 +52,11 @@ function VaccinationSchedule() {
           <tbody>
             {schedules.map(schedule => (
               <tr key={schedule.id}>
-                <td>{schedule.id}</td>
+                <td>{schedule.vaccinationId}</td>
                 <td>{schedule.animalId}</td>
-                <td>{schedule.type}</td>
-                <td>{schedule.vaccine}</td>
-                <td>{format(new Date(schedule.dueDate), 'dd/MM/yyyy')}</td>
+                <td>{schedule.animalType}</td>
+                <td>{schedule.vaccineName}</td>
+                <td>{format(new Date(schedule.vaccinationDate), 'dd/MM/yyyy')}</td>
                 <td>
                   <span className={`status ${schedule.status}`}>
                     {schedule.status === 'completed' ? 'Đã tiêm' : 'Chờ tiêm'}

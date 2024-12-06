@@ -16,6 +16,7 @@ body {
   align-items: center;
   height: 100vh;
   width: 350px;
+  background-color: var(--background-light);
 }
 
 /* Styling the login form box */
@@ -96,7 +97,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #f4f7fc;
+  background-color: var(--background-light);
 }
 
 /* Container của form đăng nhập */

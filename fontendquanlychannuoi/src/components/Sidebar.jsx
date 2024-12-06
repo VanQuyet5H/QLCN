@@ -61,7 +61,7 @@ function Sidebar({ isOpen, toggleSidebar }) {
       text: 'Tài khoản',
       submenu: [
         { text: 'Thông tin cá nhân', path: '/profile' },
-        { text: 'Đổi mật khẩu', path: '/Resetpass' },
+        { text: 'Đổi mật khẩu', path: '/forgot-password' },
         { text: 'Đăng xuất', path: '/Login', icon: <FaSignOutAlt /> },
         
       ],

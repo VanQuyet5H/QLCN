@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FaPlus, FaSearch } from 'react-icons/fa';
-import DiseaseList from './DiseaseList';
-import TreatmentHistory from './TreatmentHistory';
+import {DiseaseList} from './DiseaseList';
+import {TreatmentHistory} from './TreatmentHistory';
 import './DiseaseManagement.css';
 
 function DiseaseManagement() {

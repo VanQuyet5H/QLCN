@@ -1,6 +1,6 @@
 import React, { useState,useEffect } from "react";
 import { useSearchParams,useNavigate } from "react-router-dom"; // Sử dụng React Router để lấy token từ URL
-import './LoginForm.css'
+import './Resetpass.css'
 function Resetpass() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -37,7 +37,7 @@ function Resetpass() {
         setSuccess(data.message ||"Đặt lại mật khẩu thành công!");
         setTimeout(() => navigate("/login"), 3000);
       } else {
-        setError("Token không hợp lệ hoặc đã hết hạn.");
+        setTimeout(() => {setError("Token không hợp lệ hoặc đã hết hạn.");}, 3000);
       }
     } catch (error) {
       setError("Đã xảy ra lỗi. Vui lòng thử lại.");
