@@ -4,7 +4,7 @@ import AddLivestock from './AddLivestock';
 import './LivestockDashboard.css';
 
 function LivestockDashboard() {
-  const [activeTab, setActiveTab] = useState('livestocklist');
+  const [activeTab, setActiveTab] = useState('addlivestock');
 
   const renderContent = () => {
     switch (activeTab) {
