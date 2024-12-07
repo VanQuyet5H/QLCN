@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSave, FaTimes } from "react-icons/fa";
 import "./AddLivestock.css";
 
@@ -13,24 +13,7 @@ function AddLivestock({ onClose, onSubmit, currentCount }) {
     weight: "",
     breed: "",
   });
-
   const [errors, setErrors] = useState({});
-
-  // Tạo mã vật nuôi tự động dựa trên tên và số thứ tự
-  useEffect(() => {
-    if (formData.name) {
-      const abbreviation = formData.name
-        .split(" ")
-        .map((word) => word[0])
-        .join("")
-        .toUpperCase();
-      setFormData((prev) => ({
-        ...prev,
-        id: `${abbreviation}${(currentCount + 1).toString().padStart(3, "0")}`,
-      }));
-    }
-  }, [formData.name, currentCount]);
-
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name) newErrors.name = "Vui lòng nhập tên vật nuôi";
@@ -75,24 +58,9 @@ function AddLivestock({ onClose, onSubmit, currentCount }) {
     <div className="add-livestock-container">
       <div className="add-livestock-header">
         <h2>Thêm Vật Nuôi Mới</h2>
-        <button className="close-button" onClick={onClose}>
-          <FaTimes />
-        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="add-livestock-form">
-        <div className="form-group">
-          <label htmlFor="id">Mã số vật nuôi</label>
-          <input
-            type="text"
-            id="id"
-            name="id"
-            value={formData.id}
-            readOnly
-            placeholder="Tự động tạo"
-          />
-        </div>
-
         <div className="form-group">
           <label htmlFor="name">Tên vật nuôi *</label>
           <input

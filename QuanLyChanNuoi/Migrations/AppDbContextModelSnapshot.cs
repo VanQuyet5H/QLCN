@@ -24,8 +24,11 @@ namespace QuanLyChanNuoi.Migrations
 
             modelBuilder.Entity("QuanLyChanNuoi.Models.Animal", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<DateTime>("BirthDate")
                         .HasColumnType("datetime2");
@@ -60,7 +63,7 @@ namespace QuanLyChanNuoi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Animal");
+                    b.ToTable("Animal", (string)null);
                 });
 
             modelBuilder.Entity("QuanLyChanNuoi.Models.Feed", b =>
@@ -71,9 +74,8 @@ namespace QuanLyChanNuoi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("AnimalId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("AnimalId")
+                        .HasColumnType("int");
 
                     b.Property<int>("Cost")
                         .HasColumnType("int");
@@ -101,7 +103,7 @@ namespace QuanLyChanNuoi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Feed");
+                    b.ToTable("Feed", (string)null);
                 });
 
             modelBuilder.Entity("QuanLyChanNuoi.Models.FoodInventory", b =>
@@ -136,7 +138,7 @@ namespace QuanLyChanNuoi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("FoodInventory");
+                    b.ToTable("FoodInventory", (string)null);
                 });
 
             modelBuilder.Entity("QuanLyChanNuoi.Models.HealthRecord", b =>
@@ -147,9 +149,8 @@ namespace QuanLyChanNuoi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("AnimalId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("AnimalId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CheckupDate")
                         .HasColumnType("datetime2");
@@ -179,7 +180,7 @@ namespace QuanLyChanNuoi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("HealthRecord");
+                    b.ToTable("HealthRecord", (string)null);
                 });
 
             modelBuilder.Entity("QuanLyChanNuoi.Models.QualityControl", b =>
@@ -190,9 +191,8 @@ namespace QuanLyChanNuoi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("AnimalId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("AnimalId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Condition")
                         .IsRequired()
@@ -231,7 +231,7 @@ namespace QuanLyChanNuoi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("QualityControl");
+                    b.ToTable("QualityControl", (string)null);
                 });
 
             modelBuilder.Entity("QuanLyChanNuoi.Models.Sale", b =>
@@ -242,9 +242,8 @@ namespace QuanLyChanNuoi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("AnimalId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("AnimalId")
+                        .HasColumnType("int");
 
                     b.Property<string>("BuyerName")
                         .IsRequired()
@@ -268,7 +267,7 @@ namespace QuanLyChanNuoi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Sale");
+                    b.ToTable("Sale", (string)null);
                 });
 
             modelBuilder.Entity("QuanLyChanNuoi.Models.Treatment", b =>
@@ -310,7 +309,7 @@ namespace QuanLyChanNuoi.Migrations
 
                     b.HasIndex("HealthRecordId");
 
-                    b.ToTable("Treatment");
+                    b.ToTable("Treatment", (string)null);
                 });
 
             modelBuilder.Entity("QuanLyChanNuoi.Models.User", b =>
@@ -362,7 +361,7 @@ namespace QuanLyChanNuoi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("User");
+                    b.ToTable("User", (string)null);
                 });
 
             modelBuilder.Entity("QuanLyChanNuoi.Models.Vaccination", b =>
@@ -373,9 +372,8 @@ namespace QuanLyChanNuoi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("AnimalId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("AnimalId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("VaccinationDate")
                         .HasColumnType("datetime2");
@@ -388,7 +386,7 @@ namespace QuanLyChanNuoi.Migrations
 
                     b.HasIndex("AnimalId");
 
-                    b.ToTable("Vaccination");
+                    b.ToTable("Vaccination", (string)null);
                 });
 
             modelBuilder.Entity("QuanLyChanNuoi.Models.Feed", b =>
