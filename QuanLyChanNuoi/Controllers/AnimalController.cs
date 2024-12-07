@@ -105,23 +105,35 @@ namespace QuanLyChanNuoi.Controllers
             }
             return Ok(animal);
         }
+       
 
         // Thêm mới vật nuôi
         [HttpPost]
         public async Task<IActionResult> CreateAnimal([FromBody] Animal animal)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+
+                animal.CreatedAt = DateTime.Now;
+
+                // Thêm vật nuôi vào cơ sở dữ liệu
+                _context.Animal.Add(animal);
+                await _context.SaveChangesAsync();
+
+                return Ok();
             }
-           
+            catch(Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
 
-            animal.CreatedAt = DateTime.Now;
-            _context.Animal.Add(animal);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetAnimalById), new { id = animal.Id }, animal);
+            }
         }
+
 
         // Cập nhật thông tin vật nuôi
         [HttpPut("{id}")]

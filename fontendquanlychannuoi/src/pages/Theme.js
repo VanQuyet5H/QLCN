@@ -42,6 +42,7 @@ export const GlobalStyle = createGlobalStyle`
     --sidebar-width: 250px;
     --sidebar-collapsed-width: 70px;
     --header-height: 60px;
+    scrollbar-width: none;
   }
 
   * {

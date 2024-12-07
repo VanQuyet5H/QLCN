@@ -27,7 +27,6 @@ const ContentWrapper = styled.div`
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
-  
   min-height: calc(100vh - var(--header-height));
    @media (max-width: 768px) {
     padding-left: 1rem; /* Add some space on left side */

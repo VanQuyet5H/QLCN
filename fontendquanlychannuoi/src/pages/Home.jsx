@@ -4,7 +4,6 @@ import Layout from '../Layout/Layout';
 import Dashboard from '../components/Dashboard';
 import GrowthTracking from '../components/growth/GrowthTracking';
 import BreedList from '../components/breeds/BreedList';
-import LivestockList from '../components/livestock/LivestockList';
 import DataAnalysis from '../components/statistics/DataAnalysis';
 import SummaryReport from '../components/statistics/SummaryReport';
 import DiseaseManagement from '../components/veterinary/DiseaseManagement';
@@ -12,6 +11,8 @@ import MedicineInventory from '../components/veterinary/MedicineInventory';
 import TreatmentGuide from '../components/veterinary/TreatmentGuide';
 import VaccinationSchedule from '../components/veterinary/VaccinationSchedule';
 import UserProfile from '../components/users/useUserData';
+import DanhSachAccount from '../components/users/DanhSachAccount';
+import LivestockDashboard from '../components/livestock/LivestockDashboard';
 function Home() {
   const navigate = useNavigate();
   useEffect(() => {
@@ -25,7 +26,7 @@ function Home() {
     <Layout>
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/livestocklist" element={<LivestockList />} />
+        <Route path="/livestockdashdoard" element={<LivestockDashboard />} />
         <Route path="/growth" element={<GrowthTracking />} />
         <Route path="/breeds" element={<BreedList />} />
         <Route path="/reports/analysis" element={<DataAnalysis />} />
@@ -35,6 +36,7 @@ function Home() {
         <Route path="/medicines" element={<MedicineInventory />} />
         <Route path="/vaccinations" element={<VaccinationSchedule />} />
         <Route path="/profile" element={<UserProfile />} />
+        <Route path="/userlist" element={<DanhSachAccount />} />
       </Routes>
     </Layout>
   );

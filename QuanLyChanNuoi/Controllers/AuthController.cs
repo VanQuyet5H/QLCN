@@ -192,6 +192,124 @@ namespace QuanLyChanNuoi.Controllers
 
             return Ok(new { message = "User added successfully", user });
         }
+        //hiển thị danh sách account
+        [HttpGet("DanhSachAccount")]
+        public async Task<IActionResult> GetUsers(
+      [FromQuery] string? search = null,
+      [FromQuery] string? role = null,
+      [FromQuery] bool? isActive = null,
+      [FromQuery] DateTime? createdFrom = null,
+      [FromQuery] DateTime? createdTo = null,
+      [FromQuery] int page = 1,
+      [FromQuery] int pageSize = 10)
+        {
+            // Base query
+            var query = _context.User.AsQueryable();
+
+            // Tìm kiếm
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(u =>
+                    u.FullName.Contains(search) ||
+                    u.Email.Contains(search) ||
+                    u.PhoneNumber.Contains(search) ||
+                    u.Role.Contains(search));
+            }
+
+            // Lọc theo vai trò
+            if (!string.IsNullOrEmpty(role))
+            {
+                query = query.Where(u => u.Role == role);
+            }
+
+            // Lọc theo trạng thái hoạt động
+            if (isActive.HasValue)
+            {
+                query = query.Where(u => u.IsActive == isActive);
+            }
+
+            // Lọc theo ngày tạo
+            if (createdFrom.HasValue)
+            {
+                query = query.Where(u => u.CreatedAt >= createdFrom);
+            }
+            if (createdTo.HasValue)
+            {
+                query = query.Where(u => u.CreatedAt <= createdTo);
+            }
+
+            // Phân trang
+            var totalUsers = await query.CountAsync();
+            var users = await query
+                .OrderBy(u => u.Id) // Sắp xếp theo ID (hoặc trường khác nếu cần)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.FullName,
+                    u.Username,
+                    u.Image,
+                    u.Email,
+                    u.PhoneNumber,
+                    u.Role,
+                    u.IsActive,
+                    u.CreatedAt
+                })
+                .ToListAsync();
+
+            // Thống kê bổ sung
+            var roleStats = await _context.User
+                .GroupBy(u => u.Role)
+                .Select(g => new
+                {
+                    Role = g.Key,
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            var statusStats = await _context.User
+                .GroupBy(u => u.IsActive)
+                .Select(g => new
+                {
+                    IsActive = g.Key,
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            // Trả về kết quả
+            return Ok(new
+            {
+                TotalUsers = totalUsers,
+                CurrentPage = page,
+                PageSize = pageSize,
+                RoleStats = roleStats,
+                StatusStats = statusStats,
+                Data = users
+            });
+        }
+        [HttpPut("ChangeStatus")]
+        public async Task<IActionResult> ChangeUserStatusAsync(int userId, bool isActive)
+        {
+            try
+            {
+                var user = await _context.User.FindAsync(userId);
+                if (user == null)
+                {
+                    throw new Exception("Người dùng không tồn tại.");
+                }
+
+                user.IsActive = isActive;
+                _context.User.Update(user);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Trạng thái người dùng đã được thay đổi thành công", user });
+            }
+            catch(Exception ex)
+            {
+                return  StatusCode(500, new { error = ex.Message });
+            }
+        }
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [Bind("Username", "Email", "FullName", "PhoneNumber", "Image")] UserDto users)
         {

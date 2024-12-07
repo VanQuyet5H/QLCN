@@ -8512,11 +8512,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\XayDungPTPM\\QuanLyChanNuoi\\QuanLyChanNuoi\\QuanLyChanNuoi.csproj",
+      "projectUniqueName": "C:\\Users\\Admin\\Downloads\\V1\\QLCN\\QuanLyChanNuoi\\QuanLyChanNuoi.csproj",
       "projectName": "QuanLyChanNuoi",
-      "projectPath": "E:\\XayDungPTPM\\QuanLyChanNuoi\\QuanLyChanNuoi\\QuanLyChanNuoi.csproj",
+      "projectPath": "C:\\Users\\Admin\\Downloads\\V1\\QLCN\\QuanLyChanNuoi\\QuanLyChanNuoi.csproj",
       "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-      "outputPath": "E:\\XayDungPTPM\\QuanLyChanNuoi\\QuanLyChanNuoi\\obj\\",
+      "outputPath": "C:\\Users\\Admin\\Downloads\\V1\\QLCN\\QuanLyChanNuoi\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config",

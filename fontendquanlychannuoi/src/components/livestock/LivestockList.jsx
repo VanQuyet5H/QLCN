@@ -10,6 +10,7 @@ import './LivestockList.css';
 import axios from 'axios';
 import Notification from '../utils/Notification';
 import EditLivestock from './EditLivestock';
+import { Link } from 'react-router-dom';
 function LivestockList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -219,9 +220,6 @@ function LivestockList() {
     <div className="livestock-list">
       <div className="livestock-header">
         <h1>Quản lý vật nuôi</h1>
-        <button className="btn-add" onClick={() => setShowAddForm(true)}>
-          <FaPlus /> Thêm mới
-        </button>
       </div>
       {notification.message && (
         <Notification

@@ -142,7 +142,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       icon: <FaPiggyBank />,
       text: 'Quản lý vật nuôi',
       submenu: [
-        { text: 'Danh sách đàn', path: '/livestocklist' },
+        { text: 'Danh sách đàn', path: '/livestockdashdoard' },
         { text: 'Theo dõi tăng trưởng', path: '/growth' },
         { text: 'Quản lý giống', path: '/breeds' },
       ],
@@ -171,6 +171,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       text: 'Tài khoản',
       submenu: [
         { text: 'Thông tin cá nhân', path: '/profile' },
+        { text: 'Danh sách tài khoản', path: '/userlist' },
         { text: 'Đổi mật khẩu', path: '/forgot-password' },
         { text: 'Đăng xuất', path: '/Login', icon: <FaSignOutAlt /> },
       ],
