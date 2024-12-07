@@ -35,7 +35,6 @@ function LivestockList() {
       setIsLoading(true);
       const params = { page: currentPage, pageSize: itemsPerPage, search: searchTerm };
       const response = await axios.get('https://localhost:7185/api/Animal', { params });
-      console.log('Response data:', response.data);
       const { data, totalRecords } = response.data;
       setLivestock(data);
       setTotalRecords(totalRecords);
