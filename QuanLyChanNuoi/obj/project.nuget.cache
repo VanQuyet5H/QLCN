@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "OAW+z2Qzl4t/vjvpULxDf+ojMZo0alrpEojIVDyMnt0IeGZDMxwVjjCfENwwVKG0CpNVuK5rUUvqRrR6/AP/aw==",
+  "dgSpecHash": "6mflvAPDneamxvHWLCNO428D+rWB7BlIsZzjbIHgxrE5UH/XDGEgivWuXa3UdRbh24a+YGrapE7X6pXvMbE0tg==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Admin\\Downloads\\V1\\QLCN\\QuanLyChanNuoi\\QuanLyChanNuoi.csproj",
+  "projectFilePath": "C:\\Users\\Admin\\Downloads\\V2\\QLCN\\QuanLyChanNuoi\\QuanLyChanNuoi.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Admin\\.nuget\\packages\\automapper\\12.0.0\\automapper.12.0.0.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\dinktopdf\\1.0.8\\dinktopdf.1.0.8.nupkg.sha512",
