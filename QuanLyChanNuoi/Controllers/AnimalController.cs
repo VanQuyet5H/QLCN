@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using QuanLyChanNuoi.Models;
 using QuanLyChanNuoi.Models.Request;
 using System.Data;
+using System.Text;
+using static QuanLyChanNuoi.Models.Request.AnimalList;
 
 namespace QuanLyChanNuoi.Controllers
 {
@@ -18,78 +20,36 @@ namespace QuanLyChanNuoi.Controllers
             _context = context;
         }
         //[Authorize(Roles = "Admin")]
-        [HttpPost("addanimal")]
-        public async Task<IActionResult> AddNewAnimalWithToken([FromBody] AddAnimalRequest request)
-        {
-            if (request == null)
-            {
-                return BadRequest("Dữ liệu không hợp lệ.");
-            }
-            // 2. Thêm con vật mới vào bảng Animal
-            var newAnimal = new Animal
-            {
-                Name = request.Name,
-                Type = request.Type,
-                Gender = request.Gender,
-                BirthDate = request.BirthDate,
-                Status = "Healthy",
-                Weight = request.Weight,
-                Breed = request.Breed,
-                CreatedAt=DateTime.Now
-            };
-
-            _context.Animal.Add(newAnimal);
-            await _context.SaveChangesAsync();
-
-            // 3. Cập nhật kho thức ăn
-            var foodInventory = await _context.FoodInventory
-                .Where(f => f.FoodType == request.FoodType)
-                .FirstOrDefaultAsync();
-
-            if (foodInventory == null || foodInventory.Quantity < request.FoodQuantity)
-            {
-                return BadRequest("Số lượng thức ăn không đủ trong kho.");
-            }
-
-            foodInventory.Quantity -= request.FoodQuantity;
-            _context.FoodInventory.Update(foodInventory);
-
-            // 4. Thêm thông tin tiêm phòng cho con vật
-            var vaccination = new Vaccination
-            {
-                AnimalId = newAnimal.Id,
-                VaccineName = request.VaccineName,
-                VaccinationDate = request.VaccinationDate
-            };
-            _context.Vaccination.Add(vaccination);
-
-            // Lưu tất cả thay đổi vào cơ sở dữ liệu
-            await _context.SaveChangesAsync();
-
-            return Ok(new { Message = "Con vật và dữ liệu liên quan đã được thêm thành công." });
-        }
         [HttpGet]
-        public async Task<IActionResult> GetAnimals([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAnimals(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10)
         {
-            var query = _context.Animal.AsQueryable();
-
-            if (!string.IsNullOrEmpty(search))
+            // Kiểm tra đầu vào
+            if (page <= 0 || pageSize <= 0)
             {
-                query = query.Where(a => a.Name.Contains(search) || a.Type.Contains(search));
+                return BadRequest("Page and PageSize must be greater than 0.");
             }
 
+            // Query dữ liệu
+            var query = _context.Animal.AsQueryable();
+            // Tổng số bản ghi
             var totalRecords = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+            // Lấy dữ liệu theo trang
             var animals = await query
-                .OrderBy(a => a.Name)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
+            // Trả về dữ liệu dạng JSON
             return Ok(new
             {
                 Data = animals,
                 TotalRecords = totalRecords,
-                Page = page,
+                TotalPages = totalPages,
+                CurrentPage = page,
                 PageSize = pageSize
             });
         }
@@ -108,7 +68,7 @@ namespace QuanLyChanNuoi.Controllers
        
 
         // Thêm mới vật nuôi
-        [HttpPost]
+        [HttpPost("ThemGiong")]
         public async Task<IActionResult> CreateAnimal([FromBody] Animal animal)
         {
             try
@@ -156,7 +116,7 @@ namespace QuanLyChanNuoi.Controllers
             animal.BirthDate = updatedAnimal.BirthDate;
             animal.Status = updatedAnimal.Status;
             animal.Weight = updatedAnimal.Weight;
-
+            animal.Breed = updatedAnimal.Breed;
             await _context.SaveChangesAsync();
             return Ok();
         }
@@ -175,5 +135,7 @@ namespace QuanLyChanNuoi.Controllers
             await _context.SaveChangesAsync();
             return Ok();
         }
+        //hiển thị chi tiêt theo dõi vật nuôi
+        
     }
 }

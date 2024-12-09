@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FaSave, FaTimes } from "react-icons/fa";
 import "./AddLivestock.css";
+import axios from "axios";
+import Notification from '../utils/Notification';
 
-function AddLivestock({ onClose, onSubmit, currentCount }) {
+function AddLivestock({ onClose }) {
   const [formData, setFormData] = useState({
-    id: "",
     name: "",
     type: "",
     gender: "Male",
@@ -13,7 +14,10 @@ function AddLivestock({ onClose, onSubmit, currentCount }) {
     weight: "",
     breed: "",
   });
+
+  const [notification, setNotification] = useState({ message: '', type: '' });
   const [errors, setErrors] = useState({});
+
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name) newErrors.name = "Vui lòng nhập tên vật nuôi";
@@ -28,7 +32,7 @@ function AddLivestock({ onClose, onSubmit, currentCount }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
       const formattedData = {
@@ -36,7 +40,16 @@ function AddLivestock({ onClose, onSubmit, currentCount }) {
         weight: parseFloat(formData.weight),
         createdAt: new Date().toISOString(),
       };
-      onSubmit(formattedData);
+
+      // Gọi API thêm vật nuôi
+      try {
+        const response = await axios.post("https://localhost:7185/api/Animal/ThemGiong", formattedData);
+        console.log("Vật nuôi đã được thêm thành công:", response.data);
+        setNotification({ message: 'Thêm vật nuôi thành công!', type: 'success' });
+      } catch (error) {
+        console.error("Lỗi khi thêm vật nuôi: ", error);
+        setNotification({ message: 'Lỗi khi thêm vật nuôi', type: 'error' });
+      }
     }
   };
 
@@ -54,12 +67,33 @@ function AddLivestock({ onClose, onSubmit, currentCount }) {
     }
   };
 
+  const handleCancel = () => {
+    setFormData({
+      name: "",
+      type: "",
+      gender: "Male",
+      birthDate: "",
+      status: "",
+      weight: "",
+      breed: "",
+    });
+    if (onClose) {
+      onClose();  // Đóng form nếu có hàm onClose
+    }
+  };
+
   return (
     <div className="add-livestock-container">
       <div className="add-livestock-header">
         <h2>Thêm Vật Nuôi Mới</h2>
       </div>
-
+      {notification.message && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification({ message: '', type: '' })}
+        />
+      )}
       <form onSubmit={handleSubmit} className="add-livestock-form">
         <div className="form-group">
           <label htmlFor="name">Tên vật nuôi *</label>
@@ -115,9 +149,7 @@ function AddLivestock({ onClose, onSubmit, currentCount }) {
             onChange={handleChange}
             className={errors.birthDate ? "error" : ""}
           />
-          {errors.birthDate && (
-            <span className="error-message">{errors.birthDate}</span>
-          )}
+          {errors.birthDate && <span className="error-message">{errors.birthDate}</span>}
         </div>
 
         <div className="form-group">
@@ -131,9 +163,7 @@ function AddLivestock({ onClose, onSubmit, currentCount }) {
             className={errors.status ? "error" : ""}
             placeholder="Nhập trạng thái"
           />
-          {errors.status && (
-            <span className="error-message">{errors.status}</span>
-          )}
+          {errors.status && <span className="error-message">{errors.status}</span>}
         </div>
 
         <div className="form-group">
@@ -147,9 +177,7 @@ function AddLivestock({ onClose, onSubmit, currentCount }) {
             className={errors.weight ? "error" : ""}
             placeholder="Nhập cân nặng"
           />
-          {errors.weight && (
-            <span className="error-message">{errors.weight}</span>
-          )}
+          {errors.weight && <span className="error-message">{errors.weight}</span>}
         </div>
 
         <div className="form-group">
@@ -163,13 +191,11 @@ function AddLivestock({ onClose, onSubmit, currentCount }) {
             className={errors.breed ? "error" : ""}
             placeholder="Nhập giống"
           />
-          {errors.breed && (
-            <span className="error-message">{errors.breed}</span>
-          )}
+          {errors.breed && <span className="error-message">{errors.breed}</span>}
         </div>
 
         <div className="form-actions">
-          <button type="button" className="btn-cancel" onClick={onClose}>
+          <button type="button" className="btn-cancel" onClick={handleCancel}>
             <FaTimes /> Hủy
           </button>
           <button type="submit" className="btn-save">
