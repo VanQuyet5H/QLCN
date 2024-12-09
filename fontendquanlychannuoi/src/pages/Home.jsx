@@ -25,7 +25,7 @@ function Home() {
   return (
     <Layout>
       <Routes>
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/home" element={<Dashboard />} />
         <Route path="/livestockdashdoard" element={<LivestockDashboard />} />
         <Route path="/growth" element={<GrowthTracking />} />
         <Route path="/breeds" element={<BreedList />} />

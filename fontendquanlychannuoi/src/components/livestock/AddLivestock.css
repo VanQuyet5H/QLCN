@@ -1,98 +1,143 @@
+/* Container cho form */
 .add-livestock-container {
+  max-width: 700px;
+  margin: 0 auto;
   padding: 20px;
-  background-color: #fff;
+  background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  box-sizing: border-box;
+  width: 600px;
 }
 
-.add-livestock-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Header của form */
+.add-livestock-header h2 {
+  text-align: center;
   font-size: 24px;
   margin-bottom: 20px;
+  color: #333;
 }
 
-.add-livestock-header h2 {
-  margin: 0;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.add-livestock-form {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Chia thành 2 cột */
-  gap: 20px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-label {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-input[type="text"],
-input[type="date"],
-input[type="number"],
-select {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 16px;
-  width: 100%;
-}
-
-input.error,
-select.error {
-  border-color: red;
-}
-
+/* Phần thông báo lỗi */
 .error-message {
   color: red;
   font-size: 12px;
   margin-top: 5px;
 }
 
+/* Các nhóm input */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.form-group input.error,
+.form-group select.error {
+  border-color: red;
+}
+
+/* Cải tiến thẻ input text cho dễ sử dụng */
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group select {
+  margin-bottom: 10px;
+}
+
+/* Các nút hành động */
 .form-actions {
-  grid-column: span 2; /* Chạy qua 2 cột */
   display: flex;
   justify-content: space-between;
+  margin-top: 20px;
 }
 
 .btn-cancel,
 .btn-save {
   padding: 10px 20px;
-  font-size: 16px;
-  border: none;
+  font-size: 14px;
   border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .btn-cancel {
-  background-color: #f44336;
-  color: white;
+  background-color: #e0e0e0;
+  color: #333;
+  border: none;
+}
+
+.btn-cancel:hover {
+  background-color: #ccc;
 }
 
 .btn-save {
-  background-color: #4caf50;
+  background-color: #007bff;
   color: white;
+  border: none;
 }
 
-@media screen and (max-width: 768px) {
-  .add-livestock-form {
-    grid-template-columns: 1fr; /* Một cột trên màn hình nhỏ */
+.btn-save:hover {
+  background-color: #0056b3;
+}
+
+/* Thêm các icon vào nút */
+.btn-cancel svg,
+.btn-save svg {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* Phần Responsive */
+@media (max-width: 768px) {
+  .add-livestock-container {
+    padding: 15px;
+  }
+
+  .form-group input,
+  .form-group select {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .btn-cancel,
+  .btn-save {
+    font-size: 12px;
+    padding: 8px 15px;
   }
 }
-/**/
+
+@media (max-width: 480px) {
+  .add-livestock-container {
+    padding: 10px;
+  }
+
+  .form-group input,
+  .form-group select {
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .btn-cancel,
+  .btn-save {
+    font-size: 12px;
+    padding: 7px 12px;
+  }
+}

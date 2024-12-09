@@ -1,22 +1,42 @@
 import { useState } from 'react';
 import './LivestockFilter.css';
 
-function LivestockFilter() {
+function LivestockFilter({ onApplyFilters  }) {
   const [filters, setFilters] = useState({
+    name: '',
     type: '',
-    breed: '',
+    gender: '',
+    birthRange: '', // Replacing birthDate with birthRange
     status: '',
-    location: '',
-    ageRange: '',
-    weightRange: ''
+    weight: '',
+    breed: '',
   });
 
+  // Xử lý khi thay đổi giá trị của bộ lọc
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
+  };
+
+  // Xử lý khi nhấn nút "Áp dụng"
+  const handleApplyFilters = () => {
+    onApplyFilters(filters); // Truyền các bộ lọc đến component cha
+  };
+
+  // Xử lý khi nhấn nút "Đặt lại"
+  const handleResetFilters = () => {
+    setFilters({
+      type: '',
+      gender: '',
+      birthRange: '', // Reset the birthRange
+      status: '',
+      weight: '',
+      breed: '',
+    });
+    onApplyFilters({}); // Đặt lại bộ lọc
   };
 
   return (
@@ -25,20 +45,30 @@ function LivestockFilter() {
         <label>Loại vật nuôi</label>
         <select name="type" value={filters.type} onChange={handleFilterChange}>
           <option value="">Tất cả</option>
-          <option value="bo-thit">Bò thịt</option>
-          <option value="bo-sua">Bò sữa</option>
-          <option value="heo-thit">Heo thịt</option>
-          <option value="heo-nai">Heo nái</option>
+          <option value="Lợn">Lợn</option>
+          <option value="Bò">Bò</option>
+          <option value="Gà">Gà</option>
         </select>
       </div>
 
       <div className="filter-group">
-        <label>Giống</label>
-        <select name="breed" value={filters.breed} onChange={handleFilterChange}>
+        <label>Giới tính</label>
+        <select name="gender" value={filters.gender} onChange={handleFilterChange}>
           <option value="">Tất cả</option>
-          <option value="brahman">Brahman</option>
-          <option value="holstein">Holstein Friesian</option>
-          <option value="duroc">Duroc</option>
+          <option value="Male">Đực</option>
+          <option value="Female">Cái</option>
+        </select>
+      </div>
+
+      <div className="filter-group">
+        <label>Khoảng thời gian sinh</label>
+        <select name="birthRange" value={filters.birthRange} onChange={handleFilterChange}>
+          <option value="">Tất cả</option>
+          <option value="last-week">Tuần trước</option>
+          <option value="last-month">Tháng trước</option>
+          <option value="last-3-months">3 tháng gần đây</option>
+          <option value="last-6-months">6 tháng gần đây</option>
+          <option value="last-year">1 năm qua</option>
         </select>
       </div>
 
@@ -46,47 +76,36 @@ function LivestockFilter() {
         <label>Tình trạng</label>
         <select name="status" value={filters.status} onChange={handleFilterChange}>
           <option value="">Tất cả</option>
-          <option value="healthy">Khỏe mạnh</option>
-          <option value="treatment">Đang điều trị</option>
-          <option value="quarantine">Cách ly</option>
-        </select>
-      </div>
-
-      <div className="filter-group">
-        <label>Vị trí</label>
-        <select name="location" value={filters.location} onChange={handleFilterChange}>
-          <option value="">Tất cả</option>
-          <option value="khu-a">Khu A</option>
-          <option value="khu-b">Khu B</option>
-          <option value="khu-c">Khu C</option>
-        </select>
-      </div>
-
-      <div className="filter-group">
-        <label>Độ tuổi</label>
-        <select name="ageRange" value={filters.ageRange} onChange={handleFilterChange}>
-          <option value="">Tất cả</option>
-          <option value="0-6">0-6 tháng</option>
-          <option value="7-12">7-12 tháng</option>
-          <option value="13-24">13-24 tháng</option>
-          <option value="24+">Trên 24 tháng</option>
+          <option value="Healthy">Khỏe mạnh</option>
+          <option value="Sick">Đang điều trị</option>
         </select>
       </div>
 
       <div className="filter-group">
         <label>Cân nặng</label>
-        <select name="weightRange" value={filters.weightRange} onChange={handleFilterChange}>
+        <select name="weight" value={filters.weight} onChange={handleFilterChange}>
           <option value="">Tất cả</option>
-          <option value="0-100">0-100 kg</option>
-          <option value="101-300">101-300 kg</option>
-          <option value="301-500">301-500 kg</option>
-          <option value="500+">Trên 500 kg</option>
+          <option value="200">200 kg</option>
+          <option value="300-500">301-500 kg</option>
+        </select>
+      </div>
+
+      <div className="filter-group">
+        <label>Giống</label>
+        <select name="breed" value={filters.breed} onChange={handleFilterChange}>
+          <option value="">Tất cả</option>
+          <option value="Large White">Large White</option>
+          <option value="Yorkshire">Yorkshire</option>
         </select>
       </div>
 
       <div className="filter-actions">
-        <button className="btn-apply">Áp dụng</button>
-        <button className="btn-reset">Đặt lại</button>
+        <button className="btn-apply" onClick={handleApplyFilters}>
+          Áp dụng
+        </button>
+        <button className="btn-reset" onClick={handleResetFilters}>
+          Đặt lại
+        </button>
       </div>
     </div>
   );
