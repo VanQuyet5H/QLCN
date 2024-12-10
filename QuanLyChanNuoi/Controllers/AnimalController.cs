@@ -118,7 +118,7 @@ namespace QuanLyChanNuoi.Controllers
             animal.Weight = updatedAnimal.Weight;
             animal.Breed = updatedAnimal.Breed;
             await _context.SaveChangesAsync();
-            return Ok();
+            return Ok(animal);
         }
 
         // Xóa vật nuôi

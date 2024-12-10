@@ -60,7 +60,5 @@ export const GlobalStyle = createGlobalStyle`
     color: var(--text-light);
   }
 
-  #root {
-    min-height: 100vh;
-  }
+  
 `;

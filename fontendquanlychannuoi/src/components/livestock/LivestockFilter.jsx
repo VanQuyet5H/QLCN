@@ -28,15 +28,18 @@ function LivestockFilter({ onApplyFilters  }) {
 
   // Xử lý khi nhấn nút "Đặt lại"
   const handleResetFilters = () => {
-    setFilters({
+    const defaultFilters = {
+      name: '',
       type: '',
       gender: '',
-      birthRange: '', // Reset the birthRange
+      birthRange: '',
       status: '',
       weight: '',
       breed: '',
-    });
-    onApplyFilters({}); // Đặt lại bộ lọc
+    };
+  
+    setFilters(defaultFilters);
+    onApplyFilters(defaultFilters);
   };
 
   return (

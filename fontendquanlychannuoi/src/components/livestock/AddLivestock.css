@@ -62,6 +62,14 @@
   margin-bottom: 10px;
 }
 
+/* Cụ thể cho input[type="date"] */
+.form-group input[type="date"] {
+  margin-bottom: 10px;
+  padding: 12px; /* Điều chỉnh padding nếu cần */
+  width: 100%; /* Đảm bảo chiếm hết chiều rộng */
+  min-width: 100%; /* Đảm bảo không bị ngắn */
+}
+
 /* Các nút hành động */
 .form-actions {
   display: flex;
