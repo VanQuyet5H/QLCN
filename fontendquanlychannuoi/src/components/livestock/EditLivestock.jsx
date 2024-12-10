@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { FaSave, FaTimes } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaSave,FaTimes } from 'react-icons/fa';
 import './EditLivestock.css';
 
 function EditLivestock({ livestock, onSubmit, onCancel }) {
@@ -12,33 +12,28 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
     status: '',
     weight: '',
     breed: '',
-    createAt: new Date().toISOString(),
     otherType: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Khởi tạo dữ liệu từ prop `livestock`
   useEffect(() => {
     if (livestock) {
-      const initializedData = {
+      setFormData({
         ...livestock,
         type: ['Bò', 'Lợn', 'other'].includes(livestock.type) ? livestock.type : '',
         otherType: livestock.type === 'other' ? livestock.otherType : '',
-        birthDate: livestock.birthDate ? livestock.birthDate.split('T')[0] : '', 
-      };
-      setFormData(initializedData);
+        birthDate: livestock.birthDate ? livestock.birthDate.split('T')[0] : '',
+      });
     }
   }, [livestock]);
 
-  // Hàm kiểm tra hợp lệ
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name) newErrors.name = 'Vui lòng nhập tên vật nuôi';
     if (!formData.type) newErrors.type = 'Vui lòng chọn loại vật nuôi';
-    if (!formData.weight || formData.weight <= 0) newErrors.weight = 'Vui lòng nhập cân nặng hợp lệ';
+    if (!formData.weight || formData.weight <= 0) newErrors.weight = 'Cân nặng không hợp lệ';
     if (!formData.birthDate) newErrors.birthDate = 'Vui lòng nhập ngày sinh';
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -63,7 +58,7 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
     if (validateForm()) {
       setIsSubmitting(true);
       const finalData = formData.type === 'other' ? { ...formData, type: formData.otherType } : formData;
-  
+      onSubmit(finalData);
       try {
         await onSubmit(finalData); // Gọi API từ prop `onSubmit`
         setIsSubmitting(false);
@@ -71,17 +66,12 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
         console.error('Error updating livestock:', error);
         setIsSubmitting(false);
       }
+    
     }
   };
 
   return (
     <div className="edit-livestock-container">
-      <div className="edit-livestock-header">
-        <h2>Cập Nhật Thông Tin Vật Nuôi</h2>
-        <button className="close-button" onClick={onCancel}>
-          <FaTimes />
-        </button>
-      </div>
       <form onSubmit={handleSubmit} className="edit-livestock-form">
         <div className="form-group">
           <label htmlFor="id">Mã số vật nuôi</label>
@@ -104,7 +94,7 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
           <select
             id="type"
             name="type"
-            value={formData.type||''}
+            value={formData.type || ''}
             onChange={handleChange}
             className={errors.type ? 'error' : ''}
           >
@@ -134,8 +124,8 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
         <div className="form-group">
           <label htmlFor="gender">Giới tính</label>
           <select id="gender" name="gender" value={formData.gender} onChange={handleChange}>
-            <option value="Đực">Đực</option>
-            <option value="Cái">Cái</option>
+            <option value="Male">Đực</option>
+            <option value="FeMale">Cái</option>
           </select>
         </div>
         <div className="form-group">
@@ -187,8 +177,8 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
             <FaTimes /> Hủy
           </button>
           <button type="submit" className="btn-save" disabled={isSubmitting}>
-  {isSubmitting ? 'Đang lưu...' : <><FaSave /> Lưu</>}
-</button>
+            {isSubmitting ? 'Đang lưu...' : <><FaSave /> Lưu</>}
+          </button>
         </div>
       </form>
     </div>

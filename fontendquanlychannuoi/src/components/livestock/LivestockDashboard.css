@@ -4,49 +4,55 @@
   flex-direction: column;
   font-family: Arial, sans-serif;
   margin: 0 auto;
-  max-width: 100%;
+  max-width: 1200px; /* Đặt chiều rộng tối đa */
   width: 100%;
   padding: 20px;
   box-sizing: border-box;
   border: 1px solid #ddd;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   background-color: #ffffff;
-  width: 1000px;
   margin-top: 500px;
 }
 
 /* Tabs Styles */
 .dashboard-tabs {
   display: flex;
-  flex-wrap: wrap; /* Cho phép gói dòng khi không đủ chỗ */
-  justify-content: space-around;
+  flex-wrap: wrap; /* Đảm bảo các nút xuống dòng khi không đủ chỗ */
+  justify-content: center;
+  align-items: center;
   border-bottom: 1px solid #ddd;
   background-color: #f7f7f7;
+  padding: 10px 0;
 }
 
 .tab-button {
   flex: 1;
-  padding: 15px;
+  padding: 12px 20px;
+  margin: 0 5px;
   text-align: center;
   background-color: #f7f7f7;
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  white-space: nowrap; /* Đảm bảo nút không bị xuống dòng */
+  border-radius: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease, border 0.3s ease;
+  white-space: nowrap; /* Đảm bảo văn bản không xuống dòng */
+  color: #333;
 }
 
 .tab-button.active {
   background-color: #007bff;
-  color: white;
+  color: #fff;
   font-weight: bold;
+  border-color: #0056b3;
 }
 
 .tab-button:hover {
   background-color: #e6f7ff;
   color: #0056b3;
+  border-color: #b3d9ff;
 }
 
 /* Content Styles */
@@ -54,8 +60,10 @@
   padding: 20px;
   background-color: #fff;
   max-width: 100%;
-  overflow-x: auto; /* Cuộn ngang nếu cần */
+  overflow-x: auto; /* Cuộn ngang nếu nội dung quá rộng */
   box-sizing: border-box;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* Responsive Design */
@@ -71,15 +79,15 @@
 
 @media (max-width: 768px) {
   .dashboard-tabs {
-    flex-direction: column; /* Chuyển nút xuống dạng cột */
+    flex-direction: column; /* Các nút được xếp dọc */
     align-items: center;
+    gap: 10px; /* Khoảng cách giữa các nút */
   }
 
   .tab-button {
-    padding: 10px;
-    text-align: center;
-    width: 100%; /* Đảm bảo nút chiếm hết chiều ngang */
+    width: 100%; /* Chiếm toàn bộ chiều ngang */
     box-sizing: border-box;
+    padding: 12px;
   }
 
   .dashboard-content {
@@ -94,7 +102,7 @@
 
   .tab-button {
     font-size: 12px;
-    padding: 8px;
+    padding: 10px;
   }
 
   .dashboard-content {

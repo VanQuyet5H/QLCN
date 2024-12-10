@@ -13,6 +13,7 @@ function AddLivestock({ onClose }) {
     status: "",
     weight: "",
     breed: "",
+    otherType: "", // Thêm trường otherType
   });
 
   const [notification, setNotification] = useState({ message: '', type: '' });
@@ -21,7 +22,7 @@ function AddLivestock({ onClose }) {
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name) newErrors.name = "Vui lòng nhập tên vật nuôi";
-    if (!formData.type) newErrors.type = "Vui lòng chọn loại vật nuôi";
+    if (!formData.type && !formData.otherType) newErrors.type = "Vui lòng chọn loại vật nuôi hoặc nhập loại khác";
     if (!formData.gender) newErrors.gender = "Vui lòng chọn giới tính";
     if (!formData.birthDate) newErrors.birthDate = "Vui lòng nhập ngày sinh";
     if (!formData.status) newErrors.status = "Vui lòng nhập trạng thái";
@@ -34,13 +35,14 @@ function AddLivestock({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const finalType = formData.type === "Other" && formData.otherType ? formData.otherType : formData.type;
     if (validateForm()) {
       const formattedData = {
         ...formData,
+        type: finalType,
         weight: parseFloat(formData.weight),
         createdAt: new Date().toISOString(),
       };
-
       // Gọi API thêm vật nuôi
       try {
         const response = await axios.post("https://localhost:7185/api/Animal/ThemGiong", formattedData);
@@ -55,10 +57,30 @@ function AddLivestock({ onClose }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name === "type" && value !== "Other") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        otherType: "", // Reset otherType nếu không chọn "Khác"
+      }));
+    } else if (name === "type" && value === "Other") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value, // Giữ lại giá trị "Other"
+      }));
+    } else if (name === "otherType") {
+      setFormData((prev) => ({
+        ...prev,
+        otherType: value, // Cập nhật giá trị "otherType" khi người dùng nhập vào
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+
+    // Reset lỗi cho trường này nếu có
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -76,6 +98,7 @@ function AddLivestock({ onClose }) {
       status: "",
       weight: "",
       breed: "",
+      otherType: "", // Reset otherType khi hủy
     });
     if (onClose) {
       onClose();  // Đóng form nếu có hàm onClose
@@ -122,8 +145,22 @@ function AddLivestock({ onClose }) {
             <option value="Cattle">Gia súc</option>
             <option value="Pig">Heo</option>
             <option value="Chicken">Gà</option>
+            <option value="Other">Khác</option> {/* Thêm lựa chọn khác */}
           </select>
           {errors.type && <span className="error-message">{errors.type}</span>}
+
+          {/* Hiển thị trường nhập loại nếu chọn "Khác" */}
+          {formData.type === "Other" && (
+            <input
+              type="text"
+              id="otherType"
+              name="otherType"
+              value={formData.otherType}
+              onChange={handleChange}
+              className={errors.otherType ? "error" : ""}
+              placeholder="Nhập loại vật nuôi khác"
+            />
+          )}
         </div>
 
         <div className="form-group">

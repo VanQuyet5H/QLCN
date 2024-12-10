@@ -9,9 +9,9 @@ import './LivestockList.css';
 import axios from 'axios';
 import Notification from '../utils/Notification';
 import LivestockFilter from './LivestockFilter'; // Đảm bảo có LivestockFilter component
-
+import Modal from './Modal';
 function LivestockList() {
-  const [filteredLivestock1, setFilteredLivestock] = useState([]);
+  const [filteredLivestock, setFilteredLivestock] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
@@ -26,6 +26,7 @@ function LivestockList() {
   const [totalRecords, setTotalRecords] = useState(0);
   const [notification, setNotification] = useState({ message: '', type: '' });
   const [filters, setFilters] = useState({ name: '', type: '', gender: '', birthRange: '', status: '', weight: '', breed: '' });
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const fetchLivestock = async () => {
     try {
       setIsLoading(true);
@@ -34,20 +35,13 @@ function LivestockList() {
       const { data, totalRecords } = response.data;
       setLivestock(data);
       setTotalRecords(totalRecords);
-      setFilteredLivestock(data); 
+      setFilteredLivestock(data);
     } catch (err) {
       setNotification({ message: 'Lỗi khi tải dữ liệu!', type: 'error' });
     } finally {
       setIsLoading(false);
     }
   };
-  useEffect(() => {
-    const filtered = livestock.filter(item =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    
-    setFilteredLivestock(filtered);
-  }, [searchTerm, livestock]);
   // Gọi fetchLivestock khi thay đổi currentPage, itemsPerPage, hoặc searchTerm
   useEffect(() => {
     fetchLivestock();
@@ -56,9 +50,7 @@ function LivestockList() {
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1);
-    fetchLivestock();
   };
-
   const handleSort = (key) => {
     setSortConfig({
       key,
@@ -79,24 +71,22 @@ function LivestockList() {
         `https://localhost:7185/api/Animal/${updatedAnimal.id}`,
         updatedAnimal
       );
-      console.log('Dữ liệu vật nuôi trước khi cập nhật: ', updatedAnimal);
-      console.log('Dữ liệu vật nuôi sau khi cập nhật: ', response.data);
-
       if (response.status === 200) {
-        await fetchLivestock();
+        const updatedAnimalFromAPI = response.data;
         // Cập nhật danh sách vật nuôi sau khi chỉnh sửa thành công
         setLivestock((prev) =>
           prev.map((animal) =>
-            animal.id === updatedAnimal.id ? response.data : animal
+            animal.id === updatedAnimal.id ?  updatedAnimalFromAPI  : animal
           )
         );
-
+        console.log('Danh sách vật nuôi sau khi cập nhật:', livestock);
         setNotification({
           message: 'Cập nhật vật nuôi thành công!',
           type: 'success',
         });
         setShowEditForm(false);
         setSelectedLivestock(null);
+        setIsModalOpen(false);
       }
     } catch (err) {
       console.error('Lỗi khi cập nhật vật nuôi:', err);
@@ -109,7 +99,9 @@ function LivestockList() {
   const handleEdit = (animal) => {
     setSelectedLivestock(animal);
     setShowEditForm(true);
+    setIsModalOpen(true);
   };
+  
 
   const confirmDelete = async (id) => {
     try {
@@ -123,52 +115,62 @@ function LivestockList() {
       setSelectedLivestock(null);
     }
   };
-
+  
   const handleApplyFilters = (newFilters) => {
     setFilters(newFilters);
+    setSearchTerm(newFilters.name);
+    setCurrentPage(1);
   };
 
   // Lọc dữ liệu vật nuôi theo các điều kiện
-  const filteredLivestock = livestock.filter((animal) => {
-    // Chuyển đổi ngày sinh vật nuôi từ chuỗi sang đối tượng Date
-    const animalBirthDate = new Date(animal.birthDate);
+  useEffect(() => {
+    const filtered = livestock.filter((animal) => {
+      const animalBirthDate = new Date(animal.birthDate);
 
-    // Tạo hàm để tính khoảng thời gian cho bộ lọc
-    const getDateRange = (range) => {
-      const today = new Date();
-      switch (range) {
-        case 'last-week': // 7 ngày trước
-          today.setDate(today.getDate() - 7);
-          return today;
-        case 'last-month': // 30 ngày trước
-          today.setMonth(today.getMonth() - 1);
-          return today;
-        case 'last-3-months': // 90 ngày trước
-          today.setMonth(today.getMonth() - 3);
-          return today;
-        case 'last-6-months': // 180 ngày trước
-          today.setMonth(today.getMonth() - 6);
-          return today;
-        case 'last-year': // 1 năm trước
-          today.setFullYear(today.getFullYear() - 1);
-          return today;
-        default:
-          return today; // Nếu không có giá trị lọc
-      }
-    };
+      const getDateRange = (range) => {
+        const today = new Date();
+        switch (range) {
+          case 'last-week':
+            today.setDate(today.getDate() - 7);
+            return today;
+          case 'last-month':
+            today.setMonth(today.getMonth() - 1);
+            return today;
+          case 'last-3-months':
+            today.setMonth(today.getMonth() - 3);
+            return today;
+          case 'last-6-months':
+            today.setMonth(today.getMonth() - 6);
+            return today;
+          case 'last-year':
+            today.setFullYear(today.getFullYear() - 1);
+            return today;
+          default:
+            return today;
+        }
+      };
 
-    const filterBirthDate = filters.birthRange ? animalBirthDate >= getDateRange(filters.birthRange) : true;
+      const filterBirthDate = filters.birthRange ? animalBirthDate >= getDateRange(filters.birthRange) : true;
 
-    return (
-      (filters.name ? animal.name.toLowerCase().includes(filters.name.toLowerCase()) : true) &&
-      (filters.type ? animal.type.toLowerCase().includes(filters.type.toLowerCase()) : true) &&
-      (filters.gender ? animal.gender.toLowerCase() === filters.gender.toLowerCase() : true) &&
-      filterBirthDate &&
-      (filters.status ? animal.status.toLowerCase() === filters.status.toLowerCase() : true) &&
-      (filters.weight ? animal.weight === parseInt(filters.weight) : true) &&
-      (filters.breed ? animal.breed.toLowerCase().includes(filters.breed.toLowerCase()) : true)
+      return (
+        (filters.name ? (animal.name || '').toLowerCase().includes(filters.name.toLowerCase()) : true) &&
+        (filters.type ? (animal.type || '').toLowerCase().includes(filters.type.toLowerCase()) : true) &&
+        (filters.gender ? (animal.gender || '').toLowerCase() === filters.gender.toLowerCase() : true) &&
+        filterBirthDate &&
+        (filters.status ? (animal.status || '').toLowerCase() === filters.status.toLowerCase() : true) &&
+        (filters.weight ? animal.weight === parseInt(filters.weight) : true) &&
+        (filters.breed ? (animal.breed || '').toLowerCase().includes(filters.breed.toLowerCase()) : true)
+      );
+    });
+
+    // Lọc theo từ khóa tìm kiếm
+    const searchFiltered = filtered.filter((animal) =>
+      (animal.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (animal.type || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
-  });
+
+    setFilteredLivestock(searchFiltered);
+  }, [filters, searchTerm, livestock]);
   const sortedLivestock = [...filteredLivestock].sort((a, b) => {
     if (sortConfig.direction === 'asc') {
       return a[sortConfig.key] > b[sortConfig.key] ? 1 : -1;
@@ -178,7 +180,7 @@ function LivestockList() {
   const indexOfLastItem = Math.min(currentPage * itemsPerPage, sortedLivestock.length);
   const indexOfFirstItem = Math.min(indexOfLastItem - itemsPerPage, sortedLivestock.length);
   const currentItems = sortedLivestock.slice(indexOfFirstItem, indexOfLastItem);
-
+  console.log('so:',currentItems);
   return (
     <div className="livestock-list">
       <div className="livestock-header">
@@ -226,16 +228,13 @@ function LivestockList() {
           }}
         />
       )}
-      {showEditForm && (
+        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <EditLivestock
           livestock={selectedLivestock}
-          onCancel={() => {
-            setShowEditForm(false);
-            setSelectedLivestock(null);
-          }}
+          onCancel={() => setIsModalOpen(false)}
           onSubmit={handleUpdate}
         />
-      )}
+      </Modal>
       {showDeleteModal && (
         <DeleteConfirmation
           livestock={selectedLivestock}
