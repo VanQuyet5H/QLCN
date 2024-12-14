@@ -68,5 +68,6 @@ namespace QuanLyChanNuoi.Services
                 Body = htmlMessage
             });
         }
+        
     }
 }

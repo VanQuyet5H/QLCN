@@ -137,5 +137,6 @@ namespace QuanLyChanNuoi.Controllers
         }
         //hiển thị chi tiêt theo dõi vật nuôi
         
+
     }
 }

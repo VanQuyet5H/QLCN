@@ -25,7 +25,7 @@ namespace QuanLyChanNuoi.Models
         public DateTime CreatedAt { get; set; }
         [Required(ErrorMessage = "Trạng thái tài khoản là bắt buộc.")]
         public bool IsActive { get; set; }  // Trạng thái tài khoản
-
+      
         // Navigation Properties
         public string? ResetPasswordToken { get; set; }
         public DateTime? ResetPasswordTokenExpiry { get; set; }

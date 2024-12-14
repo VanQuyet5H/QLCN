@@ -26,10 +26,23 @@ namespace QuanLyChanNuoi.Controllers
             var animal = await _context.Animal.FindAsync(request.AnimalId);
             if (animal == null)
                 return NotFound("Vật nuôi không tồn tại.");
+            if (animal.Status != "Sick")
+            {
+                return BadRequest("Chỉ có thể thêm lịch sử chăm sóc cho những vật nuôi bị ốm.");
+            }
+            var user = await _context.User.FindAsync(request.UserId);
+            if (user == null)
+                return NotFound("Người dùng không tồn tại.");
 
+            // Kiểm tra vai trò người dùng
+            if (user.Role != "Veterinarian")
+            {
+                return Forbid("Người dùng không có quyền thực hiện hành động này.");
+            }
             var healthRecord = new HealthRecord
             {
                 AnimalId = request.AnimalId,
+                UserId = request.UserId,
                 CheckupDate = request.CheckupDate,
                 Diagnosis = request.Diagnosis,
                 Treatment = request.Treatment,

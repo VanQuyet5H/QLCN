@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './DanhSachAccount.css';
 import axios from 'axios';
 import debounce from 'lodash.debounce';
-
+import Notification from '../utils/Notification';
 const UserList = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +20,7 @@ const UserList = () => {
   const [statusStats, setStatusStats] = useState([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-
+  const [notification, setNotification] = useState({ message: '', type: '' });
   // State cho modal
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -103,6 +103,26 @@ const UserList = () => {
     setSelectedUser(user); // Lưu thông tin người dùng vào state
     setShowModal(true); // Hiển thị modal
   };
+  const updateUserRole = async (userId, newRole) => {
+    try {
+      const response = await axios.put(`https://localhost:7185/api/Auth/update-role/${userId}`, {
+        role: newRole,
+      });
+
+      setNotification({ message: 'Cập nhật vai trò thành công!', type: 'success' });
+
+      // Cập nhật vai trò trong danh sách người dùng
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, role: newRole } : user
+        )
+      );
+    } catch (error) {
+      setNotification({ message: 'Không thể cập nhật vai trò người dùng!', type: 'error' });
+      setError('Không thể cập nhật vai trò người dùng');
+      console.error(error);
+    }
+  };
 
   if (loading) return <div>Đang tải dữ liệu...</div>;
   if (error) return <div>{error}</div>;
@@ -112,6 +132,13 @@ const UserList = () => {
       <div className="user-list-header">
         <h2>Quản lý tài khoản</h2>
       </div>
+      {notification.message && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification({ message: '', type: '' })}
+        />
+      )}
       <div className="statistics">
         <div className="user-stats">
           <h3>Tổng số tài khoản: {totalUsers}</h3>
@@ -209,7 +236,14 @@ const UserList = () => {
                   <td>{user.username}</td>
                   <td>{user.email}</td>
                   <td>{user.phoneNumber}</td>
-                  <td>{user.role}</td>
+                  <td><select
+                    value={user.role}
+                    onChange={(e) => updateUserRole(user.id, e.target.value)}
+                  >
+                    <option value="Admin">Admin</option>
+                    <option value="User">User</option>
+                    <option value="Manager">Manager</option>
+                  </select></td>
                   <td>{user.isActive ? 'Hoạt động' : 'Bị khóa'}</td>
                   <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                   <td>

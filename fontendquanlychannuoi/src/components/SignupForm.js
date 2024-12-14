@@ -13,7 +13,7 @@ function RegisterForm() {
         fullName: '',
         phoneNumber: '',
         image:image,
-        role: 'User', // Mặc định là User
+        role: '', // Mặc định là User
     });
     const [errors, setErrors] = useState({});
     const validateForm = () => {
@@ -36,7 +36,7 @@ function RegisterForm() {
         } else if (!/^\d{10,11}$/.test(formData.phoneNumber)) {
             newErrors.phoneNumber = 'Số điện thoại phải từ 10-11 chữ số.';
         }
-
+        if (!formData.role) newErrors.role = 'Vai trò là bắt buộc.';
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0; // Trả về true nếu không có lỗi
     };
@@ -51,7 +51,7 @@ function RegisterForm() {
         e.preventDefault();
         if (isSubmitting) return;
         setIsSubmitting(true); 
-        const requestData = { ...formData, role: 'User',image:image };
+        const requestData = { ...formData,image:image };
         try {
             const response = await axios.post('https://localhost:7185/api/Auth/Register', requestData);
             setMessage('Đăng ký thành công!');
@@ -134,6 +134,22 @@ function RegisterForm() {
                         required
                     />
                     {errors.phoneNumber && <p className="error">{errors.phoneNumber}</p>}
+                </div>
+                <div className="form-group">
+                    <label htmlFor="role">Vai trò</label>
+                    <select
+                        id="role"
+                        name="role"
+                        value={formData.role}
+                        onChange={handleChange}
+                        required
+                    >
+                        <option value="">Chọn vai trò</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Vet">Bác sĩ thú y</option>
+                        <option value="Farmer">Chủ trại</option>
+                    </select>
+                    {errors.role && <p className="error">{errors.role}</p>}
                 </div>
                  
                 <button type="submit" className="btn" disabled={isSubmitting}>Đăng ký {isSubmitting ? "Đang gửi..." : "Gửi"}</button>
