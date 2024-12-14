@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import styled from 'styled-components';
 import { FaCog, FaUser, FaSignOutAlt, FaBell } from 'react-icons/fa';
-
+import { Link } from 'react-router-dom';
+import axios from 'axios';
 const HeaderContainer = styled.header`
   position: fixed;
   top: 0;
@@ -138,8 +139,42 @@ const UserRole = styled.span`
   font-size: 0.875rem;
   color: #64748b;
 `;
-
+const NoUnderlineLink = styled(Link)`
+  text-decoration: none; /* Loại bỏ gạch chân */
+  color: inherit; /* Duy trì màu chữ mặc định của bạn */
+`;
 function Header({ isExpanded }) {
+  const [userInfo, setUserInfo] = useState({ username: '', role: '', image: '' });
+  const id = localStorage.getItem('id');
+  useEffect(() => {
+    // Thực hiện API gọi để lấy thông tin người dùng
+    const fetchUserInfo = async () => {
+      try {
+        const params = { id: id };
+        const response = await axios.get(`https://localhost:7185/api/Auth/Profile`, {
+          params,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Lấy token từ localStorage
+          },
+        });
+  
+        // Kiểm tra xem response có dữ liệu không
+        const { username, role, image } = response.data;  // Gọi đúng từ response.data
+  
+        setUserInfo({
+          username, // Gán giá trị username
+          role,     // Gán giá trị role
+          image,    // Gán giá trị image (URL của ảnh đại diện)
+        });
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      }
+    };
+  
+    fetchUserInfo();
+  }, [id]);  // Lỗi cũ là bạn không truyền `id` vào dependencies của useEffect
+  
+
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   
@@ -176,13 +211,13 @@ function Header({ isExpanded }) {
           {showSettingsMenu && (
             <DropdownMenu>
               <MenuItem onClick={() => handleSettingsClick('general')}>
-                <FaCog /> Cài đặt chung
+                <FaCog /> <NoUnderlineLink to="/settings/general">Cài đặt chung</NoUnderlineLink>
               </MenuItem>
               <MenuItem onClick={() => handleSettingsClick('notifications')}>
-                <FaBell /> Cài đặt thông báo
+                <FaBell />  <NoUnderlineLink to="/settings/notifications">Cài đặt thông báo</NoUnderlineLink>
               </MenuItem>
               <MenuItem onClick={() => handleSettingsClick('security')}>
-                <FaUser /> Bảo mật
+                <FaUser /> <NoUnderlineLink to="/settings/security">Bảo mật</NoUnderlineLink>
               </MenuItem>
             </DropdownMenu>
           )}
@@ -190,19 +225,24 @@ function Header({ isExpanded }) {
 
         <div style={{ position: 'relative' }}>
           <UserInfo onClick={() => setShowUserMenu(!showUserMenu)}>
-            <UserAvatar>
-              <FaUser />
+          <UserAvatar>
+              {userInfo.image ? (
+                <img src={userInfo.image} alt="User Avatar" style={{width: 36,
+                  height: 36, borderRadius: '50%' }} />
+              ) : (
+                <FaUser />
+              )}
             </UserAvatar>
             <UserDetails>
-              <UserName>Admin</UserName>
-              <UserRole>Quản trị viên</UserRole>
+              <UserName>{userInfo.username || 'Tên người dùng'}</UserName>
+              <UserRole>{userInfo.role || 'Vai trò'}</UserRole>
             </UserDetails>
           </UserInfo>
 
           {showUserMenu && (
             <DropdownMenu>
               <MenuItem onClick={() => handleSettingsClick('profile')}>
-                <FaUser /> Thông tin cá nhân
+                <FaUser /> <NoUnderlineLink to="/profile">Thông tin cá nhân</NoUnderlineLink>
               </MenuItem>
               <MenuItem onClick={handleLogout}>
                 <FaSignOutAlt /> Đăng xuất

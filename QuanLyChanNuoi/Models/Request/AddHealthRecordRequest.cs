@@ -3,6 +3,7 @@
     public class AddHealthRecordRequest
     {
         public int AnimalId { get; set; }
+        public int UserId { get; set; }
         public DateTime CheckupDate { get; set; }
         public string Diagnosis { get; set; }
         public string Treatment { get; set; }

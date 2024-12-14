@@ -13,6 +13,9 @@ import VaccinationSchedule from '../components/veterinary/VaccinationSchedule';
 import UserProfile from '../components/users/useUserData';
 import DanhSachAccount from '../components/users/DanhSachAccount';
 import LivestockDashboard from '../components/livestock/LivestockDashboard';
+import GeneralSettings from '../components/settings/GeneralSettings';
+import NotificationSettings from '../components/settings/NotificationSettings';
+import SecuritySettings from '../components/settings/SecuritySettings';
 function Home() {
   const navigate = useNavigate();
   useEffect(() => {
@@ -37,6 +40,9 @@ function Home() {
         <Route path="/vaccinations" element={<VaccinationSchedule />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/userlist" element={<DanhSachAccount />} />
+        <Route path="/settings/general" element={<GeneralSettings />} />
+        <Route path="/settings/notifications" element={<NotificationSettings />} />
+        <Route path="/settings/security" element={<SecuritySettings />} />
       </Routes>
     </Layout>
   );

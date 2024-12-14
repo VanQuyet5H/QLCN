@@ -13,15 +13,15 @@ function App() {
       <GlobalStyle />
     <Router>
       <Routes>
-        
           <Route path="/*" element={ 
             <Home/>}/>
           <Route path="/Resetpass" element={<Resetpass/>}/>
           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
-          <Route path="/forgot-password" element={<ForgetPass />} />  
+          <Route path="/forgot-password" element={<ForgetPass />} /> 
         </Routes>
+        
     </Router>
     </ThemeProvider>
   );

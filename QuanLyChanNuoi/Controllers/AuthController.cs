@@ -7,7 +7,10 @@ using QuanLyChanNuoi.Extensions;
 using QuanLyChanNuoi.Models;
 using QuanLyChanNuoi.Models.Request;
 using QuanLyChanNuoi.Services;
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
+using System.Net.Mail;
 
 namespace QuanLyChanNuoi.Controllers
 {
@@ -19,14 +22,14 @@ namespace QuanLyChanNuoi.Controllers
         private readonly AppDbContext _context;
         private readonly ISendMailService _emailService;
         private readonly IMapper _mapper;
-        
-        public AuthController(AuthService authService, AppDbContext context, ISendMailService emailService, IMapper mapper)
+        private readonly IConfiguration _configuration;
+        public AuthController(AuthService authService, AppDbContext context, ISendMailService emailService, IMapper mapper, IConfiguration configuration)
         {
             _authService = authService;
             _context = context;
             _emailService = emailService;
             _mapper = mapper;
-            
+            _configuration=configuration;
         }
 
         [HttpPost("login")]
@@ -35,10 +38,12 @@ namespace QuanLyChanNuoi.Controllers
             var user = await _context.User
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
 
-            if (user == null || !PasswordHasher.VerifyPassword(request.Password, user.PasswordHash))
+            if (user == null)
             {
-                return Unauthorized(new { message = "Email hoặc mật khẩu không đúng." });
+                return Unauthorized("Tài khoản không tồn tại hoặc chưa được kích hoạt.");
             }
+            if (!PasswordHasher.VerifyPassword(request.Password, user.PasswordHash))
+                return Unauthorized("Mật khẩu không đúng.");
 
             var token = _authService.GenerateJwtToken(user.Username, user.Role);
 
@@ -77,22 +82,22 @@ namespace QuanLyChanNuoi.Controllers
                 FullName = request.FullName,
                 PasswordHash = passwordHash,
                 PhoneNumber = request.PhoneNumber,
-                Role = request.Role ?? "User",// Mặc định là User nếu không chỉ định
+                Role = request.Role,// Mặc định là User nếu không chỉ định
                 Image = request.Image,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                IsActive = false,
+                CreatedAt = DateTime.UtcNow,
+               
             };
 
             _context.User.Add(newUser);
             await _context.SaveChangesAsync();
-
             return Ok(new
             {
                 message = "Đăng ký thành công.",
                 userId = newUser.Id
             });
         }
-        
+
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
         {
@@ -339,6 +344,41 @@ namespace QuanLyChanNuoi.Controllers
 
             _context.User.Remove(user);
             return Ok(new { message = "Xóa người dùng thành công!" });
+        }
+        [HttpPut("update-role/{userId}")]
+        public async Task<IActionResult> UpdateUserRole(int userId, [FromBody] UpdateUserRoleRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest("Thông tin yêu cầu không hợp lệ.");
+            }
+
+            // Kiểm tra xem người dùng có tồn tại trong hệ thống không
+            var user = await _context.User.FindAsync(userId);
+            if (user == null)
+            {
+                return NotFound("Người dùng không tồn tại.");
+            }
+
+            // Kiểm tra nếu vai trò mới hợp lệ
+            if (string.IsNullOrEmpty(request.Role) || (request.Role != "Admin" && request.Role != "User"&& request.Role!= "Manager"))
+            {
+                return BadRequest("Vai trò không hợp lệ. Chỉ chấp nhận vai trò 'Admin' hoặc 'User'.");
+            }
+
+            // Cập nhật vai trò
+            user.Role = request.Role;
+
+            // Lưu thay đổi vào cơ sở dữ liệu
+            _context.User.Update(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Cập nhật vai trò người dùng thành công.", UserId = user.Id, NewRole = user.Role });
+        }
+        public class UpdateUserRoleRequest
+        {
+            [Required]
+            public string Role { get; set; }  // Vai trò người dùng mới
         }
     }
 }

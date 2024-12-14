@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using QuanLyChanNuoi.Models;
+using QuanLyChanNuoi.Models.Request;
 
 namespace QuanLyChanNuoi.Controllers
 {
@@ -17,7 +18,6 @@ namespace QuanLyChanNuoi.Controllers
         {
             _context = context;
         }
-
         [HttpGet("GetStatictics")]
         public async Task<IActionResult> GetStatistics()
         {
@@ -345,6 +345,7 @@ namespace QuanLyChanNuoi.Controllers
                 return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "AnimalsReport.xlsx");
             }
         }
+
         public class DataExcel{
 
             public int Id { get; set; }

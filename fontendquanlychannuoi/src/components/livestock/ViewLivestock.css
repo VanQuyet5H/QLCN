@@ -1,112 +1,88 @@
 .view-livestock-container {
-    background: white;
-    border-radius: 1rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 900px;
-    margin: 2rem auto;
-    padding: 2rem;
-  }
-  
-  .view-livestock-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #e2e8f0;
-  }
-  
-  .view-livestock-header h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-light);
-    margin: 0;
-  }
-  
-  .info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2rem;
-    margin-bottom: 2rem;
-  }
-  
-  .info-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .info-group label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #64748b;
-  }
-  
-  .info-group p {
-    font-size: 1rem;
-    color: #1e293b;
-    margin: 0;
-  }
-  
-  .info-section {
-    margin-bottom: 1.5rem;
-  }
-  
-  .info-section label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #64748b;
-    margin-bottom: 0.5rem;
-  }
-  
-  .vaccination-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  
-  .vaccination-tag {
-    background: #e0f2fe;
-    color: #0284c7;
-    padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
-    font-size: 0.875rem;
-  }
-  
-  .notes {
-    background: #f8fafc;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    color: #475569;
-    font-size: 0.95rem;
-    line-height: 1.5;
-  }
-  
-  .no-data {
-    color: #94a3b8;
-    font-style: italic;
-  }
-  
-  .status {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
-    font-size: 0.875rem;
-  }
-  
-  .status.healthy {
-    background: #dcfce7;
-    color: #15803d;
-  }
-  
-  .status.sick {
-    background: #fee2e2;
-    color: #b91c1c;
-  }
-  
-  .status.quarantine {
-    background: #fef9c3;
-    color: #854d0e;
-  }
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 2rem;
+}
+
+.view-livestock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.view-livestock-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-light);
+  margin: 0;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #475569;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.close-button:hover {
+  color: #1e293b;
+}
+
+.view-livestock-content {
+  margin-top: 2rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.info-group p {
+  font-size: 1rem;
+  color: #1e293b;
+  margin: 0;
+}
+
+.status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+}
+
+.status.healthy {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status.sick {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.status.quarantine {
+  background: #fef9c3;
+  color: #854d0e;
+}

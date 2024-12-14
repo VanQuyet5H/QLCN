@@ -24,6 +24,6 @@ namespace QuanLyChanNuoi.Models.Request
         public string? PhoneNumber { get; set; }
 
         [RegularExpression("Admin|User", ErrorMessage = "Vai trò chỉ có thể là 'Admin' hoặc 'User'.")]
-        public string? Role { get; set; }
+        public string Role { get; set; }
     }
 }
