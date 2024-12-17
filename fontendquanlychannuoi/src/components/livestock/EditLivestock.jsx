@@ -122,7 +122,7 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="gender">Giới tính</label>
+          <label htmlFor="gender">Loài</label>
           <select id="gender" name="gender" value={formData.gender} onChange={handleChange}>
             <option value="Male">Đực</option>
             <option value="FeMale">Cái</option>

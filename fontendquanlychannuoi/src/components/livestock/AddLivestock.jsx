@@ -164,7 +164,7 @@ function AddLivestock({ onClose }) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="gender">Giới tính *</label>
+          <label htmlFor="gender">Loài *</label>
           <select
             id="gender"
             name="gender"

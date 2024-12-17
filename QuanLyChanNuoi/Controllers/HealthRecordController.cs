@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using QuanLyChanNuoi.Models;
 using QuanLyChanNuoi.Models.Request;
 using QuanLyChanNuoi.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace QuanLyChanNuoi.Controllers
 {
@@ -16,6 +17,17 @@ namespace QuanLyChanNuoi.Controllers
         {
             _context = context;
             _emailService = emailService;
+        }
+        //hiển thị danh sách vật nuôi
+        [HttpGet("danhsachvatnuoicandieutri")]
+        public List<Animal> GetAnimalsInSickStatus()
+        {
+            // Lấy danh sách vật nuôi có trạng thái "ốm"
+            var sickAnimals = _context.Animal
+                                      .Where(a => a.Status == "Sick")  // Giả sử trạng thái "Sick" đại diện cho vật nuôi bị ốm
+                                      .ToList();
+
+            return sickAnimals;
         }
         [HttpPost("add")]
         public async Task<IActionResult> AddHealthRecord([FromBody] AddHealthRecordRequest request)
@@ -35,7 +47,7 @@ namespace QuanLyChanNuoi.Controllers
                 return NotFound("Người dùng không tồn tại.");
 
             // Kiểm tra vai trò người dùng
-            if (user.Role != "Veterinarian")
+            if (user.Role != "User" && user.Role!="Admin")
             {
                 return Forbid("Người dùng không có quyền thực hiện hành động này.");
             }
@@ -68,24 +80,33 @@ namespace QuanLyChanNuoi.Controllers
 
             return Ok(healthRecords);
         }
-        [HttpPut("update/{id}")]
-        public async Task<IActionResult> UpdateHealthRecord(int id, [FromBody] UpdateHealthRecordRequest request)
+        // API để cập nhật trạng thái vật nuôi
+        [HttpPut("update-status/{animalId}")]
+        public async Task<IActionResult> UpdateAnimalStatus(int animalId, [FromBody] UpdateAnimalStatusRequest request)
         {
-            var healthRecord = await _context.HealthRecord.FindAsync(id);
-            if (healthRecord == null)
-                return NotFound("Lịch sử chăm sóc không tồn tại.");
+            var animal = await _context.Animal.FindAsync(animalId);
+            if (animal == null)
+                return NotFound("Vật nuôi không tồn tại.");
 
-            healthRecord.CheckupDate = request.CheckupDate;
-            healthRecord.Diagnosis = request.Diagnosis;
-            healthRecord.Treatment = request.Treatment;
-            healthRecord.Medication = request.Medication;
-            healthRecord.Notes = request.Notes;
+            if (request.Status == "Healthy")
+            {
+                // Cập nhật trạng thái thành Khỏe mạnh
+                animal.Status = "Healthy";
+            }
+            else if (request.Status == "Dead")
+            {
+                // Xóa vật nuôi nếu chết
+                _context.Animal.Remove(animal);
+            }
+            else
+            {
+                return BadRequest("Trạng thái không hợp lệ.");
+            }
 
-            _context.HealthRecord.Update(healthRecord);
             await _context.SaveChangesAsync();
-
-            return Ok(new { Message = "Cập nhật lịch sử chăm sóc thành công." });
+            return Ok(new { Message = "Cập nhật trạng thái vật nuôi thành công." });
         }
+
         [HttpGet("report")]
         public async Task<IActionResult> GetHealthRecordReport()
         {
@@ -102,7 +123,156 @@ namespace QuanLyChanNuoi.Controllers
 
             return Ok(report);
         }
+        [HttpPost("api/treatment")]
+        public async Task<IActionResult> CreateTreatment([FromBody] TreatmentCreateDto treatmentDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
+            // Kiểm tra danh sách thuốc
+            if (treatmentDto.Medicines == null || !treatmentDto.Medicines.Any())
+            {
+                return BadRequest(new { Error = "Medicines list cannot be null or empty" });
+            }
+
+            // Kiểm tra HealthRecordId có tồn tại không
+            var healthRecord = await _context.HealthRecord.FindAsync(treatmentDto.HealthRecordId);
+            if (healthRecord == null)
+            {
+                return NotFound(new { Error = "HealthRecordId does not exist" });
+            }
+
+            // Tạo thực thể Treatment từ DTO
+            var treatment = new Treatment
+            {
+                Name = treatmentDto.Name,
+                Description = treatmentDto.Description,
+                Duration = treatmentDto.Duration,
+                Effectiveness = treatmentDto.Effectiveness, // Đảm bảo Effectiveness được truyền
+                HealthRecordId = treatmentDto.HealthRecordId,
+                TreatmentMedication = new List<TreatmentMedication>()
+            };
+
+            // Tạo các TreatmentMedication từ MedicineDto
+            foreach (var medicine in treatmentDto.Medicines)
+            {
+                var medication = await _context.Medication
+                    .FirstOrDefaultAsync(m => m.Name == medicine.Name); // Tìm thuốc trong cơ sở dữ liệu
+
+                if (medication == null)
+                {
+                    return BadRequest(new { Error = $"Medication with name {medicine.Name} not found" });
+                }
+
+                treatment.TreatmentMedication.Add(new TreatmentMedication
+                {
+                    MedicationId = medication.Id, // Ánh xạ MedicationId
+                    Dosage = medicine.Dosage,     // Ánh xạ liều lượng
+                    Frequency = medicine.Frequency ?? "1 lần/ngày"  // Tần suất sử dụng mặc định nếu không có
+                });
+            }
+
+            try
+            {
+                // Lưu vào cơ sở dữ liệu
+                _context.Treatment.Add(treatment);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    Message = "Treatment created successfully",
+                    Treatment = new
+                    {
+                        treatment.Id,
+                        treatment.Name,
+                        treatment.Description,
+                        treatment.Duration,
+                        Medicines = treatment.TreatmentMedication.Select(m => new
+                        {
+                            m.Medication.Name,
+                            m.Dosage,
+                            m.Frequency
+                        })
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi nếu có
+                return StatusCode(500, new { Error = "An error occurred while saving the treatment", Details = ex.Message });
+            }
+        }
+        [HttpGet("laydanhsachthuocvahealthrecord")]
+        public async Task<IActionResult> GetMedicationsAndHealthRecords()
+        {
+            // Lấy danh sách thuốc và loại bỏ trùng lặp
+            var medications = await _context.TreatmentMedication
+                .Join(
+                    _context.Medication,
+                    tm => tm.MedicationId,
+                    m => m.Id,
+                    (tm, m) => new
+                    {
+                        MedicineName = m.Name
+                    }
+                )
+                .Distinct()
+                .ToListAsync();
+
+            // Lấy danh sách HealthRecord ID va ten vat nuoi
+            var healthRecords = await _context.HealthRecord.Join(_context.Animal,tm=>tm.AnimalId,m=>m.Id, (tm, m) => new
+            {
+               Id=tm.Id,
+               Name=m.Name
+            })
+                .Distinct()
+                .ToListAsync();
+
+            // Gộp hai kết quả vào một đối tượng
+            var result = new
+            {
+                Medications = medications,
+                HealthRecords = healthRecords
+            };
+
+            return Ok(result);
+        }
+
+
+        public class TreatmentCreateDto
+        {
+            [Required(ErrorMessage = "Name is required")]
+            [MaxLength(100, ErrorMessage = "Name cannot exceed 100 characters")]
+            public string Name { get; set; } = string.Empty;
+
+            [Required(ErrorMessage = "Description is required")]
+            public string Description { get; set; } = string.Empty;
+
+            [Range(1, 365, ErrorMessage = "Duration must be between 1 and 365 days")]
+            public int Duration { get; set; }
+
+            [Required(ErrorMessage = "Medicines list is required")]
+            public List<MedicineDto> Medicines { get; set; } = new List<MedicineDto>();
+
+            [Required(ErrorMessage = "HealthRecordId is required")]
+            public int HealthRecordId { get; set; }
+            [Required(ErrorMessage = "Effectiveness is required")]
+            [MaxLength(20, ErrorMessage = "Effectiveness cannot exceed 20 characters")]
+            public string Effectiveness { get; set; } = string.Empty;
+        }
+        public class MedicineDto
+        {
+            public string Name { get; set; }
+            public string Dosage { get; set; }
+            public string Frequency { get; set; }
+        }
+
+
+
+        public class UpdateAnimalStatusRequest
+        {
+            public string Status { get; set; }  // "Healthy" hoặc "Dead"
+        }
 
     }
 }

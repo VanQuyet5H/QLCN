@@ -1,0 +1,10 @@
+body {
+    background-color: #ffffff;
+    color: #000000;
+  }
+  
+  /* Theme tối */
+  body.dark-theme {
+    background-color: #333333;
+    color: #ffffff;
+  }

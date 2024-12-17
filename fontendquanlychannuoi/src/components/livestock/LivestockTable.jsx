@@ -24,13 +24,13 @@ function LivestockTable({ livestock, onSort, sortConfig, onView, onEdit, onDelet
               Mã số {getSortIcon('id')}
             </th>
             <th onClick={() => onSort('name')}>
-              Name {getSortIcon('name')}
+              Tên vật nuôi {getSortIcon('name')}
             </th>
             <th onClick={() => onSort('type')}>
               Loại {getSortIcon('type')}
             </th>
             <th onClick={() => onSort('gender')}>
-              Gender {getSortIcon('gender')}
+              Loài {getSortIcon('gender')}
             </th>
             <th onClick={() => onSort('birthDate')}>
               Ngày Sinh {getSortIcon('birthDate')}
@@ -42,7 +42,7 @@ function LivestockTable({ livestock, onSort, sortConfig, onView, onEdit, onDelet
               Cân nặng (kg) {getSortIcon('weight')}
             </th>
             <th onClick={() => onSort('breed')}>
-              Breed {getSortIcon('breed')}
+              Giống {getSortIcon('breed')}
             </th>
             <th>Thao tác</th>
           </tr>

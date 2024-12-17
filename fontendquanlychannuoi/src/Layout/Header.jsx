@@ -1,8 +1,9 @@
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { FaCog, FaUser, FaSignOutAlt, FaBell } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+
 const HeaderContainer = styled.header`
   position: fixed;
   top: 0;
@@ -139,48 +140,74 @@ const UserRole = styled.span`
   font-size: 0.875rem;
   color: #64748b;
 `;
-const NoUnderlineLink = styled(Link)`
-  text-decoration: none; /* Loại bỏ gạch chân */
-  color: inherit; /* Duy trì màu chữ mặc định của bạn */
+
+const NotificationDetailModal = styled.div`
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  z-index: 1100;
 `;
+
+const NoUnderlineLink = styled(Link)`
+  text-decoration: none;
+  color: inherit;
+`;
+
 function Header({ isExpanded }) {
   const [userInfo, setUserInfo] = useState({ username: '', role: '', image: '' });
+  const [notifications, setNotifications] = useState([]);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showNotificationDetail, setShowNotificationDetail] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [showNotificationMenu, setShowNotificationMenu] = useState(false);
+
   const id = localStorage.getItem('id');
+
   useEffect(() => {
-    // Thực hiện API gọi để lấy thông tin người dùng
     const fetchUserInfo = async () => {
       try {
-        const params = { id: id };
         const response = await axios.get(`https://localhost:7185/api/Auth/Profile`, {
-          params,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`, // Lấy token từ localStorage
-          },
+          params: { id },
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
-  
-        // Kiểm tra xem response có dữ liệu không
-        const { username, role, image } = response.data;  // Gọi đúng từ response.data
-  
-        setUserInfo({
-          username, // Gán giá trị username
-          role,     // Gán giá trị role
-          image,    // Gán giá trị image (URL của ảnh đại diện)
-        });
+        const { username, role, image } = response.data;
+        setUserInfo({ username, role, image });
       } catch (error) {
         console.error('Error fetching user info:', error);
       }
     };
-  
     fetchUserInfo();
-  }, [id]);  // Lỗi cũ là bạn không truyền `id` vào dependencies của useEffect
-  
+  }, [id]);
 
-  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  
-  const handleLogout = () => {
-    // Implement logout logic here
-    console.log('Logging out...');
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await axios.get('https://localhost:7185/api/Notifications', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        setNotifications(response.data);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+    fetchNotifications();
+  }, []);
+
+  const handleNotificationClick = (notification) => {
+    setSelectedNotification(notification);
+    setShowNotificationDetail(true);
+  };
+
+  const handleCloseNotificationDetail = () => {
+    setShowNotificationDetail(false);
+    setSelectedNotification(null);
   };
 
   const handleSettingsClick = (setting) => {
@@ -195,16 +222,27 @@ function Header({ isExpanded }) {
       </HeaderLeft>
 
       <HeaderRight>
-        <IconButton title="Thông báo">
-          <FaBell />
-          <NotificationBadge>3</NotificationBadge>
-        </IconButton>
+      <div style={{ position: 'relative' }}>
+    <IconButton title="Thông báo" onClick={() => setShowNotificationMenu(!showNotificationMenu)}>
+      <FaBell />
+      <NotificationBadge>{notifications.length}</NotificationBadge>
+    </IconButton>
+
+    {showNotificationMenu && (
+      <DropdownMenu>
+        {notifications.map((notification, index) => (
+          <MenuItem key={index} onClick={() => handleNotificationClick(notification)}>
+            <FaBell /> {notification.title}
+          </MenuItem>
+        ))}
+      </DropdownMenu>
+    )}
+  </div>
+
+        
 
         <div style={{ position: 'relative' }}>
-          <IconButton 
-            title="Cài đặt hệ thống"
-            onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-          >
+          <IconButton title="Cài đặt hệ thống" onClick={() => setShowSettingsMenu(!showSettingsMenu)}>
             <FaCog />
           </IconButton>
 
@@ -225,10 +263,9 @@ function Header({ isExpanded }) {
 
         <div style={{ position: 'relative' }}>
           <UserInfo onClick={() => setShowUserMenu(!showUserMenu)}>
-          <UserAvatar>
+            <UserAvatar>
               {userInfo.image ? (
-                <img src={userInfo.image} alt="User Avatar" style={{width: 36,
-                  height: 36, borderRadius: '50%' }} />
+                <img src={userInfo.image} alt="User Avatar" style={{ width: 36, height: 36, borderRadius: '50%' }} />
               ) : (
                 <FaUser />
               )}
@@ -244,7 +281,7 @@ function Header({ isExpanded }) {
               <MenuItem onClick={() => handleSettingsClick('profile')}>
                 <FaUser /> <NoUnderlineLink to="/profile">Thông tin cá nhân</NoUnderlineLink>
               </MenuItem>
-              <MenuItem onClick={handleLogout}>
+              <MenuItem onClick={() => console.log('Logging out...')}>
                 <FaSignOutAlt /> Đăng xuất
               </MenuItem>
             </DropdownMenu>

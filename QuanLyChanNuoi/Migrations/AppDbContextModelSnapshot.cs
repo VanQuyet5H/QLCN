@@ -77,8 +77,17 @@ namespace QuanLyChanNuoi.Migrations
                     b.Property<int>("AnimalId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("Calories")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Carbohydrates")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("Cost")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("Fat")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("FeedingDate")
                         .HasColumnType("datetime2");
@@ -87,15 +96,24 @@ namespace QuanLyChanNuoi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("Minerals")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Notes")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Protein")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("Vitamins")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -104,41 +122,6 @@ namespace QuanLyChanNuoi.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Feed");
-                });
-
-            modelBuilder.Entity("QuanLyChanNuoi.Models.FoodInventory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("FoodType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LastRestockDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("Quantity")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Supplier")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("FoodInventory");
                 });
 
             modelBuilder.Entity("QuanLyChanNuoi.Models.HealthRecord", b =>
@@ -181,6 +164,66 @@ namespace QuanLyChanNuoi.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("HealthRecord");
+                });
+
+            modelBuilder.Entity("QuanLyChanNuoi.Models.Inventory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("MedicationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinimumQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicationId");
+
+                    b.ToTable("Inventory");
+                });
+
+            modelBuilder.Entity("QuanLyChanNuoi.Models.Medication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<decimal>("Cost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Medication");
                 });
 
             modelBuilder.Entity("QuanLyChanNuoi.Models.QualityControl", b =>
@@ -278,9 +321,6 @@ namespace QuanLyChanNuoi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<decimal>("Cost")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -300,7 +340,8 @@ namespace QuanLyChanNuoi.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -310,6 +351,39 @@ namespace QuanLyChanNuoi.Migrations
                     b.HasIndex("HealthRecordId");
 
                     b.ToTable("Treatment");
+                });
+
+            modelBuilder.Entity("QuanLyChanNuoi.Models.TreatmentMedication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Dosage")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Frequency")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("MedicationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TreatmentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicationId");
+
+                    b.HasIndex("TreatmentId");
+
+                    b.ToTable("TreatmentMedication");
                 });
 
             modelBuilder.Entity("QuanLyChanNuoi.Models.User", b =>
@@ -375,6 +449,17 @@ namespace QuanLyChanNuoi.Migrations
                     b.Property<int>("AnimalId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("NumberOfDoses")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("VaccinationDate")
                         .HasColumnType("datetime2");
 
@@ -408,17 +493,6 @@ namespace QuanLyChanNuoi.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("QuanLyChanNuoi.Models.FoodInventory", b =>
-                {
-                    b.HasOne("QuanLyChanNuoi.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("QuanLyChanNuoi.Models.HealthRecord", b =>
                 {
                     b.HasOne("QuanLyChanNuoi.Models.Animal", "Animal")
@@ -436,6 +510,17 @@ namespace QuanLyChanNuoi.Migrations
                     b.Navigation("Animal");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("QuanLyChanNuoi.Models.Inventory", b =>
+                {
+                    b.HasOne("QuanLyChanNuoi.Models.Medication", "Medication")
+                        .WithMany()
+                        .HasForeignKey("MedicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Medication");
                 });
 
             modelBuilder.Entity("QuanLyChanNuoi.Models.QualityControl", b =>
@@ -487,6 +572,25 @@ namespace QuanLyChanNuoi.Migrations
                     b.Navigation("HealthRecord");
                 });
 
+            modelBuilder.Entity("QuanLyChanNuoi.Models.TreatmentMedication", b =>
+                {
+                    b.HasOne("QuanLyChanNuoi.Models.Medication", "Medication")
+                        .WithMany("TreatmentMedication")
+                        .HasForeignKey("MedicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("QuanLyChanNuoi.Models.Treatment", "Treatment")
+                        .WithMany("TreatmentMedication")
+                        .HasForeignKey("TreatmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Medication");
+
+                    b.Navigation("Treatment");
+                });
+
             modelBuilder.Entity("QuanLyChanNuoi.Models.Vaccination", b =>
                 {
                     b.HasOne("QuanLyChanNuoi.Models.Animal", "Animal")
@@ -496,6 +600,16 @@ namespace QuanLyChanNuoi.Migrations
                         .IsRequired();
 
                     b.Navigation("Animal");
+                });
+
+            modelBuilder.Entity("QuanLyChanNuoi.Models.Medication", b =>
+                {
+                    b.Navigation("TreatmentMedication");
+                });
+
+            modelBuilder.Entity("QuanLyChanNuoi.Models.Treatment", b =>
+                {
+                    b.Navigation("TreatmentMedication");
                 });
 #pragma warning restore 612, 618
         }
