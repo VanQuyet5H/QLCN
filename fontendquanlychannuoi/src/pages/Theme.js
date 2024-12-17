@@ -28,7 +28,15 @@ export const theme = {
     md: '768px',
     lg: '1024px',
     xl: '1280px'
-  }
+  },
+  light: {
+    background: "#ffffff",
+    color: "#000000",
+  },
+  dark: {
+    background: "#000000",
+    color: "#ffffff",
+  },
 };
 
 export const GlobalStyle = createGlobalStyle`
@@ -56,8 +64,12 @@ export const GlobalStyle = createGlobalStyle`
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: var(--background-light);
+    background-color: ${(props) =>
+      props.theme === "dark" ? theme.colors.background.dark : theme.colors.background.light};
+    color: ${(props) =>
+      props.theme === "dark" ? theme.colors.text.dark : theme.colors.text.light};
     color: var(--text-light);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   

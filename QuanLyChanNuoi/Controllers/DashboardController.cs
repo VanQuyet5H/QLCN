@@ -66,7 +66,7 @@ namespace QuanLyChanNuoi.Controllers
             var feedExpenditure = await _context.Feed
                 .SumAsync(f => f.Cost);
 
-            var treatmentExpenditure = await _context.Treatment
+            var treatmentExpenditure = await _context.Medication
                 .SumAsync(t => t.Cost);
 
             var totalExpenditure = feedExpenditure + treatmentExpenditure;

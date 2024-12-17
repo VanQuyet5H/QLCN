@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { FaTimes, FaHome, FaPiggyBank, FaChartBar, FaFileAlt, FaMedkit, FaUser, FaCaretDown, FaSignOutAlt } from 'react-icons/fa';
+import { FaTimes, FaHome, FaPiggyBank, FaChartBar, FaFileAlt, FaMedkit, FaUser, FaCaretDown, FaSignOutAlt,FaPaw } from 'react-icons/fa';
 import { NavLink } from 'react-router-dom';
 import cowIcon from '../assets/cow.png';
 import { useState } from 'react';
@@ -152,9 +152,18 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       text: 'Thú y',
       submenu: [
         { text: 'Lịch tiêm phòng', path: '/vaccinations' },
-        { text: 'Bệnh lý', path: '/diseases' },
-        { text: 'Thuốc và vật tư', path: '/medicines' },
-        { text: 'Cách điều trị', path: '/treatmentguids' },
+        { text: 'Vật nuôi bị bệnh', path: '/sick-animals' },
+        { text: 'Kho Thuốc', path: '/medication-stock' },
+        { text: 'Điều trị', path: '/treatment' },
+        { text: 'Bệnh thường gặp', path: '/treatmentguids' },
+      ],
+    },
+    {
+      icon: <FaPaw />,
+      text: 'Chế độ ăn',
+      submenu: [
+        { text: 'Dinh dưỡng', path: '/DietCalculator' },
+        { text: 'Theo dõi', path: '/reports/analysis' },
       ],
     },
     {

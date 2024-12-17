@@ -8,6 +8,13 @@
         public decimal Quantity { get; set; }
         public int Cost {  get; set; }
         public string Notes { get; set; }
+        // Dinh dưỡng
+        public decimal Calories { get; set; }
+        public decimal Protein { get; set; }
+        public decimal Fat { get; set; }
+        public decimal Carbohydrates { get; set; }
+        public decimal Vitamins { get; set; }
+        public decimal Minerals { get; set; }
 
         // Navigation Properties
         public int AnimalId { get; set; }
