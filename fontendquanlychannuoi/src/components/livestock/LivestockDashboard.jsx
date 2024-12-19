@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { Button, Tab, Tabs, Box } from '@mui/material';
 import LivestockList from './LivestockList';
 import AddLivestock from './AddLivestock';
-import './LivestockDashboard.css';
+import './LivestockDashboard.css'; // Add this line to include custom CSS if needed.
 
 function LivestockDashboard() {
   const [activeTab, setActiveTab] = useState('addlivestock');
@@ -18,22 +19,21 @@ function LivestockDashboard() {
 
   return (
     <div className="livestock-dashboard">
-      <div className="dashboard-tabs">
-        <button
-          className={`tab-button ${activeTab === 'addlivestock' ? 'active' : ''}`}
-          onClick={() => setActiveTab('addlivestock')}
+      <Box sx={{ width: '100%' }}>
+        <Tabs
+          value={activeTab}
+          onChange={(event, newTab) => setActiveTab(newTab)}
+          textColor="primary"
+          indicatorColor="primary"
+          aria-label="Livestock Dashboard Tabs"
+          variant="fullWidth" // Ensure the tabs stretch to fill the container width
         >
-          Nhập thông tin vật nuôi
-        </button>
-        <button
-          className={`tab-button ${activeTab === 'livestocklist' ? 'active' : ''}`}
-          onClick={() => setActiveTab('livestocklist')}
-        >
-          Danh sách vật nuôi
-        </button>
-      </div>
+          <Tab label="Nhập thông tin vật nuôi" value="addlivestock" />
+          <Tab label="Danh sách vật nuôi" value="livestocklist" />
+        </Tabs>
+      </Box>
 
-      <div className="dashboard-content">
+      <div className="dashboard-content" style={{ padding: '16px', overflowX: 'hidden' }}>
         {renderContent()}
       </div>
     </div>

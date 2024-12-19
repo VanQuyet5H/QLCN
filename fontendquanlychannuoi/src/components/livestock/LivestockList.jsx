@@ -1,4 +1,15 @@
 import { useState } from 'react';
+import {
+  Box,
+  Button,
+  Typography,
+  IconButton,
+  TextField,
+  CircularProgress,
+  Modal,
+  Snackbar,
+  Alert,
+} from '@mui/material';
 import { FaSearch, FaSort, FaFilter } from 'react-icons/fa';
 import LivestockTable from './LivestockTable';
 import Pagination from './Pagination';
@@ -6,18 +17,14 @@ import ViewLivestock from './ViewLivestock';
 import DeleteConfirmation from './DeleteConfirmation';
 import EditLivestock from './EditLivestock';
 import LivestockFilter from './LivestockFilter';
-import Modal from './Modal';
-import Notification from '../utils/Notification';
 import { useLivestock } from './useLivestock';
 import './LivestockList.css';
-
 function LivestockList() {
   const {
     livestock,
     isLoading,
     totalRecords,
     currentPage,
-    itemsPerPage,
     searchTerm,
     sortConfig,
     setSearchTerm,
@@ -25,9 +32,10 @@ function LivestockList() {
     handleSort,
     handleUpdate,
     handleDelete,
-    applyFilters
+    applyFilters,
   } = useLivestock();
 
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Mặc định 10 mục mỗi trang
   const [showFilter, setShowFilter] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -37,19 +45,17 @@ function LivestockList() {
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page when search term changes
   };
 
   const handleView = (animal) => {
     setSelectedLivestock(animal);
     setShowViewModal(true);
-    
   };
 
   const handleEdit = (animal) => {
     setSelectedLivestock(animal);
     setIsModalOpen(true);
-
   };
 
   const handleUpdateSubmit = async (updatedAnimal) => {
@@ -78,50 +84,79 @@ function LivestockList() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
-    <div className="livestock-list">
-      <div className="livestock-header">
-        <h1>Quản lý vật nuôi</h1>
-      </div>
+    <Box className="hide-scrollbar" sx={{ maxHeight: 400, overflowY: 'auto'}}>
+      <Typography variant="h6" gutterBottom>
+        Quản lý vật nuôi
+      </Typography>
 
-      {notification.message && (
-        <Notification
-          message={notification.message}
-          type={notification.type}
+      <Snackbar
+        open={!!notification.message}
+        autoHideDuration={6000}
+        onClose={() => setNotification({ message: '', type: '' })}
+      >
+        <Alert
           onClose={() => setNotification({ message: '', type: '' })}
-        />
-      )}
+          severity={notification.type}
+          sx={{ width: '100%' }}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
 
-      <div className="livestock-tools">
-        <div className="search-box">
-          <FaSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Tìm kiếm..."
-            value={searchTerm}
-            onChange={handleSearch}
-          />
-        </div>
+      <Box display="flex" gap={2} alignItems="center" marginBottom={2} justifyContent="space-between">
+  {/* Tìm kiếm */}
+  <TextField
+    size="small"
+    variant="outlined"
+    placeholder="Tìm kiếm..."
+    value={searchTerm}
+    onChange={handleSearch}
+    InputProps={{
+      startAdornment: <FaSearch style={{ marginRight: 8 }} />,
+    }}
+    sx={{
+      flexGrow: 1,
+      width:60 // Làm cho TextField chiếm phần không gian còn lại
+    }}
+  />
 
-        <div className="tool-buttons">
-          <button
-            className={`btn-filter ${showFilter ? 'active' : ''}`}
-            onClick={() => setShowFilter(!showFilter)}
-          >
-            <FaFilter /> Lọc
-          </button>
-          <button className="btn-sort" onClick={handleSort}> 
-            <FaSort /> Sắp xếp
-          </button>
-        </div>
-      </div>
+  {/* Nút Lọc */}
+  <Button
+    variant={showFilter ? 'contained' : 'outlined'}
+    startIcon={<FaFilter />}
+    onClick={() => setShowFilter(!showFilter)}
+    sx={{
+      flexGrow: 1, // Làm cho nút Lọc có cùng kích thước với Tìm kiếm
+      maxWidth: '150px', // Hạn chế chiều rộng tối đa
+    }}
+  >
+    Lọc
+  </Button>
 
-      {showFilter && (
-        <LivestockFilter onApplyFilters={applyFilters} />
-      )}
+  {/* Nút Sắp xếp */}
+  <Button
+    variant="outlined"
+    startIcon={<FaSort />}
+    onClick={handleSort}
+    sx={{
+      flexGrow: 1, // Làm cho nút Sắp xếp có cùng kích thước với Tìm kiếm
+      maxWidth: '150px', // Hạn chế chiều rộng tối đa
+    }}
+  >
+    Sắp xếp
+  </Button>
+</Box>
+
+
+      {showFilter && <LivestockFilter onApplyFilters={applyFilters} />}
 
       <LivestockTable
         livestock={livestock}
@@ -135,42 +170,67 @@ function LivestockList() {
         }}
       />
 
-      <Pagination
-        itemsPerPage={itemsPerPage}
-        totalItems={totalRecords}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-      />
-
-      {showViewModal && (
-        <ViewLivestock
-          livestock={selectedLivestock}
-          onClose={() => {
-            setShowViewModal(false);
-            setSelectedLivestock(null);
+      {/* Centering Pagination */}
+      <Box display="flex" justifyContent="center" marginTop={2}>
+        <Pagination
+          totalItems={totalRecords} // total number of items
+          currentPage={currentPage} // current page number
+          onPageChange={setCurrentPage} // function to update the current page
+          onRowsPerPageChange={(newRowsPerPage) => {
+            setItemsPerPage(newRowsPerPage); // update the number of items per page
+            setCurrentPage(1); // Reset to first page when changing rows per page
           }}
         />
-      )}
+      </Box>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <EditLivestock
-          livestock={selectedLivestock}
-          onCancel={() => setIsModalOpen(false)}
-          onSubmit={handleUpdateSubmit}
-        />
+      <Modal open={showViewModal} onClose={() => setShowViewModal(false)}>
+        <Box>
+          <ViewLivestock
+            livestock={selectedLivestock}
+            onClose={() => {
+              setShowViewModal(false);
+              setSelectedLivestock(null);
+            }}
+          />
+        </Box>
       </Modal>
 
-      {showDeleteModal && (
-        <DeleteConfirmation
-          livestock={selectedLivestock}
-          onConfirm={() => confirmDelete(selectedLivestock.id)}
-          onCancel={() => {
-            setShowDeleteModal(false);
-            setSelectedLivestock(null);
+      <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 700, // Điều chỉnh kích thước phù hợp
+            bgcolor: 'background.paper',
+            border: '2px solid #000',
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
           }}
-        />
-      )}
-    </div>
+        >
+          <EditLivestock
+            livestock={selectedLivestock}
+            onCancel={() => setIsModalOpen(false)}
+            onSubmit={handleUpdateSubmit}
+          />
+        </Box>
+      </Modal>
+
+      <Modal open={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
+        <Box>
+          <DeleteConfirmation
+            livestock={selectedLivestock}
+            onConfirm={() => confirmDelete(selectedLivestock.id)}
+            onCancel={() => {
+              setShowDeleteModal(false);
+              setSelectedLivestock(null);
+            }}
+          />
+        </Box>
+      </Modal>
+    </Box>
   );
 }
 

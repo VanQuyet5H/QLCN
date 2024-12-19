@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.ComponentModel.DataAnnotations;
 
 namespace QuanLyChanNuoi.Models
@@ -23,6 +24,7 @@ namespace QuanLyChanNuoi.Models
         public DateTime CreatedAt { get; set; }
 
 
-
+        public int? CageId { get; set; }
+        public Cage Cage { get; set; }
     }
 }

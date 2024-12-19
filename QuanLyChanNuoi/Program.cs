@@ -28,6 +28,7 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
 });
+builder.Services.AddLogging();
 builder.Services.AddOptions();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));// Kích ho?t Options
 builder.Services.AddScoped<ISendMailService, SendMailService>();
@@ -46,11 +47,15 @@ var mapperConfig = new MapperConfiguration(cfg =>
 
 var mapper = mapperConfig.CreateMapper();
 builder.Services.AddSingleton(mapper);
-
+builder.Logging
+       .ClearProviders()  // Tùy ch?n: xóa các provider log m?c ??nh
+       .AddConsole()      // Ghi log ra Console
+       .AddDebug();
 // Add services to the container.
 builder.Services.AddScoped<AuthService>();  
 builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("conn")));
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

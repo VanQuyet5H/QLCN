@@ -5,6 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from "react-router-dom";
 import EditIcon from '@mui/icons-material/Edit';
+import './VaccinationSchedule.css';
 const VaccinationSchedule = () => {
   const [vaccinations, setVaccinations] = useState([]);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -76,7 +77,7 @@ const VaccinationSchedule = () => {
   };
 
   return (
-    <Box sx={{maxWidth: '1400px',padding: 3, backgroundColor: '#f4f6f8',overflowY: 'hidden' }}>
+    <Box className="hide-scrollbar" sx={{ maxHeight: 500, overflowY: 'auto'}}>
       <Typography variant="h4" mb={3} align="center" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>
         Danh Sách Tiêm Chủng
       </Typography>

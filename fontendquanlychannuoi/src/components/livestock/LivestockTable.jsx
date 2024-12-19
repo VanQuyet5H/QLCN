@@ -1,5 +1,18 @@
+import React from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+  IconButton,
+  Tooltip,
+  Paper,
+  Box,
+} from '@mui/material';
 import { FaEdit, FaTrash, FaEye } from 'react-icons/fa';
-import './LivestockTable.css';
 
 function LivestockTable({ livestock, onSort, sortConfig, onView, onEdit, onDelete }) {
   const getSortIcon = (key) => {
@@ -8,90 +21,92 @@ function LivestockTable({ livestock, onSort, sortConfig, onView, onEdit, onDelet
     }
     return '↕';
   };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    const day = ("0" + date.getDate()).slice(-2); // Đảm bảo ngày luôn có 2 chữ số
-    const month = ("0" + (date.getMonth() + 1)).slice(-2); // Tháng bắt đầu từ 0
+    const day = ("0" + date.getDate()).slice(-2);
+    const month = ("0" + (date.getMonth() + 1)).slice(-2);
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
+
   return (
-    <div className="livestock-table-container">
-      <table className="livestock-table">
-        <thead>
-          <tr>
-            <th onClick={() => onSort('id')}>
+    <TableContainer component={Paper} elevation={3} sx={{ margin: '20px 0' }}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell onClick={() => onSort('id')} sx={{ cursor: 'pointer' }}>
               Mã số {getSortIcon('id')}
-            </th>
-            <th onClick={() => onSort('name')}>
+            </TableCell>
+            <TableCell onClick={() => onSort('name')} sx={{ cursor: 'pointer' }}>
               Tên vật nuôi {getSortIcon('name')}
-            </th>
-            <th onClick={() => onSort('type')}>
+            </TableCell>
+            <TableCell onClick={() => onSort('type')} sx={{ cursor: 'pointer' }}>
               Loại {getSortIcon('type')}
-            </th>
-            <th onClick={() => onSort('gender')}>
+            </TableCell>
+            <TableCell onClick={() => onSort('gender')} sx={{ cursor: 'pointer' }}>
               Loài {getSortIcon('gender')}
-            </th>
-            <th onClick={() => onSort('birthDate')}>
+            </TableCell>
+            <TableCell onClick={() => onSort('birthDate')} sx={{ cursor: 'pointer' }}>
               Ngày Sinh {getSortIcon('birthDate')}
-            </th>
-            <th onClick={() => onSort('status')}>
+            </TableCell>
+            <TableCell onClick={() => onSort('status')} sx={{ cursor: 'pointer' }}>
               Trạng Thái {getSortIcon('status')}
-            </th>
-            <th onClick={() => onSort('weight')}>
+            </TableCell>
+            <TableCell onClick={() => onSort('weight')} sx={{ cursor: 'pointer' }}>
               Cân nặng (kg) {getSortIcon('weight')}
-            </th>
-            <th onClick={() => onSort('breed')}>
+            </TableCell>
+            <TableCell onClick={() => onSort('breed')} sx={{ cursor: 'pointer' }}>
               Giống {getSortIcon('breed')}
-            </th>
-            <th>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
+            </TableCell>
+            <TableCell>Thao tác</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
           {livestock.map((animal) => (
-            <tr key={animal.id}>
-              <td>{animal.id}</td>
-              <td>{animal.name}</td>
-              <td>{animal.type}</td>
-              <td>{animal.gender}</td>
-              <td>{formatDate(animal.birthDate)}</td>
-              <td>
-                <span className={`status ${animal.status === 'Khỏe mạnh' ? 'healthy' : 'treatment'}`}>
+            <TableRow key={animal.id} hover>
+              <TableCell>{animal.id}</TableCell>
+              <TableCell>{animal.name}</TableCell>
+              <TableCell>{animal.type}</TableCell>
+              <TableCell>{animal.gender}</TableCell>
+              <TableCell>{formatDate(animal.birthDate)}</TableCell>
+              <TableCell>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: animal.status === 'Khỏe mạnh' ? 'green' : 'orange',
+                    fontWeight: 'bold',
+                  }}
+                >
                   {animal.status}
-                </span>
-              </td>
-              <td>{animal.weight}</td>
-              <td>{animal.breed}</td>
-              <td>
-                <div className="action-buttons">
-                  <button
-                    className="btn-view"
-                    title="Xem chi tiết"
-                    onClick={() => onView(animal)}
-                  >
-                    <FaEye />
-                  </button>
-                  <button
-                    className="btn-edit"
-                    title="Chỉnh sửa"
-                    onClick={() => onEdit(animal)}
-                  >
-                    <FaEdit />
-                  </button>
-                  <button
-                    className="btn-delete"
-                    title="Xóa"
-                    onClick={() => onDelete(animal)}
-                  >
-                    <FaTrash />
-                  </button>
-                </div>
-              </td>
-            </tr>
+                </Typography>
+              </TableCell>
+              <TableCell>{animal.weight}</TableCell>
+              <TableCell>{animal.breed}</TableCell>
+              <TableCell>
+                <Box display="flex" gap={1}>
+                  <Tooltip title="Xem chi tiết">
+                    <IconButton color="primary" onClick={() => onView(animal)}>
+                      <FaEye />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Chỉnh sửa">
+                    <IconButton color="warning" onClick={() => onEdit(animal)}>
+                      <FaEdit />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Xóa">
+                    <IconButton color="error" onClick={() => onDelete(animal)}>
+                      <FaTrash />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }
 

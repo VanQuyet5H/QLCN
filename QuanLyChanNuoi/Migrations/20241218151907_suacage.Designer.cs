@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuanLyChanNuoi.Models;
 
@@ -11,9 +12,10 @@ using QuanLyChanNuoi.Models;
 namespace QuanLyChanNuoi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241218151907_suacage")]
+    partial class suacage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,6 +41,7 @@ namespace QuanLyChanNuoi.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<int?>("CageId")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -532,7 +535,8 @@ namespace QuanLyChanNuoi.Migrations
                     b.HasOne("QuanLyChanNuoi.Models.Cage", "Cage")
                         .WithMany("Animal")
                         .HasForeignKey("CageId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Cage");
                 });
