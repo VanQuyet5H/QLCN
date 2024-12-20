@@ -7,3 +7,7 @@
 .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Ẩn thanh cuộn trên Chrome, Safari, và Edge */
 }
+.tool-buttons {
+  display: flex;
+  gap: 1rem;
+}

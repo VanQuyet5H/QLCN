@@ -8,7 +8,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Button, Grid, Typography, Card, CardContent, Paper } from "@mui/material";
 import axios from "axios";
 import { Box } from '@mui/system';
-
+import './Dashboard.css';
 function Dashboard() {
   const icons = [<FaHorse />, <FaPiggyBank />, <FaWeight />, <FaExclamationTriangle />];
 
@@ -182,7 +182,8 @@ function Dashboard() {
   }, [startDate, endDate, year]);
 
   return (
-    <Box className="dashboard">
+    <div className="livestock-dashboard">
+    <Box sx={{ width: '100%' }}>
     <Grid container spacing={3} className="grid-container">
       {/* Stats Section */}
       <Grid item xs={12} sm={6} md={4}>
@@ -306,7 +307,7 @@ function Dashboard() {
       </Grid>
     </Grid>
   </Box>
-  
+  </div>
   );
 }
 

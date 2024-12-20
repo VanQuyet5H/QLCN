@@ -1,23 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './LivestockFilter.css';
 
-function LivestockFilter({ onApplyFilters  }) {
+function LivestockFilter({ onApplyFilters }) {
   const [filters, setFilters] = useState({
     name: '',
     type: '',
     gender: '',
-    birthRange: '', // Replacing birthDate with birthRange
+    birthRange: '',
     status: '',
     weight: '',
     breed: '',
+    cage: '',
+    withoutCage: false, // Thêm thuộc tính 'withoutCage' vào trạng thái filters
   });
+  const [cages, setCages] = useState([]);
+
+  useEffect(() => {
+    const fetchCages = async () => {
+      try {
+        const response = await fetch('https://localhost:7185/api/Cage/available');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setCages(data);
+      } catch (error) {
+        console.error('Error fetching cages:', error);
+      }
+    };
+
+    fetchCages();
+  }, []);
 
   // Xử lý khi thay đổi giá trị của bộ lọc
   const handleFilterChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFilters((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -36,8 +56,10 @@ function LivestockFilter({ onApplyFilters  }) {
       status: '',
       weight: '',
       breed: '',
+      cage: '',
+      withoutCage: false, // Đặt lại giá trị 'withoutCage' về false
     };
-  
+
     setFilters(defaultFilters);
     onApplyFilters(defaultFilters);
   };
@@ -51,6 +73,18 @@ function LivestockFilter({ onApplyFilters  }) {
           <option value="Lợn">Lợn</option>
           <option value="Bò">Bò</option>
           <option value="Gà">Gà</option>
+        </select>
+      </div>
+
+      <div className="filter-group">
+        <label>Chuồng</label>
+        <select name="cage" value={filters.cage} onChange={handleFilterChange}>
+          <option value="">Tất cả</option>
+          {cages.map((cage) => (
+            <option key={cage.id} value={cage.id}>
+              {cage.name}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -100,6 +134,20 @@ function LivestockFilter({ onApplyFilters  }) {
           <option value="Large White">Large White</option>
           <option value="Yorkshire">Yorkshire</option>
         </select>
+      </div>
+
+      <div className="filter-group">
+        <label>Vật nuôi chưa có phòng</label>
+        <label> 
+          <input
+            type="checkbox"
+            name="withoutCage"
+            checked={filters.withoutCage}
+            onChange={handleFilterChange}
+            className="checkbox-input"
+          />
+          <span className="checkbox-label">Chưa có phòng</span>
+          </label>
       </div>
 
       <div className="filter-actions">

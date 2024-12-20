@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using QuanLyChanNuoi.Models;
+using QuanLyChanNuoi.Models.Request;
 using System.Text.Json;
+using static QuanLyChanNuoi.Controllers.AnimalController;
 
 namespace QuanLyChanNuoi.Controllers
 {
@@ -12,10 +15,12 @@ namespace QuanLyChanNuoi.Controllers
     {
         private readonly AppDbContext _context;
         private readonly ILogger<AnimalController> _logger;
-        public AnimalController(AppDbContext context, ILogger<AnimalController> logger)
+        private readonly IMapper _mapper;
+        public AnimalController(AppDbContext context, ILogger<AnimalController> logger, IMapper mapper)
         {
             _context = context;
             _logger = logger;
+            _mapper = mapper;
         }
 
         // Lấy danh sách vật nuôi (kèm thông tin chuồng)
@@ -127,38 +132,38 @@ namespace QuanLyChanNuoi.Controllers
         }
 
         // Thêm mới vật nuôi (kèm cập nhật chuồng)
-        [HttpPost]
-        public async Task<IActionResult> CreateAnimal([FromBody] Animal animal)
+        [HttpPost("ThemGiong")]
+        public async Task<IActionResult> CreateAnimal([FromBody] AddDto animalDto)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var animal = new Animal
+                {
+                    Name = animalDto.Name,
+                    Type = animalDto.Type,
+                    Gender = animalDto.Gender,
+                    BirthDate = animalDto.BirthDate,
+                    Status = animalDto.Status,
+                    Weight = animalDto.Weight,
+                    Breed = animalDto.Breed,
+                    CreatedAt = DateTime.Now
+                };
+                _context.Animal.Add(animal);
+                await _context.SaveChangesAsync();
 
-            var cage = await _context.Cage.FindAsync(animal.CageId);
-            if (cage == null)
+                return Ok();
+            }
+            catch (Exception ex)
             {
-                return BadRequest(new { message = "Chuồng không tồn tại" });
+                return StatusCode(500, new { error = ex.Message });
             }
-
-            if (cage.CurrentOccupancy >= cage.Capacity)
-            {
-                return BadRequest(new { message = "Chuồng đã đầy" });
-            }
-
-            animal.CreatedAt = DateTime.Now;
-            _context.Animal.Add(animal);
-
-            // Cập nhật số lượng vật nuôi trong chuồng
-            cage.CurrentOccupancy++;
-            await _context.SaveChangesAsync();
-
-            return Ok(animal);
         }
-
-        // Cập nhật thông tin vật nuôi (kèm cập nhật chuồng)
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAnimal(int id, [FromBody] Animal updatedAnimal)
+        public async Task<IActionResult> UpdateAnimal(int id, [FromBody] AddDto updatedAnimal)
         {
             if (id != updatedAnimal.Id)
             {
@@ -171,21 +176,6 @@ namespace QuanLyChanNuoi.Controllers
                 return NotFound(new { message = "Vật nuôi không tồn tại" });
             }
 
-            if (animal.CageId != updatedAnimal.CageId)
-            {
-                // Giảm số lượng ở chuồng cũ
-                var oldCage = await _context.Cage.FindAsync(animal.CageId);
-                if (oldCage != null) oldCage.CurrentOccupancy--;
-
-                // Tăng số lượng ở chuồng mới
-                var newCage = await _context.Cage.FindAsync(updatedAnimal.CageId);
-                if (newCage == null || newCage.CurrentOccupancy >= newCage.Capacity)
-                {
-                    return BadRequest(new { message = "Chuồng mới không hợp lệ" });
-                }
-                newCage.CurrentOccupancy++;
-            }
-
             animal.Name = updatedAnimal.Name;
             animal.Type = updatedAnimal.Type;
             animal.Gender = updatedAnimal.Gender;
@@ -193,8 +183,6 @@ namespace QuanLyChanNuoi.Controllers
             animal.Status = updatedAnimal.Status;
             animal.Weight = updatedAnimal.Weight;
             animal.Breed = updatedAnimal.Breed;
-            animal.CageId = updatedAnimal.CageId;
-
             await _context.SaveChangesAsync();
             return Ok(animal);
         }
@@ -295,6 +283,17 @@ namespace QuanLyChanNuoi.Controllers
             public DateTime BirthDate { get; set; }
             public CageDto Cage { get; set; }
         }
+        public class AddDto
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public string Type { get; set; }
+            public string Gender { get; set; }
+            public DateTime BirthDate { get; set; }
+            public string Status { get; set; }
+            public decimal? Weight { get; set; }
+            public string Breed { get; set; }
+        }
 
         public class CageDto
         {
@@ -307,6 +306,7 @@ namespace QuanLyChanNuoi.Controllers
             public int Capacity { get; set; }
             public int CurrentOccupancy { get; set; }
         }
+        
 
     }
 }

@@ -127,27 +127,50 @@ namespace QuanLyChanNuoi.Controllers
 
             return Ok(new { Message = "Thêm chuồng thành công!", Data = cage });
         }
+        [HttpGet("available")]
+        public async Task<ActionResult<IEnumerable<Cage>>> GetAvailableCages()
+        {
+            var cages = await _context.Cage
+                .Where(c => c.CurrentOccupancy < c.Capacity) // Chỉ lấy chuồng còn chỗ trống
+                .ToListAsync();
 
+            if (cages == null || cages.Count == 0)
+            {
+                return NotFound("Không có chuồng khả dụng.");
+            }
+
+            return Ok(cages);
+        }
         // 3. Thêm vật nuôi vào chuồng
-        [HttpPost("{cageId}/AddAnimal")]
-        public async Task<ActionResult> AddAnimalToCage(int cageId, Animal animal)
+        [HttpPost("{cageId}/AddAnimals")]
+        public async Task<ActionResult> AddAnimalsToCage(int cageId, List<int> animalIds)
         {
             var cage = await _context.Cage.Include(c => c.Animal).FirstOrDefaultAsync(c => c.Id == cageId);
 
             if (cage == null)
                 return NotFound("Chuồng không tồn tại.");
 
-            if (cage.CurrentOccupancy + 1 > cage.Capacity)
-                return BadRequest("Chuồng đã đầy.");
+            var animals = await _context.Animal.Where(a => animalIds.Contains(a.Id)).ToListAsync();
 
-            animal.CageId = cageId;
-            cage.CurrentOccupancy++;
-            _context.Animal.Add(animal); 
+            if (animals.Count != animalIds.Count)
+                return BadRequest("Một số vật nuôi không tồn tại.");
+
+            if (cage.CurrentOccupancy + animals.Count > cage.Capacity)
+                return BadRequest("Chuồng không đủ chỗ.");
+
+            foreach (var animal in animals)
+            {
+                animal.CageId = cageId;
+                cage.CurrentOccupancy++;
+            }
+
+            _context.Animal.UpdateRange(animals);
             _context.Cage.Update(cage);
 
             await _context.SaveChangesAsync();
             return Ok("Đã thêm vật nuôi vào chuồng.");
         }
+
 
         // 4. Di chuyển vật nuôi giữa các chuồng
         [HttpPost("MoveAnimal")]

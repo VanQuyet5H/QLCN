@@ -17,16 +17,18 @@ export const useLivestock = () => {
     birthRange: '',
     status: '',
     weight: '',
-    breed: ''
+    breed: '',
+    cage: '',
+
   });
 
   const fetchLivestock = async () => {
     try {
       setIsLoading(true);
-      const params = { 
-        page: currentPage, 
-        pageSize: itemsPerPage, 
-        search: searchTerm 
+      const params = {
+        page: currentPage,
+        pageSize: itemsPerPage,
+        search: searchTerm
       };
       const response = await axios.get('https://localhost:7185/api/Animal', { params });
       const { data, totalRecords } = response.data;
@@ -34,6 +36,7 @@ export const useLivestock = () => {
       setTotalRecords(totalRecords);
       setFilteredLivestock(data);
     } catch (error) {
+      alert("Could not fetch livestock data. Please try again later.");
       throw new Error('Failed to fetch livestock data');
     } finally {
       setIsLoading(false);
@@ -112,9 +115,13 @@ export const useLivestock = () => {
           }
         };
 
-        const filterBirthDate = filters.birthRange ? 
+        const filterBirthDate = filters.birthRange ?
           animalBirthDate >= getDateRange(filters.birthRange) : true;
+        const filterCage = filters.cage
+          ? animal.cage?.name?.toLowerCase().includes(filters.cage.toLowerCase()) || false
+          : true;
 
+        console.log('loc', filterCage);
         return (
           (filters.name ? animal.name?.toLowerCase().includes(filters.name.toLowerCase()) : true) &&
           (filters.type ? animal.type?.toLowerCase().includes(filters.type.toLowerCase()) : true) &&
@@ -122,7 +129,8 @@ export const useLivestock = () => {
           filterBirthDate &&
           (filters.status ? animal.status?.toLowerCase() === filters.status.toLowerCase() : true) &&
           (filters.weight ? animal.weight === parseInt(filters.weight) : true) &&
-          (filters.breed ? animal.breed?.toLowerCase().includes(filters.breed.toLowerCase()) : true)
+          (filters.breed ? animal.breed?.toLowerCase().includes(filters.breed.toLowerCase()) : true) &&
+          filterCage
         );
       });
 
