@@ -144,20 +144,7 @@ const VaccinationForm = () => {
               InputLabelProps={{
                 shrink: true, // Đảm bảo nhãn luôn thu nhỏ
               }}
-              inputProps={{
-                style: {
-                  height: '60px', // Chiều cao của input
-                  fontSize: '16px', // Kích thước font
-                  padding: '0 14px',
-                  width: '220px'
-                },
-              }}
-              sx={{
-                width: '220px', // Chiều rộng của TextField
-                '& .MuiInputBase-root': {
-                  height: '60px', // Áp dụng chiều cao cho toàn bộ input
-                },
-              }}
+              
             />
           </Grid>
 

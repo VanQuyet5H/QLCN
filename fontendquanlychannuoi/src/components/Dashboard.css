@@ -1,229 +1,125 @@
-.dashboard {
+/* Reset cơ bản */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 1.5rem;
-  box-sizing: border-box; /* Đảm bảo padding không ảnh hưởng đến chiều rộng */
-  overflow-x: hidden; /* Tránh tràn ngang */
-  margin-top: 850px;
-  width: 1000px;
+  height: 100%;
+  overflow-x: hidden; /* Ẩn tràn ngang */
+  font-family: Arial, sans-serif;
+}
+.feed-consumption-input {
+  padding: 12px;  /* Tăng khoảng cách padding để làm input lớn hơn */
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100%;
+  max-width: 250px; /* Cải thiện độ rộng của input */
+  font-size: 16px; /* Tăng kích thước chữ trong input */
 }
 
-.stats-grid {
+.livestock-dashboard {
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Đảm bảo co giãn đều */
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Tự điều chỉnh kích thước */
+  gap: 20px;
 }
 
-.stat-card {
+.card {
   background: white;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  display: flex;
-  align-items: flex-start;
-  gap: 1.5rem;
-  transition: all 0.3s ease;
-  box-sizing: border-box;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Ẩn nội dung tràn */
 }
 
-.environment-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
+.card-content {
+  padding: 15px;
 }
 
-.dashboard-content {
-  display: grid;
-  grid-template-columns: 1fr; /* Một cột mặc định */
-  gap: 2rem;
-  margin-bottom: 2rem;
-  box-sizing: border-box; /* Đảm bảo padding không gây tràn */
+.card .icon {
+  font-size: 24px;
+  margin-right: 10px;
 }
 
-.chart-section,
-.feed-consumption,
-.activities-section {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  box-sizing: border-box;
+.paper {
+  padding: 15px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow-x: auto; /* Thanh cuộn ngang nếu cần */
 }
 
 .chart-container {
   width: 100%;
-  height: 400px;
-  position: relative;
-  overflow: hidden; /* Tránh tràn nội dung */
+  overflow-x: auto; /* Đảm bảo không tràn màn hình */
 }
 
-.date-picker-container {
+.date-picker {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.date-picker-container > div {
-  flex: 1;
-  min-width: 200px; /* Đảm bảo đủ không gian để hiển thị nội dung */
-}
-
-.date-picker-container label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #64748b;
-}
-
-.year-selector {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
   align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.year-selector input {
+.button {
+  background-color: #1976d2;
+  color: white;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.button:hover {
+  background-color: #145a9e;
+}
+
+.recent-activities-section {
+  margin-top: 30px;
+}
+
+.recent-activities-list {
+  margin-top: 15px;
+  padding: 10px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow-y: auto; /* Thanh cuộn dọc */
+  max-height: 300px; /* Giới hạn chiều cao */
+}
+
+.recent-activities-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.recent-activities-item:last-child {
+  border-bottom: none;
+}
+
+.feed-consumption-input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
   width: 100%;
-  max-width: 150px; /* Giới hạn chiều rộng */
-  padding: 0.5rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-}
-
-.activities-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.activity-item {
-  padding: 1rem;
-  border-radius: 0.5rem;
-  background: #f8fafc;
-  border-left: 4px solid var(--primary-color);
-}
-
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-  .stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  }
-
-  .dashboard-content {
-    grid-template-columns: 1fr; /* Một cột trên màn hình nhỏ */
-  }
+  max-width: 200px;
 }
 
 @media (max-width: 768px) {
-  .dashboard {
-    padding: 1rem;
+  .grid-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
   }
 
-  .stats-grid {
-    grid-template-columns: 1fr; /* Mỗi dòng chỉ có một phần tử */
-  }
-
-  .stat-card {
-    padding: 1rem;
-  }
-
-  .chart-section,
-  .feed-consumption,
-  .activities-section {
-    padding: 1rem;
-  }
-
-  .date-picker-container {
+  .date-picker {
     flex-direction: column;
   }
-
-  .date-picker-container > div {
-    width: 100%;
-  }
-
-  .year-selector {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
-@media (max-width: 480px) {
-  .stat-info p {
-    font-size: 1.25rem; /* Giảm kích thước font để tránh tràn */
-  }
-
-  .activity-content {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .dashboard {
-    padding: 0.5rem;
-  }
-}
-/* Nút bấm */
-button {
-  padding: 0.6rem 1.2rem;
-  background-color: #10b981; /* Màu xanh chủ đạo */
-  color: white;
-  font-size: 1rem;
-  font-weight: 500;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-button:hover {
-  background-color: #059669; /* Màu khi hover */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Hiệu ứng nổi bật */
-}
-
-button:active {
-  background-color: #047857; /* Màu khi nhấn */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transform: scale(0.98); /* Nhấn xuống */
-}
-
-button:disabled {
-  background-color: #d1d5db; /* Màu xám khi không hoạt động */
-  color: #6b7280;
-  cursor: not-allowed;
-}
-
-/* Input datetimepicker */
-input[type="datetime-local"],
-input[type="date"] {
-  width: 100%;
-  max-width: 250px; /* Giới hạn chiều rộng */
-  padding: 0.6rem;
-  font-size: 1rem;
-  border: 1px solid #d1d5db; /* Viền xám nhạt */
-  border-radius: 0.5rem;
-  box-sizing: border-box;
-  background-color: #f9fafb; /* Màu nền nhạt */
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-input[type="datetime-local"]:focus,
-input[type="date"]:focus {
-  border-color: #10b981; /* Viền màu xanh khi focus */
-  box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
-  outline: none; /* Xóa viền mặc định */
-}
-
-input[type="datetime-local"]::placeholder,
-input[type="date"]::placeholder {
-  color: #9ca3af; /* Màu placeholder */
-  font-style: italic;
-}
-
-input[type="datetime-local"]:disabled,
-input[type="date"]:disabled {
-  background-color: #e5e7eb; /* Màu nền khi disabled */
-  cursor: not-allowed;
 }

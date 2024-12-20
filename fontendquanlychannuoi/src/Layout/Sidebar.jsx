@@ -144,7 +144,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       submenu: [
         { text: 'Danh sách đàn', path: '/livestockdashdoard' },
         { text: 'Theo dõi tăng trưởng', path: '/growth' },
-        { text: 'Quản lý giống', path: '/breeds' },
+        { text: 'Danh sách chuồng', path: '/danhsachchuong' },
       ],
     },
     {

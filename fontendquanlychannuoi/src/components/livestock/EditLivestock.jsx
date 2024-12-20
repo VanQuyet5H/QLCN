@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { FaSave,FaTimes } from 'react-icons/fa';
-import './EditLivestock.css';
+import {
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Box,
+  Typography,
+  CircularProgress,
+  Grid,
+} from '@mui/material';
+import { FaSave, FaTimes } from 'react-icons/fa';
 
 function EditLivestock({ livestock, onSubmit, onCancel }) {
   const [formData, setFormData] = useState({
@@ -44,7 +55,7 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
       ...prev,
       [name]: value,
     }));
-    // Xóa lỗi khi người dùng nhập lại
+
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -58,130 +69,156 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
     if (validateForm()) {
       setIsSubmitting(true);
       const finalData = formData.type === 'other' ? { ...formData, type: formData.otherType } : formData;
-      onSubmit(finalData);
       try {
-        await onSubmit(finalData); // Gọi API từ prop `onSubmit`
+        await onSubmit(finalData);
         setIsSubmitting(false);
       } catch (error) {
         console.error('Error updating livestock:', error);
         setIsSubmitting(false);
       }
-    
     }
   };
 
   return (
-    <div className="edit-livestock-container">
-      <form onSubmit={handleSubmit} className="edit-livestock-form">
-        <div className="form-group">
-          <label htmlFor="id">Mã số vật nuôi</label>
-          <input type="text" id="id" name="id" value={formData.id} readOnly />
-        </div>
-        <div className="form-group">
-          <label htmlFor="name">Tên vật nuôi *</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className={errors.name ? 'error' : ''}
-          />
-          {errors.name && <span className="error-message">{errors.name}</span>}
-        </div>
-        <div className="form-group">
-          <label htmlFor="type">Loại vật nuôi *</label>
-          <select
-            id="type"
-            name="type"
-            value={formData.type || ''}
-            onChange={handleChange}
-            className={errors.type ? 'error' : ''}
-          >
-            <option value="">Chọn loại</option>
-            <option value="Bò">Bò</option>
-            <option value="Lợn">Lợn</option>
-            <option value="other">Khác</option> {/* Thêm lựa chọn "Khác" */}
-          </select>
-          {errors.type && <span className="error-message">{errors.type}</span>}
+    <Box sx={{ maxWidth: 800, margin: 'auto', p: 4, border: '1px solid #ccc', borderRadius: 2, boxShadow: 2 }}>
+      <Typography variant="h5" gutterBottom align="center">
+        Chỉnh sửa thông tin vật nuôi
+      </Typography>
+      <form onSubmit={handleSubmit}>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField
+              label="Mã số vật nuôi"
+              name="id"
+              value={formData.id}
+              fullWidth
+              InputProps={{ readOnly: true }}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Tên vật nuôi *"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              fullWidth
+              error={!!errors.name}
+              helperText={errors.name}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth error={!!errors.type}>
+              <InputLabel>Loại vật nuôi *</InputLabel>
+              <Select
+                name="type"
+                value={formData.type || ''}
+                onChange={handleChange}
+              >
+                <MenuItem value="">Chọn loại</MenuItem>
+                <MenuItem value="Bò">Bò</MenuItem>
+                <MenuItem value="Lợn">Lợn</MenuItem>
+                <MenuItem value="other">Khác</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
 
           {formData.type === 'other' && (
-            <div className="form-group">
-              <label htmlFor="otherType">Nhập loại vật nuôi khác</label>
-              <input
-                type="text"
-                id="otherType"
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Nhập loại khác"
                 name="otherType"
                 value={formData.otherType || ''}
                 onChange={handleChange}
-                className={errors.otherType ? 'error' : ''}
+                fullWidth
               />
-              {errors.otherType && <span className="error-message">{errors.otherType}</span>}
-            </div>
+            </Grid>
           )}
-        </div>
 
-        <div className="form-group">
-          <label htmlFor="gender">Loài</label>
-          <select id="gender" name="gender" value={formData.gender} onChange={handleChange}>
-            <option value="Male">Đực</option>
-            <option value="FeMale">Cái</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label htmlFor="birthDate">Ngày sinh *</label>
-          <input
-            type="date"
-            id="birthDate"
-            name="birthDate"
-            value={formData.birthDate}
-            onChange={handleChange}
-            className={errors.birthDate ? 'error' : ''}
-          />
-          {errors.birthDate && <span className="error-message">{errors.birthDate}</span>}
-        </div>
-        <div className="form-group">
-          <label htmlFor="weight">Cân nặng (kg) *</label>
-          <input
-            type="number"
-            id="weight"
-            name="weight"
-            value={formData.weight}
-            onChange={handleChange}
-            className={errors.weight ? 'error' : ''}
-          />
-          {errors.weight && <span className="error-message">{errors.weight}</span>}
-        </div>
-        <div className="form-group">
-          <label htmlFor="breed">Giống</label>
-          <input
-            type="text"
-            id="breed"
-            name="breed"
-            value={formData.breed}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="status">Tình trạng</label>
-          <input
-            type="text"
-            id="status"
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="form-actions">
-          <button type="button" className="btn-cancel" onClick={onCancel}>
-            <FaTimes /> Hủy
-          </button>
-          <button type="submit" className="btn-save" disabled={isSubmitting}>
-            {isSubmitting ? 'Đang lưu...' : <><FaSave /> Lưu</>}
-          </button>
-        </div>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Giới tính</InputLabel>
+              <Select
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+              >
+                <MenuItem value="Male">Đực</MenuItem>
+                <MenuItem value="Female">Cái</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Ngày sinh *"
+              type="date"
+              name="birthDate"
+              value={formData.birthDate}
+              onChange={handleChange}
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              error={!!errors.birthDate}
+              helperText={errors.birthDate}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Cân nặng (kg) *"
+              type="number"
+              name="weight"
+              value={formData.weight}
+              onChange={handleChange}
+              fullWidth
+              error={!!errors.weight}
+              helperText={errors.weight}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Giống"
+              name="breed"
+              value={formData.breed}
+              onChange={handleChange}
+              fullWidth
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField
+              label="Tình trạng"
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              fullWidth
+            />
+          </Grid>
+
+          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={onCancel}
+              startIcon={<FaTimes />}
+            >
+              Hủy
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              disabled={isSubmitting}
+              startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <FaSave />}
+            >
+              {isSubmitting ? 'Đang lưu...' : 'Lưu'}
+            </Button>
+          </Grid>
+        </Grid>
       </form>
-    </div>
+    </Box>
   );
 }
 

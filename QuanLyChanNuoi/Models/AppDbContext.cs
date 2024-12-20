@@ -17,6 +17,7 @@ namespace QuanLyChanNuoi.Models
         public DbSet<Vaccination> Vaccination { get; set; }
         public DbSet<Inventory> Inventory { get; set; }
         public DbSet<TreatmentMedication> TreatmentMedication { get; set; } = null!;
+        public DbSet<Cage> Cage { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Medication Entity
@@ -52,6 +53,12 @@ namespace QuanLyChanNuoi.Models
                     .HasForeignKey(tm => tm.MedicationId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
+            modelBuilder.Entity<Animal>()
+                       .HasOne(a => a.Cage) // Mỗi Animal có 1 Cage
+                       .WithMany(c => c.Animal) // Một Cage có nhiều Animal
+                       .HasForeignKey(a => a.CageId) // Animal tham chiếu Cage thông qua CageId
+                       .OnDelete(DeleteBehavior.Restrict)
+                       .IsRequired(false);
 
 
         }

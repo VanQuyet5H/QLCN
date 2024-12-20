@@ -9,6 +9,7 @@
   gap: 1.5rem;
 }
 
+
 .filter-group {
   display: flex;
   flex-direction: column;
@@ -80,4 +81,54 @@
   .filter-panel {
     grid-template-columns: 1fr;
   }
+}
+/* Ẩn checkbox mặc định */
+.checkbox-input {
+  display: none;
+}
+
+/* Tạo kiểu cho nhãn */
+.checkbox-label {
+  position: relative;
+  padding-left: 30px; /* Khoảng cách cho biểu tượng checkbox */
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+}
+
+/* Tạo biểu tượng checkbox tùy chỉnh */
+.checkbox-label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* Thay đổi màu sắc khi hover */
+.checkbox-label:hover::before {
+  border-color: #888;
+}
+
+/* Thay đổi màu sắc khi checkbox được chọn */
+.checkbox-input:checked + .checkbox-label::before {
+  background-color: #4CAF50;
+  border-color: #4CAF50;
+}
+
+/* Thêm dấu tích vào checkbox khi được chọn */
+.checkbox-input:checked + .checkbox-label::after {
+  content: '✔';
+  position: absolute;
+  left: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #fff;
+  font-size: 14px;
 }

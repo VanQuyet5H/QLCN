@@ -12,6 +12,7 @@
             public DateTime LastUpdated { get; set; }
             public string Status { get; set; }
         }
+       
 
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuanLyChanNuoi.Models;
 
@@ -11,9 +12,10 @@ using QuanLyChanNuoi.Models;
 namespace QuanLyChanNuoi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241218113419_suaidcagenull")]
+    partial class suaidcagenull
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,6 +41,7 @@ namespace QuanLyChanNuoi.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<int?>("CageId")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -78,6 +81,14 @@ namespace QuanLyChanNuoi.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AgeGroup")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AnimalType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Area")
                         .HasColumnType("decimal(18,2)");
@@ -532,7 +543,8 @@ namespace QuanLyChanNuoi.Migrations
                     b.HasOne("QuanLyChanNuoi.Models.Cage", "Cage")
                         .WithMany("Animal")
                         .HasForeignKey("CageId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Cage");
                 });
