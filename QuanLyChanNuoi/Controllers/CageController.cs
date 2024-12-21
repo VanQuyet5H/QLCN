@@ -20,67 +20,70 @@ namespace QuanLyChanNuoi.Controllers
 
         // 1. Thêm Chuồng Mới
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Cage>>> GetCages(
+        public async Task<ActionResult> GetCages(
      int pageNumber = 1,       // Trang hiện tại
      int pageSize = 10,        // Số mục trên mỗi trang
-     string? searchTerm = "",   // Từ khóa tìm kiếm
+     string? searchTerm = "",  // Từ khóa tìm kiếm
      string sortBy = "Name",   // Trường sắp xếp
      bool ascending = true     // Thứ tự sắp xếp (tăng dần hoặc giảm dần)
  )
         {
+            // Kiểm tra giá trị hợp lệ của `pageNumber` và `pageSize`
+            if (pageNumber <= 0 || pageSize <= 0)
+            {
+                return BadRequest(new { Message = "PageNumber và PageSize phải lớn hơn 0." });
+            }
+
+            // Lấy dữ liệu và bao gồm liên kết với `Animal`
             var query = _context.Cage.Include(c => c.Animal).AsQueryable();
 
             // Tìm kiếm theo tên chuồng
-            if (!string.IsNullOrEmpty(searchTerm))
+            if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 query = query.Where(c => c.Name.Contains(searchTerm));
             }
 
-            // Sắp xếp theo trường được chỉ định
-            if (ascending)
+            // Sắp xếp
+            query = ascending switch
             {
-                switch (sortBy.ToLower())
+                true => sortBy.ToLower() switch
                 {
-                    case "name":
-                        query = query.OrderBy(c => c.Name);
-                        break;
-                    case "capacity":
-                        query = query.OrderBy(c => c.Capacity);
-                        break;
-                    case "currentoccupancy":
-                        query = query.OrderBy(c => c.CurrentOccupancy);
-                        break;
-                    default:
-                        query = query.OrderBy(c => c.Name); // Sắp xếp theo tên mặc định
-                        break;
-                }
-            }
-            else
-            {
-                switch (sortBy.ToLower())
+                    "capacity" => query.OrderBy(c => c.Capacity),
+                    "currentoccupancy" => query.OrderBy(c => c.CurrentOccupancy),
+                    _ => query.OrderBy(c => c.Name)
+                },
+                false => sortBy.ToLower() switch
                 {
-                    case "name":
-                        query = query.OrderByDescending(c => c.Name);
-                        break;
-                    case "capacity":
-                        query = query.OrderByDescending(c => c.Capacity);
-                        break;
-                    case "currentoccupancy":
-                        query = query.OrderByDescending(c => c.CurrentOccupancy);
-                        break;
-                    default:
-                        query = query.OrderByDescending(c => c.Name); // Sắp xếp theo tên mặc định
-                        break;
+                    "capacity" => query.OrderByDescending(c => c.Capacity),
+                    "currentoccupancy" => query.OrderByDescending(c => c.CurrentOccupancy),
+                    _ => query.OrderByDescending(c => c.Name)
                 }
-            }
+            };
 
-            // Phân trang
+            // Tổng số mục trước khi phân trang
             var totalItems = await query.CountAsync();
-            var cages = await query.Skip((pageNumber - 1) * pageSize)
-                                    .Take(pageSize)
-                                    .ToListAsync();
 
-            // Trả về kết quả phân trang
+            // Lấy dữ liệu theo phân trang
+            var cages = await query.Skip((pageNumber - 1) * pageSize)
+                                   .Take(pageSize)
+                                   .Select(c => new
+                                   {
+                                       c.Id,
+                                       c.Name,
+                                       c.Capacity,
+                                       c.CurrentOccupancy,
+                                       Animals = c.Animal.Select(a => new
+                                       {
+                                           a.Id,
+                                           a.Name,
+                                           a.BirthDate,
+                                           a.Type,
+                                           a.Gender
+                                       })
+                                   })
+                                   .ToListAsync();
+
+            // Trả về kết quả
             return Ok(new
             {
                 TotalItems = totalItems,
@@ -89,6 +92,35 @@ namespace QuanLyChanNuoi.Controllers
                 PageSize = pageSize,
                 Cages = cages
             });
+        }
+
+        public class CageDto1
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+           
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<CageDto1>> GetCage(int id)
+        {
+            var cage = await _context.Cage.Include(c => c.Animal)
+                                            .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (cage == null)
+            {
+                return NotFound(new { message = "Chuồng không tồn tại." });
+            }
+
+            // Chuyển đổi thành DTO để tránh vòng lặp
+            var cageDto = new CageDto1
+            {
+                Id = cage.Id,
+                Name = cage.Name,
+               
+            };
+
+            return Ok(cageDto);
         }
 
 

@@ -34,6 +34,7 @@ function LivestockList() {
     applyFilters,
     handleUpdate,
     handleDelete,
+    setLivestock
   } = useLivestock();
 
   const [cages, setCages] = useState([]);
@@ -88,6 +89,25 @@ function LivestockList() {
         `https://localhost:7185/api/cage/${selectedCage}/AddAnimals`,
         selectedLivestockIds
       );
+      const cageResponse = await axios.get(`https://localhost:7185/api/cage/${selectedCage} `);
+      const selectedCageName = cageResponse.data.name;  // Lấy tên chuồng từ API
+      setLivestock((prevLivestock) =>
+        prevLivestock.map((animal) =>
+          selectedLivestockIds.includes(animal.id)
+            ? { ...animal, cage: { id: selectedCage, name: selectedCageName } } // Cập nhật chuồng
+            : animal
+        )
+      );
+
+      setCages((prevCages) =>
+        prevCages.map((cage) =>
+          cage.id === selectedCage
+            ? {
+              ...cage,
+              currentOccupancy: cage.currentOccupancy + selectedLivestockIds.length, // Cập nhật số lượng vật nuôi
+            }
+            : cage
+        ));
       setNotification({ message: response.data || 'Gán vật nuôi thành công!', type: 'success' });
       setShowAssignCageModal(false);
       setSelectedLivestockIds([]);

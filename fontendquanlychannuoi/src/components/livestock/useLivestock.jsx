@@ -19,7 +19,7 @@ export const useLivestock = () => {
     weight: '',
     breed: '',
     cage: '',
-
+    withoutCage: false,
   });
 
   const fetchLivestock = async () => {
@@ -117,11 +117,15 @@ export const useLivestock = () => {
 
         const filterBirthDate = filters.birthRange ?
           animalBirthDate >= getDateRange(filters.birthRange) : true;
-        const filterCage = filters.cage
-          ? animal.cage?.name?.toLowerCase().includes(filters.cage.toLowerCase()) || false
-          : true;
+        const filterCage =
+          filters.cage && animal.cage
+            ? animal.cage.id === parseInt(filters.cage) || // Compare with cage ID
+            animal.cage.name?.toLowerCase() === filters.cage.toLowerCase() // Compare with cage name
+            : true;
 
-        console.log('loc', filterCage);
+        const filterNoCage = filters.withoutCage
+          ? animal.cage?.name === 'Chưa gán chuồng'
+          : true;
         return (
           (filters.name ? animal.name?.toLowerCase().includes(filters.name.toLowerCase()) : true) &&
           (filters.type ? animal.type?.toLowerCase().includes(filters.type.toLowerCase()) : true) &&
@@ -130,7 +134,7 @@ export const useLivestock = () => {
           (filters.status ? animal.status?.toLowerCase() === filters.status.toLowerCase() : true) &&
           (filters.weight ? animal.weight === parseInt(filters.weight) : true) &&
           (filters.breed ? animal.breed?.toLowerCase().includes(filters.breed.toLowerCase()) : true) &&
-          filterCage
+          filterCage && filterNoCage
         );
       });
 
@@ -165,6 +169,7 @@ export const useLivestock = () => {
     handleSort,
     handleUpdate,
     handleDelete,
-    applyFilters
+    applyFilters,
+    setLivestock,
   };
 };

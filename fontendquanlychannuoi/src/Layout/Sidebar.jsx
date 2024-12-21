@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { FaTimes, FaHome, FaPiggyBank, FaChartBar, FaFileAlt, FaMedkit, FaUser, FaCaretDown, FaSignOutAlt,FaPaw } from 'react-icons/fa';
-import { NavLink } from 'react-router-dom';
+import { NavLink,useNavigate } from 'react-router-dom';
 import cowIcon from '../assets/cow.png';
 import { useState } from 'react';
 
@@ -126,14 +126,25 @@ const SubmenuItem = styled(NavLink)`
   }
 `;
 
+
+
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [expandedMenus, setExpandedMenus] = useState({});
-
+  const id = localStorage.getItem('id');
+  const navigate = useNavigate();
   const toggleSubmenu = (index) => {
     setExpandedMenus((prev) => ({
       ...prev,
       [index]: !prev[index],
     }));
+  };
+  const handleLogout = () => {
+    // Clear localStorage or any session data
+    localStorage.removeItem('id');
+    localStorage.removeItem('token');
+  
+    // Redirect to login page
+    navigate('/Login');
   };
 
   const menuItems = [
@@ -182,7 +193,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         { text: 'Thông tin cá nhân', path: '/profile' },
         { text: 'Danh sách tài khoản', path: '/userlist' },
         { text: 'Đổi mật khẩu', path: '/forgot-password' },
-        { text: 'Đăng xuất', path: '/Login', icon: <FaSignOutAlt /> },
+        { text: 'Đăng xuất', path: 'Login', icon: <FaSignOutAlt />, onClick:handleLogout },
       ],
     },
   ];
@@ -205,7 +216,10 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       <NavMenu>
         {menuItems.map((item, index) => (
           <div key={index}>
-            <NavItem to={item.path} isOpen={isOpen} onClick={() => item.submenu && toggleSubmenu(index)}>
+            <NavItem to={item.path} isOpen={isOpen} onClick={() => {
+        if (item.onClick) item.onClick();  // Kiểm tra nếu có hàm logout thì gọi
+        else if (item.submenu) toggleSubmenu(index);
+      }}>
             <span className="icon">{item.icon}</span>
               {isOpen && <span>{item.text}</span>}
               {item.submenu && <FaCaretDown style={{ transform: expandedMenus[index] ? 'rotate(180deg)' : 'none' }} />}
