@@ -1,0 +1,39 @@
+/* Cập nhật CSS để tránh tràn thẻ tab */
+.cage-dashboard {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+  }
+  
+  /* Đảm bảo các nội dung trong form không bị tràn */
+  .cagedashboard-content {
+    padding: 16px;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    width: 100%;
+  }
+  
+  /* Chỉnh sửa để đảm bảo Tabs không tràn */
+  .MuiTabs-root {
+    width: 100%;
+    overflow-x: auto;  /* Cho phép cuộn ngang nếu các tab vượt quá chiều rộng */
+  }
+  
+  .MuiTab-root {
+    flex-shrink: 0;  /* Ngăn các tab bị co lại */
+    white-space: nowrap;  /* Ngăn chữ trong tab bị xuống dòng */
+  }
+  
+  /* Đảm bảo phần hiển thị của form không bị tràn */
+  form {
+    width: 100%;
+    overflow-x: hidden; /* Ngăn tràn ngang */
+  }
+  
+  /* Đảm bảo Grid trong form có chiều rộng hợp lý */
+  .MuiGrid-root {
+    width: 100%;
+  }
+  

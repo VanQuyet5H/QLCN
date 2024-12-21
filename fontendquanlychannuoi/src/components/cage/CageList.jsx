@@ -2,9 +2,11 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  TableSortLabel, TextField, MenuItem, Select, InputLabel, FormControl, Pagination, Grid,Typography
+  TableSortLabel, TextField, MenuItem, Select, InputLabel, FormControl, Pagination, Grid, Typography, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Button
 } from "@mui/material";
-
+import AddIcon from '@mui/icons-material/Add';
+import CreateCage from './CreateCage';  // Import CreateCage component
+import CloseIcon from '@mui/icons-material/Close';
 const CageList = () => {
   const [cages, setCages] = useState([]);
   const [page, setPage] = useState(1);
@@ -13,7 +15,13 @@ const CageList = () => {
   const [sortBy, setSortBy] = useState("Name");
   const [ascending, setAscending] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
-
+  const [openModal, setOpenModal] = useState(false);
+  const handleAddCage = () => {
+    setOpenModal(true);  // Open the modal when the button is clicked
+  };
+  const handleCloseModal = () => {
+    setOpenModal(false);  // Close the modal
+  };
   const fetchCages = async () => {
     try {
       const response = await axios.get("https://localhost:7185/api/Cage", {
@@ -25,20 +33,20 @@ const CageList = () => {
           ascending: ascending
         }
       });
-  
+
       console.log("API Response:", response.data); // In ra toàn bộ dữ liệu trả về
-  
+
       const data = response.data;
       // Sử dụng đúng trường 'cages' từ API
       setCages(data.cages); // Cập nhật mảng chuồng
-  
+
       // Kiểm tra nếu TotalItems tồn tại và đặt tổng số mục
       setTotalItems(data.totalItems || 0);
     } catch (error) {
       console.error("Error fetching cages:", error);
     }
   };
-  
+
 
   useEffect(() => {
     fetchCages();
@@ -64,9 +72,59 @@ const CageList = () => {
 
   return (
     <div>
-        <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" gutterBottom>
         Quản lý Chuồng
       </Typography>
+      <IconButton
+        color="primary"
+        onClick={handleAddCage}
+        style={{
+          marginBottom: "20px",
+          padding: "10px", // Tăng kích thước nút để nhìn rõ hơn
+          borderRadius: "8px", // Bo góc của nút
+          backgroundColor: "#1976d2", // Màu nền của nút
+          color: "#fff", // Màu icon và chữ
+          display: "flex",
+          alignItems: "center", // Đảm bảo nội dung nằm giữa
+          justifyContent: "center",
+          fontWeight: "bold", // Làm cho chữ đậm
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", // Thêm bóng đổ cho nút
+        }}
+      >
+        <AddIcon style={{ marginRight: "8px" }} /> {/* Thêm khoảng cách giữa icon và chữ */}
+        <Typography variant="body1">Nhập thông tin chuồng</Typography>
+      </IconButton>
+
+      <Dialog open={openModal} onClose={handleCloseModal} sx={{
+        '& .MuiDialog-paper': {
+          maxHeight: '90vh', // Giới hạn chiều cao modal
+          overflow: 'hidden', // Loại bỏ cuộn
+          padding: '16px', // Đảm bảo nội dung có khoảng cách hợp lý
+        },
+      }} >
+        <DialogContent sx={{
+          padding: 0, // Loại bỏ padding dư thừa nếu cần
+          overflow: 'hidden', // Đảm bảo không xuất hiện thanh cuộn
+        }}>
+          <CreateCage /> {/* Add the CreateCage component inside the modal */}
+        </DialogContent>
+        <DialogActions sx={{ position: 'absolute', top: 0, right: 0, zIndex: 1 }}>
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={handleCloseModal}
+            aria-label="close"
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 20,
+              zIndex: 2, // Ensure the icon is always above content
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogActions>
+      </Dialog>
       <Grid container spacing={2} style={{ marginBottom: "20px" }}>
         <Grid item xs={12} sm={6}>
           <TextField

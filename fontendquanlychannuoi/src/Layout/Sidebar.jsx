@@ -155,7 +155,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       submenu: [
         { text: 'Danh sách đàn', path: '/livestockdashdoard' },
         { text: 'Theo dõi tăng trưởng', path: '/growth' },
-        { text: 'Danh sách chuồng', path: '/danhsachchuong' },
+        { text: 'Danh sách chuồng', path: '/menucage' },
       ],
     },
     {
@@ -163,7 +163,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       text: 'Thú y',
       submenu: [
         { text: 'Lịch tiêm phòng', path: '/vaccinations' },
-        { text: 'Vật nuôi bị bệnh', path: '/sick-animals' },
+        { text: 'Sức Khỏe Vật Nuôi', path: '/healthanimaldashboard' },
         { text: 'Kho Thuốc', path: '/medication-stock' },
         { text: 'Điều trị', path: '/treatment' },
         { text: 'Bệnh thường gặp', path: '/treatmentguids' },

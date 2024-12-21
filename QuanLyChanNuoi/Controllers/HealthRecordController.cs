@@ -206,18 +206,11 @@ namespace QuanLyChanNuoi.Controllers
         public async Task<IActionResult> GetMedicationsAndHealthRecords()
         {
             // Lấy danh sách thuốc và loại bỏ trùng lặp
-            var medications = await _context.TreatmentMedication
-                .Join(
-                    _context.Medication,
-                    tm => tm.MedicationId,
-                    m => m.Id,
-                    (tm, m) => new
-                    {
-                        MedicineName = m.Name
-                    }
-                )
-                .Distinct()
-                .ToListAsync();
+            var medications = await _context.Medication
+                            .Select(m => m.Name)  // Chọn tên thuốc
+                            .Distinct()  // Lọc các tên thuốc duy nhất
+                            .ToListAsync();
+
 
             // Lấy danh sách HealthRecord ID va ten vat nuoi
             var healthRecords = await _context.HealthRecord.Join(_context.Animal,tm=>tm.AnimalId,m=>m.Id, (tm, m) => new
@@ -236,8 +229,138 @@ namespace QuanLyChanNuoi.Controllers
             };
 
             return Ok(result);
+
+        }
+        //danh sách vật nuôi điều trị(ok)
+        [HttpGet("with-health-records")]
+        public async Task<IActionResult> GetAnimalsWithHealthRecords(
+    int page = 1,
+    int size = 10,
+    string searchQuery = "")
+        {
+            // Tạo truy vấn cơ bản
+            var query = _context.Animal
+                .Where(a => _context.HealthRecord.Any(hr => hr.AnimalId == a.Id)); // Kiểm tra nếu có bản ghi sức khỏe liên quan
+
+            // Nếu có tìm kiếm theo tên hoặc ID
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                query = query.Where(a => a.Name.Contains(searchQuery) || a.Id.ToString().Contains(searchQuery));
+            }
+
+            // Tính toán phân trang
+            var totalRecords = await query.CountAsync();
+            var animals = await query
+                .Skip((page - 1) * size)  // Bỏ qua các bản ghi trước trang hiện tại
+                .Take(size)  // Lấy số lượng bản ghi theo kích thước trang
+                .Select(a => new AnimalResponse
+                {
+                    Id = a.Id,
+                    Name = a.Name,
+                    Type = a.Type,
+                    Gender = a.Gender,
+                    BirthDate = a.BirthDate,
+                    Status = a.Status,
+                    Weight = a.Weight,
+                    Breed = a.Breed,
+                    CreatedAt = a.CreatedAt
+                })
+                .OrderBy(a => a.Name)  // Sắp xếp theo tên vật nuôi
+                .ToListAsync();
+
+            // Trả về kết quả với tổng số bản ghi và dữ liệu vật nuôi
+            var result = new
+            {
+                TotalRecords = totalRecords,
+                Animals = animals
+            };
+
+            return Ok(result);
         }
 
+        // API lấy lịch sử khám chữa bệnh của vật nuôi theo ID vật nuôi(chưa sd)
+        [HttpGet("history/{animalId}")]
+        public async Task<ActionResult<IEnumerable<HealthRecordHistoryDto>>> GetAnimalHistory(int animalId)
+        {
+            var historyRecords = await _context.HealthRecord
+                .Where(hr => hr.AnimalId == animalId)
+                .Include(hr => hr.User)
+                .Include(hr => hr.Animal) // Lấy thông tin vật nuôi liên quan
+                .Select(hr => new HealthRecordHistoryDto
+                {
+                    Id = hr.Id,
+                    AnimalId = hr.AnimalId,
+                    AnimalName = hr.Animal.Name,
+                    CheckupDate = hr.CheckupDate,
+                    Diagnosis = hr.Diagnosis,
+                    Treatment = hr.Treatment,
+                    Medication = hr.Medication,
+                    Notes = hr.Notes,
+                    UserFullName = hr.User.FullName
+                })
+                .ToListAsync();
+
+            if (historyRecords == null || !historyRecords.Any())
+            {
+                return NotFound("No history found for this animal.");
+            }
+
+            return Ok(historyRecords);
+        }
+        //thống kê sức theo dõi sức khỏe vật nuoi
+        [HttpGet("thongketheodoisuckhoevatnuoi")]
+        public IActionResult GetHealthStatistics(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            // Dữ liệu mẫu
+            var statistics = new HealthStatistics
+            {
+                TotalAnimals = 150,
+                TotalSickAnimals = 20,
+                TotalHealthyAnimals = 130,
+                SickAnimals = new List<int> { 1, 2, 5, 7, 10 },
+                HealthyAnimals = new List<int> { 3, 4, 6, 8, 9, 11, 12, 13, 14, 15 },
+                TotalRecords = 200
+            };
+
+            // Trả về dữ liệu mẫu
+            return Ok(statistics);
+        }
+        public class HealthStatistics
+        {
+            public int TotalAnimals { get; set; }
+            public int TotalSickAnimals { get; set; }
+            public int TotalHealthyAnimals { get; set; }
+            public List<int> SickAnimals { get; set; }
+            public List<int> HealthyAnimals { get; set; }
+            public int TotalRecords { get; set; }
+        }
+
+
+        public class AnimalResponse
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public string Type { get; set; }
+            public string Gender { get; set; }
+            public DateTime BirthDate { get; set; }
+            public string Status { get; set; }
+            public decimal? Weight { get; set; }
+            public string Breed { get; set; }
+            public DateTime CreatedAt { get; set; }
+        }
+
+        public class HealthRecordHistoryDto
+        {
+            public int Id { get; set; }
+            public int AnimalId { get; set; }
+            public string AnimalName { get; set; }
+            public DateTime CheckupDate { get; set; }
+            public string Diagnosis { get; set; }
+            public string Treatment { get; set; }
+            public string Medication { get; set; }
+            public string Notes { get; set; }
+            public string UserFullName { get; set; }
+        }
 
         public class TreatmentCreateDto
         {

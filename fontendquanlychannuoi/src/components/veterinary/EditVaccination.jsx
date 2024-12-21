@@ -94,15 +94,7 @@ const EditVaccination = () => {
                                 value={vaccination.vaccinationDate ? new Date(vaccination.vaccinationDate).toISOString().split('T')[0] : ''}
                                 onChange={handleInputChange}
                                 name="vaccinationDate"
-                                sx={{
-                                    mb: 2,               // Margin bottom
-                                    minWidth: '220px',   // Đặt min-width là 420px
-                                    height: '60px',      // Đặt chiều cao là 60px
-                                    '& input': {
-                                      height: '60px',
-                                      minWidth: '220px',    // Đảm bảo chiều cao của input không bị thu hẹp
-                                    },
-                                  }}  // Thêm minWidth
+                                sx={{ mb: 2 }}
                             />
 
                             <TextField

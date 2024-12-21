@@ -149,7 +149,6 @@ namespace QuanLyChanNuoi.Controllers
                 Capacity = cageDto.Capacity,
                 CurrentOccupancy = cageDto.CurrentOccupancy,
                 IsAvailable = cageDto.IsAvailable,
-                MaintenanceDate = cageDto.MaintenanceDate,
                 Notes = cageDto.Notes,
                 EnvironmentalConditions = cageDto.EnvironmentalConditions
             };
@@ -312,7 +311,6 @@ namespace QuanLyChanNuoi.Controllers
             public int Capacity { get; set; } // Sức chứa tối đa
             public int CurrentOccupancy { get; set; } // Số lượng vật nuôi hiện tại
             public bool IsAvailable { get; set; } // Trạng thái sẵn sàng
-            public DateTime? MaintenanceDate { get; set; } // Ngày bảo trì gần nhất
             public string EnvironmentalConditions { get; set; } = "Đảm bảo tiêu chuẩn vệ sinh.";
             public string Notes { get; set; } // Ghi chú
         }

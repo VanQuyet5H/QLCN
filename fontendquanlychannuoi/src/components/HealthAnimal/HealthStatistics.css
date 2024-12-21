@@ -1,0 +1,58 @@
+.container {
+    width: 80%;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+  }
+  
+  .filters {
+    margin-bottom: 20px;
+  }
+  
+  .filters label {
+    margin-right: 10px;
+  }
+  
+  .filters input {
+    margin-right: 10px;
+  }
+  
+  .filters button {
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .filters button:hover {
+    background-color: #45a049;
+  }
+  
+  .report {
+    margin-top: 20px;
+  }
+  
+  .report table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .report table th, .report table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+  
+  .report table th {
+    background-color: #f2f2f2;
+  }
+  
+  .report ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .report ul li {
+    margin: 5px 0;
+  }
+  

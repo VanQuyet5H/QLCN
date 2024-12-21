@@ -13,7 +13,7 @@ import {
   IconButton,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import CloseIcon  from '@mui/icons-material/Close';
+import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
 
 const CreateTreatmentForm = () => {
@@ -32,8 +32,8 @@ const CreateTreatmentForm = () => {
   useEffect(() => {
     const fetchTreatmentData = async () => {
       try {
-        const response = await fetch('https://localhost:7185/laydanhsachthuocvahealthrecord');
-        const data = await response.json();
+        const response = await axios.get(`https://localhost:7185/laydanhsachthuocvahealthrecord`);
+        const data = await response.data;
         setMedications(data.medications);
         setHealthRecords(data.healthRecords);
       } catch (error) {
@@ -221,16 +221,21 @@ const CreateTreatmentForm = () => {
                   <InputLabel>Tên thuốc</InputLabel>
                   <Select
                     name="name"
-                    value={medicine.name}
+                    value={medicine.name || ""} // Đảm bảo value có giá trị hợp lệ
                     onChange={(e) => handleMedicineChange(index, e)}
                     label="Tên thuốc"
                   >
-                    {medications.map((med) => (
-                      <MenuItem key={med.medicineName} value={med.medicineName}>
-                        {med.medicineName}
-                      </MenuItem>
-                    ))}
+                    {medications.length > 0 ? (
+                      medications.map((med, idx) => (
+                        <MenuItem key={med + idx} value={med}>
+                          {med} {/* Hiển thị tên thuốc */}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem disabled>Không có thuốc</MenuItem> // Nếu không có tên thuốc
+                    )}
                   </Select>
+
                 </FormControl>
               </Grid>
               <Grid item xs={3}>
