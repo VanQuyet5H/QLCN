@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { FaCog, FaUser, FaSignOutAlt, FaBell } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const HeaderContainer = styled.header`
@@ -169,6 +169,7 @@ function Header({ isExpanded }) {
   const [showNotificationMenu, setShowNotificationMenu] = useState(false);
 
   const id = localStorage.getItem('id');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -215,6 +216,16 @@ function Header({ isExpanded }) {
     setShowSettingsMenu(false);
   };
 
+  // Logout function
+  const handleLogout = () => {
+    // Clear localStorage or any session data
+    localStorage.removeItem('id');
+    localStorage.removeItem('token');
+
+    // Redirect to login page
+    navigate('/Login');
+  };
+
   return (
     <HeaderContainer isExpanded={isExpanded}>
       <HeaderLeft>
@@ -222,24 +233,22 @@ function Header({ isExpanded }) {
       </HeaderLeft>
 
       <HeaderRight>
-      <div style={{ position: 'relative' }}>
-    <IconButton title="Thông báo" onClick={() => setShowNotificationMenu(!showNotificationMenu)}>
-      <FaBell />
-      <NotificationBadge>{notifications.length}</NotificationBadge>
-    </IconButton>
+        <div style={{ position: 'relative' }}>
+          <IconButton title="Thông báo" onClick={() => setShowNotificationMenu(!showNotificationMenu)}>
+            <FaBell />
+            <NotificationBadge>{notifications.length}</NotificationBadge>
+          </IconButton>
 
-    {showNotificationMenu && (
-      <DropdownMenu>
-        {notifications.map((notification, index) => (
-          <MenuItem key={index} onClick={() => handleNotificationClick(notification)}>
-            <FaBell /> {notification.title}
-          </MenuItem>
-        ))}
-      </DropdownMenu>
-    )}
-  </div>
-
-        
+          {showNotificationMenu && (
+            <DropdownMenu>
+              {notifications.map((notification, index) => (
+                <MenuItem key={index} onClick={() => handleNotificationClick(notification)}>
+                  <FaBell /> {notification.title}
+                </MenuItem>
+              ))}
+            </DropdownMenu>
+          )}
+        </div>
 
         <div style={{ position: 'relative' }}>
           <IconButton title="Cài đặt hệ thống" onClick={() => setShowSettingsMenu(!showSettingsMenu)}>
@@ -252,7 +261,7 @@ function Header({ isExpanded }) {
                 <FaCog /> <NoUnderlineLink to="/settings/general">Cài đặt chung</NoUnderlineLink>
               </MenuItem>
               <MenuItem onClick={() => handleSettingsClick('notifications')}>
-                <FaBell />  <NoUnderlineLink to="/settings/notifications">Cài đặt thông báo</NoUnderlineLink>
+                <FaBell /> <NoUnderlineLink to="/settings/notifications">Cài đặt thông báo</NoUnderlineLink>
               </MenuItem>
               <MenuItem onClick={() => handleSettingsClick('security')}>
                 <FaUser /> <NoUnderlineLink to="/settings/security">Bảo mật</NoUnderlineLink>
@@ -281,7 +290,7 @@ function Header({ isExpanded }) {
               <MenuItem onClick={() => handleSettingsClick('profile')}>
                 <FaUser /> <NoUnderlineLink to="/profile">Thông tin cá nhân</NoUnderlineLink>
               </MenuItem>
-              <MenuItem onClick={() => console.log('Logging out...')}>
+              <MenuItem onClick={handleLogout}> {/* Logout functionality */}
                 <FaSignOutAlt /> Đăng xuất
               </MenuItem>
             </DropdownMenu>

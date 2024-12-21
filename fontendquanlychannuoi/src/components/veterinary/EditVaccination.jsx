@@ -35,7 +35,7 @@ const EditVaccination = () => {
     };
 
     return (
-        <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
+        <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md" >
             <DialogTitle>
                 <Typography variant="h6" align="center" sx={{ fontWeight: 'bold' }}>
                     Cập Nhật Thông Tin Tiêm Chủng
