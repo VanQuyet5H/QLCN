@@ -22,11 +22,9 @@ import CreateTreatmentForm from '../components/HealthAnimal/CreateTreatmentForm'
 import VaccinationForm from '../components/veterinary/VaccinationForm';
 import EditVaccination from '../components/veterinary/EditVaccination';
 import DietCalculator from '../components/Feed/DietCalculator';
-import CreateCage from '../components/cage/CreateCage';
-import GetCage from '../components/cage/GetCage';
-import CageList from '../components/cage/CageList';
 import AddAnimalCage from '../components/cage/AddAnimalToCage';
-
+import MenuCage from '../components/cage/CageDashboard';
+import HealthAnimalDashboard from "../components/HealthAnimal/HealthAnimalDashboard";
 function Home() {
   const navigate = useNavigate();
   useEffect(() => {
@@ -47,6 +45,7 @@ function Home() {
       <Routes>
         <Route path="/home" element={<Dashboard />} />
         <Route path="/livestockdashdoard" element={<LivestockDashboard />} />
+        <Route path="/menucage" element={<MenuCage />} />
         <Route path="/growth" element={<GrowthTracking />} />
         <Route path="/breeds" element={<BreedList />} />
         <Route path="/reports/analysis" element={<DataAnalysis />} />
@@ -66,10 +65,8 @@ function Home() {
         <Route path="/add-schedule" element={<VaccinationForm />} />
         <Route path="/edit-schedule/:id" element={<EditVaccination />} />
         <Route path="/DietCalculator" element={<DietCalculator />} />
-        <Route path="/nhapchuongvatnuoi" element={<CreateCage />} />
-        <Route path="/timchuong" element={<GetCage />} />
-        <Route path="/danhsachchuong" element={<CageList />} />
         <Route path="/themvatnuoivaochuong" element={<AddAnimalCage />} />
+        <Route path="/healthanimaldashboard" element={<HealthAnimalDashboard />} />
       </Routes>
     </Layout>
   );

@@ -109,65 +109,76 @@ function LivestockTable({ livestock, onSort, sortConfig, onView, onEdit, onDelet
         </TableRow>
       </TableHead>
       <TableBody>
-        {livestock.map((animal, index) => (
-          <TableRow
-            key={animal.id}
+  {livestock.length === 0 ? (
+    <TableRow>
+      <TableCell colSpan={9} align="center">
+        <Typography variant="h6" color="textSecondary">
+          Không có dữ liệu vật nuôi nào.
+        </Typography>
+      </TableCell>
+    </TableRow>
+  ) : (
+    livestock.map((animal, index) => (
+      <TableRow
+        key={animal.id}
+        sx={{
+          backgroundColor: index % 2 === 0 ? '#fafafa' : '#ffffff',
+          '&:hover': {
+            backgroundColor: '#f1f1f1',
+          },
+        }}
+      >
+        <TableCell padding="checkbox">
+          <Checkbox
+            checked={selectedLivestockIds.includes(animal.id)}
+            onChange={(event) => {
+              event.stopPropagation();
+              handleSelectLivestock(animal.id);
+            }}
+          />
+        </TableCell>
+        <TableCell>{animal.id}</TableCell>
+        <TableCell>{animal.name}</TableCell>
+        <TableCell>{animal.cage ? animal.cage.name : 'Chưa có'}</TableCell>
+        <TableCell>{animal.type}</TableCell>
+        <TableCell>{animal.gender}</TableCell>
+        <TableCell>{formatDate(animal.birthDate)}</TableCell>
+        <TableCell>
+          <Typography
+            variant="body2"
             sx={{
-              backgroundColor: index % 2 === 0 ? '#fafafa' : '#ffffff',
-              '&:hover': {
-                backgroundColor: '#f1f1f1',
-              },
+              color: animal.status === 'Khỏe mạnh' ? 'green' : 'orange',
+              fontWeight: 'bold',
             }}
           >
-            <TableCell padding="checkbox">
-              <Checkbox
-                checked={selectedLivestockIds.includes(animal.id)}
-                onChange={(event) => {
-                  event.stopPropagation();
-                  handleSelectLivestock(animal.id);
-                }}
-              />
-            </TableCell>
-            <TableCell>{animal.id}</TableCell>
-            <TableCell>{animal.name}</TableCell>
-            <TableCell>{animal.cage ? animal.cage.name : 'Chưa có'}</TableCell>
-            <TableCell>{animal.type}</TableCell>
-            <TableCell>{animal.gender}</TableCell>
-            <TableCell>{formatDate(animal.birthDate)}</TableCell>
-            <TableCell>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: animal.status === 'Khỏe mạnh' ? 'green' : 'orange',
-                  fontWeight: 'bold',
-                }}
-              >
-                {animal.status}
-              </Typography>
-            </TableCell>
-            <TableCell>{animal.weight}</TableCell>
-            <TableCell>
-              <Box display="flex" gap={1}>
-                <Tooltip title="Xem chi tiết">
-                  <IconButton color="primary" onClick={() => onView(animal)}>
-                    <FaEye />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Chỉnh sửa">
-                  <IconButton color="warning" onClick={() => onEdit(animal)}>
-                    <FaEdit />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Xóa">
-                  <IconButton color="error" onClick={() => onDelete(animal)}>
-                    <FaTrash />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
+            {animal.status}
+          </Typography>
+        </TableCell>
+        <TableCell>{animal.weight}</TableCell>
+        <TableCell>
+          <Box display="flex" gap={1}>
+            <Tooltip title="Xem chi tiết">
+              <IconButton color="primary" onClick={() => onView(animal)}>
+                <FaEye />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Chỉnh sửa">
+              <IconButton color="warning" onClick={() => onEdit(animal)}>
+                <FaEdit />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Xóa">
+              <IconButton color="error" onClick={() => onDelete(animal)}>
+                <FaTrash />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </TableCell>
+      </TableRow>
+    ))
+  )}
+</TableBody>
+
     </Table>
   </TableContainer>
 </Box>
