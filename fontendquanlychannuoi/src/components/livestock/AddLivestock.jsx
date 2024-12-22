@@ -25,6 +25,7 @@ function AddLivestock({ onClose }) {
     weight: "",
     breed: "",
     otherType: "", // Thêm trường otherType
+    otherStatus: "",
   });
 
   const [notification, setNotification] = useState({ message: "", type: "" });
@@ -36,7 +37,7 @@ function AddLivestock({ onClose }) {
     if (!formData.type && !formData.otherType) newErrors.type = "Vui lòng chọn loại vật nuôi hoặc nhập loại khác";
     if (!formData.gender) newErrors.gender = "Vui lòng chọn giới tính";
     if (!formData.birthDate) newErrors.birthDate = "Vui lòng nhập ngày sinh";
-    if (!formData.status) newErrors.status = "Vui lòng nhập trạng thái";
+    if (!formData.status && !formData.otherStatus) newErrors.status = "Vui lòng nhập trạng thái";
     if (!formData.weight) newErrors.weight = "Vui lòng nhập cân nặng";
     if (!formData.breed) newErrors.breed = "Vui lòng chọn giống";
 
@@ -47,10 +48,12 @@ function AddLivestock({ onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const finalType = formData.type === "Other" && formData.otherType ? formData.otherType : formData.type;
+    const finalStatus = formData.status === "Other" && formData.otherStatus ? formData.otherStatus : formData.status;
     if (validateForm()) {
       const formattedData = {
         ...formData,
         type: finalType,
+        status: finalStatus,
         weight: parseFloat(formData.weight),
         createdAt: new Date().toISOString(),
       };
@@ -68,37 +71,20 @@ function AddLivestock({ onClose }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     if (name === "type" && value !== "Other") {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-        otherType: "", // Reset otherType nếu không chọn "Khác"
-      }));
-    } else if (name === "type" && value === "Other") {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value, // Giữ lại giá trị "Other"
-      }));
-    } else if (name === "otherType") {
-      setFormData((prev) => ({
-        ...prev,
-        otherType: value, // Cập nhật giá trị "otherType" khi người dùng nhập vào
-      }));
+      setFormData((prev) => ({ ...prev, [name]: value, otherType: "" }));
+    } else if (name === "status" && value !== "Other") {
+      setFormData((prev) => ({ ...prev, [name]: value, otherStatus: "" }));
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
 
-    // Reset lỗi cho trường này nếu có
     if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
+
 
   const handleCancel = () => {
     setFormData({
@@ -110,6 +96,7 @@ function AddLivestock({ onClose }) {
       weight: "",
       breed: "",
       otherType: "", // Reset otherType khi hủy
+      otherStatus: "",
     });
     if (onClose) {
       onClose(); // Đóng form nếu có hàm onClose
@@ -215,17 +202,40 @@ function AddLivestock({ onClose }) {
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Trạng thái *"
-              variant="outlined"
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              error={!!errors.status}
-              helperText={errors.status}
-            />
+            <FormControl fullWidth variant="outlined" error={!!errors.status}>
+              <InputLabel id="status-label">Trạng thái *</InputLabel>
+              <Select
+                labelId="status-label"
+                id="status"
+                value={formData.status}
+                onChange={handleChange}
+                label="Trạng thái"
+                name="status"
+              >
+                <MenuItem value="">Chọn trạng thái</MenuItem>
+                <MenuItem value="Healthy">Khỏe mạnh</MenuItem>
+                <MenuItem value="Sick">Ốm</MenuItem>
+                <MenuItem value="Recovering">Đang hồi phục</MenuItem>
+                <MenuItem value="Other">Khác</MenuItem>
+              </Select>
+              {errors.status && <Typography color="error">{errors.status}</Typography>}
+            </FormControl>
           </Grid>
+
+          {formData.status === "Other" && (
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Nhập trạng thái khác"
+                variant="outlined"
+                name="otherStatus"
+                value={formData.otherStatus}
+                onChange={handleChange}
+                error={!!errors.otherStatus}
+                helperText={errors.otherStatus}
+              />
+            </Grid>
+          )}
 
           <Grid item xs={12} sm={6}>
             <TextField

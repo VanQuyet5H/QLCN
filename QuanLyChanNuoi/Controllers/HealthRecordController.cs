@@ -148,7 +148,7 @@ namespace QuanLyChanNuoi.Controllers
                 Name = treatmentDto.Name,
                 Description = treatmentDto.Description,
                 Duration = treatmentDto.Duration,
-                Effectiveness = treatmentDto.Effectiveness, // Đảm bảo Effectiveness được truyền
+                Effectiveness = treatmentDto.Effectiveness,
                 HealthRecordId = treatmentDto.HealthRecordId,
                 TreatmentMedication = new List<TreatmentMedication>()
             };
@@ -156,25 +156,66 @@ namespace QuanLyChanNuoi.Controllers
             // Tạo các TreatmentMedication từ MedicineDto
             foreach (var medicine in treatmentDto.Medicines)
             {
-                var medication = await _context.Medication
-                    .FirstOrDefaultAsync(m => m.Name == medicine.Name); // Tìm thuốc trong cơ sở dữ liệu
+                // Sử dụng join để lấy thông tin thuốc và tồn kho
+                var medicationWithInventory = await (from m in _context.Medication
+                                                     join i in _context.Inventory on m.Id equals i.MedicationId
+                                                     where m.Name == medicine.Name
+                                                     select new
+                                                     {
+                                                         Medication = m,
+                                                         Inventory = i
+                                                     }).FirstOrDefaultAsync();
 
-                if (medication == null)
+                if (medicationWithInventory == null)
                 {
-                    return BadRequest(new { Error = $"Medication with name {medicine.Name} not found" });
+                    return BadRequest(new { Error = $"Medication with ID {medicine.Name} not found in inventory" });
                 }
 
+                var medication = medicationWithInventory.Medication;
+                var inventory = medicationWithInventory.Inventory;
+
+                // Kiểm tra số lượng tồn kho
+                if (inventory.Quantity < medicine.Dosage)
+                {
+                    return BadRequest(new
+                    {
+                        Error = $"Not enough stock for medication {medication.Name}. Available: {inventory.Quantity}, Required: {medicine.Dosage}"
+                    });
+                }
+
+                // Trừ số lượng tồn kho
+                // Nếu medicine.Dosage là double hoặc decimal và bạn muốn làm tròn trước khi trừ
+                int dosageToSubtract = (int)Math.Floor(medicine.Dosage); // Làm tròn xuống
+
+                // Nếu muốn làm tròn đến số nguyên gần nhất
+                // int dosageToSubtract = (int)Math.Round(medicine.Dosage);
+
+                if (inventory.Quantity < dosageToSubtract)
+                {
+                    return BadRequest(new
+                    {
+                        Error = $"Not enough stock for medication {medication.Name}. Available: {inventory.Quantity}, Required: {dosageToSubtract}"
+                    });
+                }
+
+                // Trừ số lượng tồn kho
+                inventory.Quantity -= dosageToSubtract;
+
+
+                // Thêm vào danh sách TreatmentMedication
                 treatment.TreatmentMedication.Add(new TreatmentMedication
                 {
-                    MedicationId = medication.Id, // Ánh xạ MedicationId
-                    Dosage = medicine.Dosage,     // Ánh xạ liều lượng
-                    Frequency = medicine.Frequency ?? "1 lần/ngày"  // Tần suất sử dụng mặc định nếu không có
+                    MedicationId = medication.Id,
+                    Dosage = medicine.Dosage,
+                    Frequency = medicine.Frequency ?? "1 lần/ngày"
                 });
             }
 
+
+
             try
             {
-                // Lưu vào cơ sở dữ liệu
+                // Lưu thông tin điều trị và cập nhật kho thuốc
                 _context.Treatment.Add(treatment);
                 await _context.SaveChangesAsync();
 
@@ -198,17 +239,43 @@ namespace QuanLyChanNuoi.Controllers
             }
             catch (Exception ex)
             {
-                // Xử lý lỗi nếu có
                 return StatusCode(500, new { Error = "An error occurred while saving the treatment", Details = ex.Message });
             }
         }
+        [HttpGet("api/inventory/{medicineName}")]
+        public async Task<IActionResult> GetMedicineQuantity(string medicineName)
+        {
+            // Lấy số lượng thuốc từ cơ sở dữ liệu, kết hợp giữa Inventory và Medication
+            var medicationData = await (from inv in _context.Inventory
+                                        join med in _context.Medication on inv.MedicationId equals med.Id
+                                        where med.Name.ToLower() == medicineName.ToLower() // So sánh không phân biệt hoa/thường
+                                        select new
+                                        {
+                                            med.Name,  // Tên thuốc
+                                            inv.Quantity // Số lượng thuốc
+                                        }).FirstOrDefaultAsync();
+
+            // Kiểm tra nếu không tìm thấy thuốc
+            if (medicationData == null)
+            {
+                return NotFound(new { Message = "Thuốc không có trong kho" });
+            }
+
+            // Trả về thông tin số lượng thuốc
+            return Ok(new
+            {
+                MedicineName = medicationData.Name,
+                Quantity = medicationData.Quantity
+            });
+        }
+
         [HttpGet("laydanhsachthuocvahealthrecord")]
         public async Task<IActionResult> GetMedicationsAndHealthRecords()
         {
             // Lấy danh sách thuốc và loại bỏ trùng lặp
             var medications = await _context.Medication
-                            .Select(m => m.Name)  // Chọn tên thuốc
-                            .Distinct()  // Lọc các tên thuốc duy nhất
+                            .Select(m => new { m.Name, m.Unit })  // Chọn cả tên thuốc và đơn vị
+                            .Distinct()  // Lọc các cặp tên thuốc và đơn vị duy nhất
                             .ToListAsync();
 
 
@@ -386,7 +453,7 @@ namespace QuanLyChanNuoi.Controllers
         public class MedicineDto
         {
             public string Name { get; set; }
-            public string Dosage { get; set; }
+            public double Dosage { get; set; }
             public string Frequency { get; set; }
         }
 

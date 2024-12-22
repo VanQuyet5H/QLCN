@@ -75,25 +75,7 @@ const CageList = () => {
       <Typography variant="h4" gutterBottom>
         Quản lý Chuồng
       </Typography>
-      <IconButton
-        color="primary"
-        onClick={handleAddCage}
-        style={{
-          marginBottom: "20px",
-          padding: "10px", // Tăng kích thước nút để nhìn rõ hơn
-          borderRadius: "8px", // Bo góc của nút
-          backgroundColor: "#1976d2", // Màu nền của nút
-          color: "#fff", // Màu icon và chữ
-          display: "flex",
-          alignItems: "center", // Đảm bảo nội dung nằm giữa
-          justifyContent: "center",
-          fontWeight: "bold", // Làm cho chữ đậm
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", // Thêm bóng đổ cho nút
-        }}
-      >
-        <AddIcon style={{ marginRight: "8px" }} /> {/* Thêm khoảng cách giữa icon và chữ */}
-        <Typography variant="body1">Nhập thông tin chuồng</Typography>
-      </IconButton>
+      
 
       <Dialog open={openModal} onClose={handleCloseModal} sx={{
         '& .MuiDialog-paper': {

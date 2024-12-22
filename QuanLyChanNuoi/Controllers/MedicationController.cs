@@ -48,6 +48,32 @@ namespace QuanLyChanNuoi.Controllers
                 return BadRequest("Dữ liệu không hợp lệ.");
             }
 
+            // Kiểm tra xem thuốc đã tồn tại chưa
+            var existingMedication = _context.Medication
+    .FirstOrDefault(m => m.Name.ToLower() == request.Name.ToLower());
+
+            if (existingMedication != null)
+            {
+                // Nếu thuốc đã tồn tại, cập nhật số lượng tồn kho
+                var existingInventory = _context.Inventory
+                    .FirstOrDefault(i => i.MedicationId == existingMedication.Id);
+
+                if (existingInventory != null)
+                {
+                    existingInventory.Quantity += request.Quantity;
+
+                    // Cập nhật trạng thái tồn kho
+                    existingInventory.Status = existingInventory.Quantity < existingInventory.MinimumQuantity
+                        ? "Cảnh báo"
+                        : "Đủ kho";
+
+                    _context.SaveChanges();
+                    return Ok(new { message = "Cập nhật số lượng thuốc thành công!" });
+                }
+
+                return BadRequest("Dữ liệu tồn kho không hợp lệ.");
+            }
+
             // Tạo mới một đối tượng Medication
             var medication = new Medication
             {
@@ -75,8 +101,9 @@ namespace QuanLyChanNuoi.Controllers
             _context.Inventory.Add(inventory);
             _context.SaveChanges();
 
-            return Ok(new { message = "Thêm thuốc thành công!" });
+            return Ok(new { message = "Thêm thuốc mới thành công!" });
         }
+
         public class MedicationRequest
         {
             public string Name { get; set; } = null!; // Tên thuốc
