@@ -11,6 +11,7 @@
   overflow-x: hidden; /* Ensure content doesn't overflow horizontally */
   box-sizing: border-box;
   width: 100%;
+  scrollbar-width: none;
 }
 
 /* Optional: Fix overflow issues in the Tabs */

@@ -23,7 +23,7 @@ const CreateTreatmentForm = () => {
     name: '',
     description: '',
     duration: '',
-    medicines: [{ name: '', dosage: '', frequency: '' }],
+    medicines: [{ name: '', dosage: '', frequency: '', unit: '' }],
     healthRecordId: '',
     effectiveness: 'Tốt',
   });
@@ -43,7 +43,55 @@ const CreateTreatmentForm = () => {
 
     fetchTreatmentData();
   }, []);
-
+  const checkMedicineQuantity = async (medicineName) => {
+    try {
+      const response = await axios.get(`https://localhost:7185/api/inventory/${medicineName}`);
+      return response.data.quantity || 0; // Trả về số lượng hoặc 0 nếu không có dữ liệu
+    } catch (error) {
+      console.error(`Lỗi kiểm tra số lượng thuốc: ${medicineName}`, error);
+      return 0; // Nếu có lỗi, trả về số lượng là 0
+    }
+  };
+  
+  const handleDosageChange = async (index, e) => {
+    const { value } = e.target;
+    const medicineName = treatmentData.medicines[index].name;
+  
+    if (!medicineName) {
+      alert("Vui lòng chọn thuốc trước khi nhập liều lượng");
+      return;
+    }
+  
+    // Lấy số lượng thuốc từ kho
+    const quantity = await checkMedicineQuantity(medicineName);
+    
+  
+    // Kiểm tra xem liều lượng có vượt quá số lượng kho không
+    if (parseInt(value) > quantity) {
+      alert(`Liều lượng vượt quá số lượng thuốc trong kho. Còn lại: ${quantity}`);
+      // Giữ nguyên liều lượng cũ nếu vượt quá số lượng
+      const updatedMedicines = treatmentData.medicines.map((med, i) =>
+        i === index ? { ...med, dosage: med.dosage } : med // Giữ nguyên liều lượng cũ
+      );
+      setTreatmentData((prev) => ({
+        ...prev,
+        medicines: updatedMedicines,
+      }));
+      return;
+    }
+  
+    // Cập nhật liều lượng nếu không vượt quá số lượng
+    const updatedMedicines = treatmentData.medicines.map((med, i) =>
+      i === index ? { ...med, dosage: value } : med
+    );
+  
+    setTreatmentData((prev) => ({
+      ...prev,
+      medicines: updatedMedicines,
+    }));
+  };
+  
+  
   // Xử lý thay đổi input
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -69,7 +117,7 @@ const CreateTreatmentForm = () => {
   const addMedicine = () => {
     setTreatmentData((prev) => ({
       ...prev,
-      medicines: [...prev.medicines, { name: '', dosage: '', frequency: '' }],
+      medicines: [...prev.medicines, { name: '', dosage: '', frequency: '', unit: '' }],
     }));
   };
 
@@ -88,7 +136,7 @@ const CreateTreatmentForm = () => {
       name: '',
       description: '',
       duration: '',
-      medicines: [{ name: '', dosage: '', frequency: '' }],
+      medicines: [{ name: '', dosage: '', frequency: '', unit: '' }],
       healthRecordId: '',
       effectiveness: 'Tốt',
     });
@@ -225,17 +273,12 @@ const CreateTreatmentForm = () => {
                     onChange={(e) => handleMedicineChange(index, e)}
                     label="Tên thuốc"
                   >
-                    {medications.length > 0 ? (
-                      medications.map((med, idx) => (
-                        <MenuItem key={med + idx} value={med}>
-                          {med} {/* Hiển thị tên thuốc */}
-                        </MenuItem>
-                      ))
-                    ) : (
-                      <MenuItem disabled>Không có thuốc</MenuItem> // Nếu không có tên thuốc
-                    )}
+                    {medications.map((med) => (
+                      <MenuItem key={med.name} value={med.name}>
+                        {med.name} - {med.unit} {/* Hiển thị tên thuốc và đơn vị */}
+                      </MenuItem>
+                    ))}
                   </Select>
-
                 </FormControl>
               </Grid>
               <Grid item xs={3}>
@@ -244,7 +287,7 @@ const CreateTreatmentForm = () => {
                   label="Liều lượng"
                   name="dosage"
                   value={medicine.dosage}
-                  onChange={(e) => handleMedicineChange(index, e)}
+                  onChange={(e) => handleDosageChange(index, e)}
                   required
                 />
               </Grid>
@@ -275,7 +318,7 @@ const CreateTreatmentForm = () => {
 
           {/* Nút gửi */}
           <Grid item xs={6}>
-            <Button variant="contained" color="success" type="submit" fullWidth onClick={handleSubmit}>
+            <Button variant="contained" color="success" type="submit" fullWidth>
               Gửi
             </Button>
           </Grid>

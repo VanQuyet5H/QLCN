@@ -1,21 +1,25 @@
+
 .register-form-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #f4f4f9;
+  background-color: none;
   width: 500px;
 }
 
 .register-form {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-height: 100vh; /* Giới hạn chiều cao tối đa là 90% chiều cao màn hình */
+  overflow-y: auto; /* Thêm thanh cuộn dọc nếu nội dung tràn */
+  padding: 20px 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 700px;
-  margin-top: 150px;
+  max-width: 800px;
+  background: #ffffff;
+  scrollbar-width: none;
 }
+
 
 .register-form h2 {
   text-align: center;

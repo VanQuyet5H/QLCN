@@ -63,7 +63,7 @@ const MedicationStock = () => {
                 <TableCell>
                   {medication.quantity < medication.minimumQuantity ? (
                     <span style={{ color: 'red', fontWeight: 'bold' }}>
-                      Vitamin AD3E dưới mức tồn kho tối thiểu
+                      Cảnh báo: {medication.name} dưới mức tồn kho tối thiểu! Hiện tại: {medication.quantity} (Tối thiểu: {medication.minimumQuantity})
                     </span>
                   ) : (
                     <span style={{ color: 'green' }}>Đủ tồn kho</span>

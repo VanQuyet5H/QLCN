@@ -128,18 +128,30 @@ namespace QuanLyChanNuoi.Controllers
         [HttpPost("NhapChuong")]
         public async Task<IActionResult> AddCage([FromBody] CageDto cageDto)
         {
-            if (cageDto == null) return BadRequest("Thông tin không hợp lệ.");
+            if (cageDto == null)
+                return BadRequest("Thông tin không hợp lệ.");
 
-            // Kiểm tra logic
+            // Kiểm tra xem chuồng có bị trùng tên không
+            var existingCage = await _context.Cage
+                .FirstOrDefaultAsync(c => c.Name.Equals(cageDto.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (existingCage != null)
+            {
+                return BadRequest("Chuồng với tên này đã tồn tại.");
+            }
+
+            // Kiểm tra logic khác
             if (cageDto.CurrentOccupancy > cageDto.Capacity)
             {
                 return BadRequest("Số lượng vật nuôi hiện tại vượt sức chứa chuồng.");
             }
+
             if (string.IsNullOrEmpty(cageDto.EnvironmentalConditions))
             {
                 cageDto.EnvironmentalConditions = "Không có yêu cầu đặc biệt.";
             }
 
+            // Tạo đối tượng mới
             var cage = new Cage
             {
                 Name = cageDto.Name,

@@ -9,7 +9,7 @@
         public int MedicationId { get; set; }
 
         // Additional Columns
-        public string Dosage { get; set; } = null!; // Liều lượng
+        public double Dosage { get; set; }  // Liều lượng
         public string Frequency { get; set; } = null!; // Tần suất sử dụng (ví dụ: 2 lần/ngày)
 
         // Navigation properties
