@@ -19,7 +19,9 @@
 .notification.info {
   background-color: #2196f3; /* Màu xanh dương (thông tin) */
 }
-
+.notification.warning {
+  background-color: #ff9800; /* Màu cam (cảnh báo) */
+}
 @keyframes slide-in {
   from {
     opacity: 0;

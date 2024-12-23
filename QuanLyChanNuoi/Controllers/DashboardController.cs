@@ -141,7 +141,7 @@ namespace QuanLyChanNuoi.Controllers
             }
         }
         [HttpPost("AnimalByMonthGrouped")]
-        public async Task<IActionResult> GetAnimalReportByMonthGrouped(Models.Request.AnimalReportDto animalReportDto)
+        public async Task<IActionResult> GetAnimalReportByMonthGrouped(AnimalReportDto animalReportDto)
         {
             try
             {
@@ -311,6 +311,11 @@ namespace QuanLyChanNuoi.Controllers
                 recentActivities.AddRange(feedActivities);
 
                 return Ok(recentActivities.OrderByDescending(a => a.Time)); // Sắp xếp theo thời gian
+        }
+        public class AnimalReportDto
+        {
+            public DateTime? startDate { get; set; }
+            public DateTime? endDate { get; set; }
         }
 
     }

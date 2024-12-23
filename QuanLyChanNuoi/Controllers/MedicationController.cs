@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using QuanLyChanNuoi.Models;
 
 namespace QuanLyChanNuoi.Controllers
@@ -25,6 +26,7 @@ namespace QuanLyChanNuoi.Controllers
                     i => i.MedicationId,
                     (m, i) => new
                     {
+                        m.Id,
                         m.Name,  // Tên thuốc
                         m.Description,  // Mô tả thuốc
                         m.Unit,  // Đơn vị
@@ -50,16 +52,17 @@ namespace QuanLyChanNuoi.Controllers
 
             // Kiểm tra xem thuốc đã tồn tại chưa
             var existingMedication = _context.Medication
-    .FirstOrDefault(m => m.Name.ToLower() == request.Name.ToLower());
+                .FirstOrDefault(m => m.Name.ToLower() == request.Name.ToLower());
 
             if (existingMedication != null)
             {
-                // Nếu thuốc đã tồn tại, cập nhật số lượng tồn kho
+                // Kiểm tra xem thông tin tồn kho có tồn tại không
                 var existingInventory = _context.Inventory
                     .FirstOrDefault(i => i.MedicationId == existingMedication.Id);
 
                 if (existingInventory != null)
                 {
+                    // Cập nhật số lượng tồn kho nếu tồn tại
                     existingInventory.Quantity += request.Quantity;
 
                     // Cập nhật trạng thái tồn kho
@@ -70,11 +73,24 @@ namespace QuanLyChanNuoi.Controllers
                     _context.SaveChanges();
                     return Ok(new { message = "Cập nhật số lượng thuốc thành công!" });
                 }
+                else
+                {
+                    // Nếu tồn kho không tồn tại, tạo mới thông tin tồn kho
+                    var newInventory = new Inventory
+                    {
+                        MedicationId = existingMedication.Id,
+                        Quantity = request.Quantity,
+                        MinimumQuantity = request.MinimumQuantity,
+                        Status = request.Quantity < request.MinimumQuantity ? "Cảnh báo" : "Đủ kho"
+                    };
 
-                return BadRequest("Dữ liệu tồn kho không hợp lệ.");
+                    _context.Inventory.Add(newInventory);
+                    _context.SaveChanges();
+                    return Ok(new { message = "Thêm thông tin tồn kho thành công!" });
+                }
             }
 
-            // Tạo mới một đối tượng Medication
+            // Nếu thuốc chưa tồn tại, tạo mới thuốc và thông tin tồn kho
             var medication = new Medication
             {
                 Name = request.Name,
@@ -84,11 +100,9 @@ namespace QuanLyChanNuoi.Controllers
                 CreatedAt = DateTime.UtcNow
             };
 
-            // Thêm thuốc vào cơ sở dữ liệu
             _context.Medication.Add(medication);
             _context.SaveChanges();
 
-            // Thêm thông tin tồn kho cho thuốc mới
             var inventory = new Inventory
             {
                 MedicationId = medication.Id,
@@ -97,13 +111,37 @@ namespace QuanLyChanNuoi.Controllers
                 Status = request.Quantity < request.MinimumQuantity ? "Cảnh báo" : "Đủ kho"
             };
 
-            // Thêm thông tin tồn kho vào cơ sở dữ liệu
             _context.Inventory.Add(inventory);
             _context.SaveChanges();
 
             return Ok(new { message = "Thêm thuốc mới thành công!" });
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteMedication(int id)
+        {
+            // Kiểm tra thuốc trong kho có tồn tại không
+            var inventoryItem = await _context.Inventory.FirstOrDefaultAsync(i => i.MedicationId == id);
+            if (inventoryItem == null)
+            {
+                return NotFound(new { message = "Không có thông tin thuốc trong kho." });
+            }
+
+            try
+            {
+                // Xóa bản ghi khỏi bảng Inventory
+                _context.Inventory.Remove(inventoryItem);
+
+                // Lưu thay đổi vào database
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Thông tin thuốc trong kho đã được xóa thành công." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Có lỗi xảy ra khi xóa thông tin thuốc trong kho.", error = ex.Message });
+            }
+        }
         public class MedicationRequest
         {
             public string Name { get; set; } = null!; // Tên thuốc

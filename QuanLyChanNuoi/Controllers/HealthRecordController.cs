@@ -378,20 +378,50 @@ namespace QuanLyChanNuoi.Controllers
         [HttpGet("thongketheodoisuckhoevatnuoi")]
         public IActionResult GetHealthStatistics(DateTime? startDate = null, DateTime? endDate = null)
         {
-            // Dữ liệu mẫu
-            var statistics = new HealthStatistics
+            // Lọc theo ngày nếu có
+            var query = _context.Animal.AsQueryable();
+
+            if (startDate.HasValue)
             {
-                TotalAnimals = 150,
-                TotalSickAnimals = 20,
-                TotalHealthyAnimals = 130,
-                SickAnimals = new List<int> { 1, 2, 5, 7, 10 },
-                HealthyAnimals = new List<int> { 3, 4, 6, 8, 9, 11, 12, 13, 14, 15 },
-                TotalRecords = 200
+                query = query.Where(a => a.CreatedAt >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                query = query.Where(a => a.CreatedAt <= endDate.Value);
+            }
+
+            // Thống kê dữ liệu
+            var totalAnimals = query.Count();
+            var totalSickAnimals = query.Count(a => a.Status == "Sick");
+            var totalHealthyAnimals = query.Count(a => a.Status == "Healthy");
+
+            var sickAnimalIds = query
+                .Where(a => a.Status == "Sick")
+                .Select(a => a.Id)
+                .ToList();
+
+            var healthyAnimalIds = query
+                .Where(a => a.Status == "Healthy")
+                .Select(a => a.Id)
+                .ToList();
+
+            var totalRecords = _context.Animal.Count(); // Tổng số bản ghi không áp dụng bộ lọc
+
+            // Tạo kết quả trả về
+            var statistics = new
+            {
+                TotalAnimals = totalAnimals,
+                TotalSickAnimals = totalSickAnimals,
+                TotalHealthyAnimals = totalHealthyAnimals,
+                SickAnimals = sickAnimalIds,
+                HealthyAnimals = healthyAnimalIds,
+                TotalRecords = totalRecords
             };
 
-            // Trả về dữ liệu mẫu
             return Ok(statistics);
         }
+
         public class HealthStatistics
         {
             public int TotalAnimals { get; set; }

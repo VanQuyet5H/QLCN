@@ -7,6 +7,8 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import CreateCage from './CreateCage';  // Import CreateCage component
 import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete'; // Import icon for delete action
+
 const CageList = () => {
   const [cages, setCages] = useState([]);
   const [page, setPage] = useState(1);
@@ -16,12 +18,17 @@ const CageList = () => {
   const [ascending, setAscending] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
   const [openModal, setOpenModal] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [cageToDelete, setCageToDelete] = useState(null);
+
   const handleAddCage = () => {
     setOpenModal(true);  // Open the modal when the button is clicked
   };
+
   const handleCloseModal = () => {
     setOpenModal(false);  // Close the modal
   };
+
   const fetchCages = async () => {
     try {
       const response = await axios.get("https://localhost:7185/api/Cage", {
@@ -34,19 +41,14 @@ const CageList = () => {
         }
       });
 
-      console.log("API Response:", response.data); // In ra toàn bộ dữ liệu trả về
 
       const data = response.data;
-      // Sử dụng đúng trường 'cages' từ API
       setCages(data.cages); // Cập nhật mảng chuồng
-
-      // Kiểm tra nếu TotalItems tồn tại và đặt tổng số mục
       setTotalItems(data.totalItems || 0);
     } catch (error) {
       console.error("Error fetching cages:", error);
     }
   };
-
 
   useEffect(() => {
     fetchCages();
@@ -70,13 +72,69 @@ const CageList = () => {
     setPage(1);  // Reset to first page when page size changes
   };
 
+  // Hàm xử lý khi nhấn xóa chuồng
+  const handleDeleteCage = async () => {
+    try {
+      if (!cageToDelete) return;
+  
+      console.log("Chuồng cần xóa: ", cageToDelete); // Log thông tin chuồng cần xóa
+  
+      // Gọi API kiểm tra vật nuôi trong chuồng
+      const response = await axios.get(`https://localhost:7185/api/Cage/CheckAnimalsInCage?tenChuong=${cageToDelete.name}`);
+      const { hasAnimals } = response.data;
+  
+      console.log("Kết quả kiểm tra vật nuôi: ", hasAnimals); // Log kết quả kiểm tra vật nuôi
+  
+      if (hasAnimals) {
+        // Nếu có vật nuôi, hỏi người dùng có muốn chuyển vật nuôi sang chuồng khác không
+        const confirmSwitch = window.confirm(
+          `Chuồng này có vật nuôi. Bạn có muốn chuyển chúng sang chuồng khác trước khi xóa không?`
+        );
+  
+        if (confirmSwitch) {
+          // Chuyển hướng người dùng sang trang danh sách vật nuôi để thực hiện chuyển chuồng
+          console.log("Chuyển hướng người dùng sang trang danh sách vật nuôi");
+          window.location.href = `/livestockdashdoard`;
+        } else {
+          console.log("Người dùng không muốn chuyển vật nuôi. Đóng hộp thoại.");
+          setDeleteDialogOpen(false);
+          return;
+        }
+      } else {
+        // Xóa chuồng nếu không có vật nuôi
+        console.log(`Xóa chuồng "${cageToDelete.name}"`);
+        await axios.delete(`https://localhost:7185/api/Cage/${cageToDelete.id}`);
+        
+        alert(`Chuồng "${cageToDelete.name}" đã được xóa!`);
+        console.log("Cập nhật lại danh sách chuồng.");
+        fetchCages(); // Cập nhật lại danh sách chuồng
+        setDeleteDialogOpen(false);  // Đóng hộp thoại sau khi xóa thành công
+      }
+    } catch (error) {
+      console.error("Error deleting cage:", error);
+      alert("Có lỗi xảy ra khi xóa chuồng!");
+      setDeleteDialogOpen(false);  // Đóng hộp thoại nếu có lỗi
+    }
+  };
+  
+
+  const handleDeleteDialogOpen = (cage) => {
+    setCageToDelete(cage);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteDialogClose = () => {
+    setDeleteDialogOpen(false);
+    setCageToDelete(null);
+  };
+
   return (
     <div>
       <Typography variant="h4" gutterBottom>
         Quản lý Chuồng
       </Typography>
-      
 
+      {/* Modal thêm chuồng */}
       <Dialog open={openModal} onClose={handleCloseModal} sx={{
         '& .MuiDialog-paper': {
           maxHeight: '90vh', // Giới hạn chiều cao modal
@@ -107,6 +165,21 @@ const CageList = () => {
           </IconButton>
         </DialogActions>
       </Dialog>
+
+      {/* Xóa chuồng */}
+      <Dialog open={deleteDialogOpen} onClose={handleDeleteDialogClose}>
+        <DialogTitle>Xóa Chuồng</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Bạn có chắc chắn muốn xóa chuồng "{cageToDelete?.name}"?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteDialogClose}>Hủy</Button>
+          <Button onClick={handleDeleteCage} color="error">Xóa</Button>
+        </DialogActions>
+      </Dialog>
+
       <Grid container spacing={2} style={{ marginBottom: "20px" }}>
         <Grid item xs={12} sm={6}>
           <TextField
@@ -166,6 +239,7 @@ const CageList = () => {
                 </TableSortLabel>
               </TableCell>
               <TableCell>Trạng thái</TableCell>
+              <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -176,20 +250,24 @@ const CageList = () => {
                   <TableCell>{cage.name}</TableCell>
                   <TableCell>{cage.capacity}</TableCell>
                   <TableCell>{cage.currentOccupancy}</TableCell>
-                  <TableCell>{cage.status || "Hoạt động"}</TableCell> {/* Trạng thái */}
+                  <TableCell>
+                    {cage.currentOccupancy === cage.capacity ? "Đầy" : "Còn chỗ"}
+                  </TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => handleDeleteDialogOpen(cage)}>
+                      <DeleteIcon color="error" />
+                    </IconButton>
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} style={{ textAlign: "center" }}>
-                  Không có dữ liệu
-                </TableCell>
+                <TableCell colSpan={6} align="center">Không có dữ liệu</TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </TableContainer>
-
       <div style={{ marginTop: "20px", display: "flex", justifyContent: "space-between" }}>
         <Pagination
           count={Math.ceil(totalItems / pageSize)}
@@ -210,6 +288,7 @@ const CageList = () => {
           </Select>
         </FormControl>
       </div>
+      
     </div>
   );
 };

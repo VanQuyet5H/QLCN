@@ -68,14 +68,19 @@ const AnimalHistory = () => {
     style={{ marginRight: '10px', width: '200px' }} // Đặt chiều rộng của TextField
     size="small" // Kích thước nhỏ hơn
   />
-  <Button 
-    variant="contained" 
-    onClick={handleSearch}
-    size="small" // Kích thước nhỏ cho 
-    
-  >
-    Tìm kiếm
-  </Button>
+  <Button
+  variant="contained"
+  onClick={handleSearch}
+  size="small"
+  sx={{
+    height: '40px', // Đặt chiều cao cho nút
+    padding: '0 16px', // Điều chỉnh padding bên trong nút
+    fontSize: '14px', // Điều chỉnh kích thước chữ nếu cần
+  }}
+>
+  Tìm kiếm
+</Button>
+
 </div>
 
       {/* Kiểm tra nếu mảng animals rỗng */}

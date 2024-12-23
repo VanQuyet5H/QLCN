@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { FaCog, FaUser, FaSignOutAlt, FaBell } from 'react-icons/fa';
 import { Link,useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
+import DeleteIcon from '@mui/icons-material/Delete';
 const HeaderContainer = styled.header`
   position: fixed;
   top: 0;
@@ -160,6 +160,7 @@ const NoUnderlineLink = styled(Link)`
 `;
 
 function Header({ isExpanded }) {
+  const [recentActivities, setRecentActivities] = useState([]);
   const [userInfo, setUserInfo] = useState({ username: '', role: '', image: '' });
   const [notifications, setNotifications] = useState([]);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
@@ -170,7 +171,42 @@ function Header({ isExpanded }) {
 
   const id = localStorage.getItem('id');
   const navigate = useNavigate();
+  const fetchApiRecentAction = async () => {
+    try {
+      const response = await axios.get("https://localhost:7185/api/Dashboard/recent-activities");
+      if (response.status === 200) {
+        return response.data;
+      } else {
+        console.log("API returned an error", response.status);
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching recent activities data:", error);
+      return [];
+    }
+  };
 
+  // Load recent activities
+  const loadRecentActive = async () => {
+    try {
+      const data = await fetchApiRecentAction();
+      if (Array.isArray(data)) {
+        const formattedStats = data.map((item) => ({
+          action: item.action,
+          time: item.time,
+          type: item.type,
+          priority: item.priority,
+          isRead: false,
+        }));
+        setRecentActivities(formattedStats);
+      }
+    } catch (error) {
+      console.error("Lỗi khi fetch dữ liệu:", error);
+    }
+  };
+  useEffect(() => {
+    loadRecentActive();
+  }, []);
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
@@ -187,28 +223,33 @@ function Header({ isExpanded }) {
     fetchUserInfo();
   }, [id]);
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const response = await axios.get('https://localhost:7185/api/Notifications', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        setNotifications(response.data);
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-      }
-    };
-    fetchNotifications();
-  }, []);
+  const removeNotification = (notification) => {
+    setRecentActivities((prevActivities) => 
+      prevActivities.filter((activity) => activity !== notification)
+    );
+    handleCloseNotificationDetail(); // Close modal after removing notification
+  };
 
   const handleNotificationClick = (notification) => {
     setSelectedNotification(notification);
     setShowNotificationDetail(true);
+    markAsRead(notification);
   };
-
+  const markAsRead = (notification) => {
+    setRecentActivities((prevActivities) => {
+      return prevActivities.map((activity) => 
+        activity === notification ? { ...activity, isRead: true } : activity
+      );
+    });
+  };
   const handleCloseNotificationDetail = () => {
     setShowNotificationDetail(false);
     setSelectedNotification(null);
+  };
+  const removeReadNotifications = () => {
+    setRecentActivities((prevActivities) => 
+      prevActivities.filter((activity) => !activity.isRead)
+    );
   };
 
   const handleSettingsClick = (setting) => {
@@ -236,20 +277,41 @@ function Header({ isExpanded }) {
         <div style={{ position: 'relative' }}>
           <IconButton title="Thông báo" onClick={() => setShowNotificationMenu(!showNotificationMenu)}>
             <FaBell />
-            <NotificationBadge>{notifications.length}</NotificationBadge>
+            {recentActivities.some((activity) => !activity.isRead) && (
+            <NotificationBadge>{recentActivities.filter((activity) => !activity.isRead).length}</NotificationBadge>
+            
+            )}
           </IconButton>
-
+          
           {showNotificationMenu && (
             <DropdownMenu>
-              {notifications.map((notification, index) => (
-                <MenuItem key={index} onClick={() => handleNotificationClick(notification)}>
-                  <FaBell /> {notification.title}
-                </MenuItem>
-              ))}
-            </DropdownMenu>
+            {recentActivities.map((notification, index) => (
+              <MenuItem key={index} onClick={() => handleNotificationClick(notification)}>
+                <FaBell /> {notification.action}
+                {!notification.isRead && (
+                  <IconButton onClick={(e) => { e.stopPropagation(); removeNotification(notification); }}>
+                    <DeleteIcon style={{ color: 'red', fontSize: '1.25rem' }} />
+                  </IconButton>
+                )}
+              </MenuItem>
+            ))}
+          </DropdownMenu>
           )}
-        </div>
 
+        </div>
+        {showNotificationDetail && (
+        <NotificationDetailModal>
+          <h3>{selectedNotification?.action}</h3>
+          <p><strong>Time:</strong> {selectedNotification?.time}</p>
+          <p><strong>Type:</strong> {selectedNotification?.type}</p>
+          <p><strong>Priority:</strong> {selectedNotification?.priority}</p>
+          <IconButton onClick={() => removeNotification(selectedNotification)}><DeleteIcon style={{ color: 'red', fontSize: '1.25rem' }} /></IconButton>
+          <IconButton onClick={handleCloseNotificationDetail}>Đóng</IconButton>
+        </NotificationDetailModal>
+      )}
+      
+     
+    
         <div style={{ position: 'relative' }}>
           <IconButton title="Cài đặt hệ thống" onClick={() => setShowSettingsMenu(!showSettingsMenu)}>
             <FaCog />

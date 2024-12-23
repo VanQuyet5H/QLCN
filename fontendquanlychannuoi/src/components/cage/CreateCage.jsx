@@ -40,7 +40,7 @@ const CreateCage = () => {
   };
 
   const validateForm = () => {
-    const { name, area, capacity, currentOccupancy } = formData;
+    const { name, area, capacity} = formData;
 
     if (!name.trim() || name.length > 50) {
       setNotification({ message: 'Tên chuồng phải từ 1 đến 50 ký tự!', type: 'error' });
@@ -57,13 +57,7 @@ const CreateCage = () => {
       return false;
     }
 
-    if (currentOccupancy < 0 || currentOccupancy > capacity || isNaN(currentOccupancy)) {
-      setNotification({
-        message: 'Số lượng hiện tại phải từ 0 đến sức chứa!',
-        type: 'error',
-      });
-      return false;
-    }
+    
 
     return true;
   };
@@ -74,6 +68,12 @@ const CreateCage = () => {
 
     setLoading(true);
     try {
+      const checkResponse = await axios.get(`https://localhost:7185/api/Cage/CheckCage?name=${formData.name}`);
+    if (checkResponse.data.exists) {
+      setNotification({ message: 'Chuồng đã tồn tại!', type: 'warning' });
+      setLoading(false);
+      return;
+    }
       const response = await axios.post(`https://localhost:7185/api/Cage/NhapChuong`, formData);
       setNotification({ message: 'Thêm chuồng thành công!', type: 'success' });
       setFormData({
@@ -82,7 +82,6 @@ const CreateCage = () => {
         area: '',
         location: '',
         capacity: '',
-        currentOccupancy: '',
         isAvailable: true,
         notes: '',
         environmentalConditions: '',
@@ -104,7 +103,6 @@ const CreateCage = () => {
         area: '',
         location: '',
         capacity: '',
-        currentOccupancy: '',
         isAvailable: true,
         notes: '',
         environmentalConditions: '',
@@ -113,7 +111,7 @@ const CreateCage = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 800, margin: 'auto', padding: 4,scrollbarWidth:'none' }}>
+    <Box sx={{ maxWidth: 800, margin: 'auto', padding: 4, scrollbarWidth: 'none' }}>
       <Typography variant="h4" gutterBottom>
         Nhập thông tin chuồng trại
       </Typography>
@@ -164,15 +162,7 @@ const CreateCage = () => {
               required
               sx={{ mt: 2 }}
             />
-            <TextField
-              fullWidth
-              label="Vị trí"
-              variant="outlined"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              sx={{ mt: 2 }}
-            />
+
           </Grid>
           <Grid item xs={12} md={6}>
             <TextField
@@ -187,29 +177,31 @@ const CreateCage = () => {
             />
             <TextField
               fullWidth
-              label="Số lượng hiện tại"
+              label="Vị trí"
               variant="outlined"
-              type="number"
-              name="currentOccupancy"
-              value={formData.currentOccupancy}
+              name="location"
+              value={formData.location}
               onChange={handleChange}
               sx={{ mt: 2 }}
             />
-            <TextField
-              fullWidth
-              label="Ghi chú"
-              variant="outlined"
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              sx={{ mt: 2 }}
-            />
+
             <TextField
               fullWidth
               label="Điều kiện môi trường"
               variant="outlined"
               name="environmentalConditions"
               value={formData.environmentalConditions}
+              onChange={handleChange}
+              sx={{ mt: 2 }}
+            />
+          </Grid>
+          <Grid item xs={12} >
+            <TextField
+              fullWidth
+              label="Ghi chú"
+              variant="outlined"
+              name="notes"
+              value={formData.notes}
               onChange={handleChange}
               sx={{ mt: 2 }}
             />

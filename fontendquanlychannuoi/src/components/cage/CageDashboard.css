@@ -1,39 +1,22 @@
-/* Cập nhật CSS để tránh tràn thẻ tab */
 .cage-dashboard {
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-  }
-  
-  /* Đảm bảo các nội dung trong form không bị tràn */
-  .cagedashboard-content {
-    padding: 16px;
-    overflow-x: hidden;
-    box-sizing: border-box;
-    width: 100%;
-  }
-  
-  /* Chỉnh sửa để đảm bảo Tabs không tràn */
-  .MuiTabs-root {
-    width: 100%;
-    overflow-x: auto;  /* Cho phép cuộn ngang nếu các tab vượt quá chiều rộng */
-  }
-  
-  .MuiTab-root {
-    flex-shrink: 0;  /* Ngăn các tab bị co lại */
-    white-space: nowrap;  /* Ngăn chữ trong tab bị xuống dòng */
-  }
-  
-  /* Đảm bảo phần hiển thị của form không bị tràn */
-  form {
-    width: 100%;
-    overflow-x: hidden; /* Ngăn tràn ngang */
-  }
-  
-  /* Đảm bảo Grid trong form có chiều rộng hợp lý */
-  .MuiGrid-root {
-    width: 100%;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Chiều cao toàn màn hình */
+  overflow: hidden; /* Ngăn tràn nội dung */
+  scrollbar-width: none;
+  margin-top: 25px;
+  width: 1000px;
+}
+
+.cage-dashboard .MuiTabs-root {
+  background-color: #f5f5f5; /* Màu nền cho Tabs */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Đổ bóng */
+  z-index: 1; /* Đảm bảo Tabs luôn hiển thị trên cùng */
+}
+
+.cagedashboard-content {
+  flex: 1; /* Cho phép nội dung chiếm toàn bộ không gian còn lại */
+  overflow-y: auto; /* Cuộn dọc nếu nội dung vượt quá chiều cao */
+  padding: 16px;
+  background-color: #fff; /* Nền trắng để tách biệt nội dung */
+}

@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { FaTimes, FaHome, FaPiggyBank, FaChartBar, FaFileAlt, FaMedkit, FaUser, FaCaretDown, FaSignOutAlt,FaPaw } from 'react-icons/fa';
+import { FaTimes, FaHome, FaPiggyBank, FaChartBar, FaFileAlt, FaMedkit, FaUser, FaCaretDown, FaSignOutAlt,FaPaw,FaShoppingCart } from 'react-icons/fa';
 import { NavLink,useNavigate } from 'react-router-dom';
 import cowIcon from '../assets/cow.png';
 import { useState } from 'react';
@@ -154,7 +154,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       text: 'Quản lý vật nuôi',
       submenu: [
         { text: 'Danh sách đàn', path: '/livestockdashdoard' },
-        { text: 'Theo dõi tăng trưởng', path: '/growth' },
         { text: 'Danh sách chuồng', path: '/menucage' },
       ],
     },
@@ -174,7 +173,16 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       text: 'Chế độ ăn',
       submenu: [
         { text: 'Dinh dưỡng', path: '/DietCalculator' },
-        { text: 'Theo dõi', path: '/reports/analysis' },
+        { text: 'Danh sách chế độ ăn', path: '/menueat' },
+      ],
+    },
+    {
+      icon: <FaShoppingCart/>,
+      text: 'Bán Vật Nuôi',
+      submenu: [
+        
+        { text: 'Danh sách vật nuôi đã bán', path: '/salemenu' },
+        
       ],
     },
     {
@@ -185,7 +193,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         { text: 'Phân tích dữ liệu', path: '/reports/analysis' },
       ],
     },
-    { icon: <FaFileAlt />, text: 'Báo cáo', path: '/reports' },
     {
       icon: <FaUser />,
       text: 'Tài khoản',
