@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, TextField, Button, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress } from '@mui/material';
+import { Container, TextField, Button, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress,Grid } from '@mui/material';
 import './HealthStatistics.css';
 
 const HealthStatistics = () => {
@@ -21,7 +21,7 @@ const HealthStatistics = () => {
           endDate: endDate || undefined,
         }
       });
-      console.log('apibc:',response.data);
+      console.log('Dữ liệu API:', response.data);
       setStatistics(response.data);
     } catch (error) {
       setErrorMessage('Có lỗi xảy ra khi lấy dữ liệu.');
@@ -43,34 +43,39 @@ const HealthStatistics = () => {
       
       {/* Các input để lọc dữ liệu */}
       <div className="filters">
-        <TextField
-          label="Ngày bắt đầu"
-          type="date"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
+  <Grid container spacing={2} alignItems="flex-end">
+    <Grid item xs={4}>
+      <TextField
+        label="Ngày bắt đầu"
+        type="date"
+        InputLabelProps={{
+          shrink: true,
+        }}
+        value={startDate}
+        onChange={(e) => setStartDate(e.target.value)}
+        fullWidth
+      />
+    </Grid>
 
-        <TextField
-          label="Ngày kết thúc"
-          type="date"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
+    <Grid item xs={4}>
+      <TextField
+        label="Ngày kết thúc"
+        type="date"
+        InputLabelProps={{
+          shrink: true,
+        }}
+        value={endDate}
+        onChange={(e) => setEndDate(e.target.value)}
+        fullWidth
+      />
+    </Grid>
 
-        <Button variant="contained" color="primary" onClick={fetchStatistics} fullWidth>
-          Lọc
-        </Button>
-      </div>
+    <Grid item xs={4}>
+      <Button variant="contained" color="primary" onClick={fetchStatistics} fullWidth>
+        Lọc
+      </Button>
+    </Grid>
+  </Grid></div>
 
       {/* Hiển thị lỗi nếu có */}
       {errorMessage && <Typography variant="body1" color="error" align="center">{errorMessage}</Typography>}
@@ -94,10 +99,10 @@ const HealthStatistics = () => {
               </TableHead>
               <TableBody>
                 <TableRow>
-                  <TableCell>{statistics.TotalAnimals}</TableCell>
-                  <TableCell>{statistics.TotalSickAnimals}</TableCell>
-                  <TableCell>{statistics.TotalHealthyAnimals}</TableCell>
-                  <TableCell>{statistics.TotalRecords}</TableCell>
+                  <TableCell>{statistics.totalAnimals}</TableCell>
+                  <TableCell>{statistics.totalSickAnimals}</TableCell>
+                  <TableCell>{statistics.totalHealthyAnimals}</TableCell>
+                  <TableCell>{statistics.totalRecords}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -106,9 +111,9 @@ const HealthStatistics = () => {
           <Typography variant="h6" gutterBottom>
             Danh sách vật nuôi ốm:
           </Typography>
-          {Array.isArray(statistics.SickAnimals) && statistics.SickAnimals.length > 0 ? (
+          {Array.isArray(statistics.sickAnimals) && statistics.sickAnimals.length > 0 ? (
             <ul>
-              {statistics.SickAnimals.map((animalId, index) => (
+              {statistics.sickAnimals.map((animalId, index) => (
                 <li key={index}>Vật nuôi ID: {animalId}</li>
               ))}
             </ul>
@@ -119,9 +124,9 @@ const HealthStatistics = () => {
           <Typography variant="h6" gutterBottom>
             Danh sách vật nuôi khỏe mạnh:
           </Typography>
-          {Array.isArray(statistics.HealthyAnimals) && statistics.HealthyAnimals.length > 0 ? (
+          {Array.isArray(statistics.healthyAnimals) && statistics.healthyAnimals.length > 0 ? (
             <ul>
-              {statistics.HealthyAnimals.map((animalId, index) => (
+              {statistics.healthyAnimals.map((animalId, index) => (
                 <li key={index}>Vật nuôi ID: {animalId}</li>
               ))}
             </ul>

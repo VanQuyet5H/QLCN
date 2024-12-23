@@ -122,8 +122,19 @@ namespace QuanLyChanNuoi.Controllers
 
             return Ok(cageDto);
         }
+        [HttpGet("CheckCage")]
+        public async Task<IActionResult> CheckCage(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return BadRequest("Tên chuồng không được để trống.");
+            }
 
+            var existingCage = await _context.Cage
+     .FirstOrDefaultAsync(c => c.Name.ToLower() == name.ToLower());
 
+            return Ok(new { exists = existingCage });
+        }
         // 2. Thêm chuồng mới
         [HttpPost("NhapChuong")]
         public async Task<IActionResult> AddCage([FromBody] CageDto cageDto)
@@ -133,19 +144,15 @@ namespace QuanLyChanNuoi.Controllers
 
             // Kiểm tra xem chuồng có bị trùng tên không
             var existingCage = await _context.Cage
-                .FirstOrDefaultAsync(c => c.Name.Equals(cageDto.Name, StringComparison.OrdinalIgnoreCase));
+     .FirstOrDefaultAsync(c => c.Name.ToLower() == cageDto.Name.ToLower());
+
 
             if (existingCage != null)
             {
                 return BadRequest("Chuồng với tên này đã tồn tại.");
             }
 
-            // Kiểm tra logic khác
-            if (cageDto.CurrentOccupancy > cageDto.Capacity)
-            {
-                return BadRequest("Số lượng vật nuôi hiện tại vượt sức chứa chuồng.");
-            }
-
+            // Kiểm tra điều kiện môi trường
             if (string.IsNullOrEmpty(cageDto.EnvironmentalConditions))
             {
                 cageDto.EnvironmentalConditions = "Không có yêu cầu đặc biệt.";
@@ -159,7 +166,6 @@ namespace QuanLyChanNuoi.Controllers
                 Area = cageDto.Area,
                 Location = cageDto.Location,
                 Capacity = cageDto.Capacity,
-                CurrentOccupancy = cageDto.CurrentOccupancy,
                 IsAvailable = cageDto.IsAvailable,
                 Notes = cageDto.Notes,
                 EnvironmentalConditions = cageDto.EnvironmentalConditions
@@ -170,6 +176,7 @@ namespace QuanLyChanNuoi.Controllers
 
             return Ok(new { Message = "Thêm chuồng thành công!", Data = cage });
         }
+
         [HttpGet("available")]
         public async Task<ActionResult<IEnumerable<Cage>>> GetAvailableCages()
         {
@@ -188,9 +195,9 @@ namespace QuanLyChanNuoi.Controllers
         [HttpPost("{cageId}/AddAnimals")]
         public async Task<ActionResult> AddAnimalsToCage(int cageId, List<int> animalIds)
         {
-            var cage = await _context.Cage.Include(c => c.Animal).FirstOrDefaultAsync(c => c.Id == cageId);
+            var newCage = await _context.Cage.Include(c => c.Animal).FirstOrDefaultAsync(c => c.Id == cageId);
 
-            if (cage == null)
+            if (newCage == null)
                 return NotFound("Chuồng không tồn tại.");
 
             var animals = await _context.Animal.Where(a => animalIds.Contains(a.Id)).ToListAsync();
@@ -198,122 +205,126 @@ namespace QuanLyChanNuoi.Controllers
             if (animals.Count != animalIds.Count)
                 return BadRequest("Một số vật nuôi không tồn tại.");
 
-            if (cage.CurrentOccupancy + animals.Count > cage.Capacity)
+            if (newCage.CurrentOccupancy + animals.Count > newCage.Capacity)
                 return BadRequest("Chuồng không đủ chỗ.");
 
+            // Tạo danh sách các chuồng cũ
+            var cageIds = animals.Select(a => a.CageId).Distinct().Where(id => id != null).ToList();
+            var oldCages = await _context.Cage.Where(c => cageIds.Contains(c.Id)).ToListAsync();
+
+            // Chuyển vật nuôi và cập nhật CurrentOccupancy của chuồng cũ và chuồng mới
             foreach (var animal in animals)
             {
-                animal.CageId = cageId;
-                cage.CurrentOccupancy++;
+                if (animal.CageId != null) // Giảm CurrentOccupancy của chuồng cũ
+                {
+                    var oldCage = oldCages.FirstOrDefault(c => c.Id == animal.CageId);
+                    if (oldCage != null)
+                        oldCage.CurrentOccupancy--;
+                }
+
+                animal.CageId = cageId; // Gán CageId mới
             }
 
+            newCage.CurrentOccupancy += animals.Count; // Tăng CurrentOccupancy của chuồng mới
+
+            // Cập nhật thông tin
             _context.Animal.UpdateRange(animals);
-            _context.Cage.Update(cage);
+            _context.Cage.UpdateRange(oldCages);
+            _context.Cage.Update(newCage);
 
             await _context.SaveChangesAsync();
             return Ok("Đã thêm vật nuôi vào chuồng.");
         }
-
-
-        // 4. Di chuyển vật nuôi giữa các chuồng
-        [HttpPost("MoveAnimal")]
-        public async Task<ActionResult> MoveAnimal(int animalId, int targetCageId)
+        [HttpGet("CheckAnimalsInCage")]
+        public async Task<IActionResult> CheckAnimalsInCage(string tenChuong)
         {
-            var animal = await _context.Animal.FindAsync(animalId); // Sử dụng bảng Animal không có 's'
-            if (animal == null)
-                return NotFound("Vật nuôi không tồn tại.");
+            var query = from a in _context.Cage
+                        join b in _context.Animal on a.Id equals b.CageId
+                        select new
+                        {
+                            a.Name,
+                            a.CurrentOccupancy
+                        };
 
-            var currentCage = await _context.Cage.FirstOrDefaultAsync(c => c.Id == animal.CageId);
-            var targetCage = await _context.Cage.FirstOrDefaultAsync(c => c.Id == targetCageId);
+            var result = await query.Where(a => a.Name == tenChuong && a.CurrentOccupancy > 0).ToListAsync();
 
-            if (targetCage == null)
-                return NotFound("Chuồng đích không tồn tại.");
+            if (result.Any())  // Nếu có vật nuôi trong chuồng
+            {
+                return Ok(new { hasAnimals = true });  // Trả về true nếu có vật nuôi
+            }
 
-            if (targetCage.CurrentOccupancy + 1 > targetCage.Capacity)
-                return BadRequest("Chuồng đích đã đầy.");
+            return Ok(new { hasAnimals = false });  // Trả về false nếu không có vật nuôi
+        }
 
-            // Cập nhật sức chứa
-            if (currentCage != null)
-                currentCage.CurrentOccupancy--;
-            targetCage.CurrentOccupancy++;
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCage(int id)
+        {
+            var cage = await _context.Cage.FindAsync(id);
 
-            // Cập nhật chuồng cho vật nuôi
-            animal.CageId = targetCageId;
+            if (cage == null)
+            {
+                return NotFound("Chuồng không tồn tại.");
+            }
 
-            _context.Cage.Update(currentCage);
-            _context.Cage.Update(targetCage);
-            _context.Animal.Update(animal); // Sử dụng bảng Animal không có 's'
+            // Kiểm tra xem chuồng có vật nuôi hay không
+            var hasAnimals = await _context.Animal.AnyAsync(a => a.CageId == id);
 
+            if (hasAnimals)
+            {
+                return BadRequest("Chuồng này có vật nuôi. Bạn cần chuyển chúng sang chuồng khác trước khi xóa.");
+            }
+
+            // Xóa chuồng nếu không có vật nuôi
+            _context.Cage.Remove(cage);
             await _context.SaveChangesAsync();
-            return Ok("Đã di chuyển vật nuôi thành công.");
+
+            return NoContent(); // Trả về 204 nếu xóa thành công
         }
 
-        // 5. Xóa vật nuôi khỏi chuồng
-        [HttpDelete("RemoveAnimal/{animalId}")]
-        public async Task<ActionResult> RemoveAnimal(int animalId)
-        {
-            var animal = await _context.Animal.FindAsync(animalId); // Sử dụng bảng Animal không có 's'
-            if (animal == null)
-                return NotFound("Vật nuôi không tồn tại.");
-
-            var cage = await _context.Cage.FirstOrDefaultAsync(c => c.Id == animal.CageId);
-
-            if (cage != null)
-                cage.CurrentOccupancy--;
-
-            _context.Animal.Remove(animal); // Sử dụng bảng Animal không có 's'
-            _context.Cage.Update(cage);
-
-            await _context.SaveChangesAsync();
-            return Ok("Đã xóa vật nuôi khỏi chuồng.");
-        }
-
-        // 6. Lấy danh sách vật nuôi trong một chuồng
-        [HttpGet("{cageId}/Animals")]
-        public async Task<ActionResult<IEnumerable<object>>> GetAnimalsInCage(int cageId)
-        {
-            var animals = await _context.Animal
-                .Where(a => a.CageId == cageId)
-                .Select(a => new
-                {
-                    a.Id,
-                    a.Name,
-                    a.Type,
-                    a.BirthDate
-                })
-                .ToListAsync();
-
-            if (!animals.Any())
-                return NotFound("Không có vật nuôi nào trong chuồng này.");
-
-            return Ok(animals);
-        }
-
-
-        // 7. Lấy danh sách các chuồng đầy
-        [HttpGet("FullCages")]
-        public async Task<ActionResult<IEnumerable<Cage>>> GetFullCages()
-        {
-            var fullCages = await _context.Cage.Where(c => c.CurrentOccupancy >= c.Capacity).ToListAsync();
-            return Ok(fullCages);
-        }
 
         // 8. Thống kê vật nuôi theo chuồng
         [HttpGet("Statistics")]
         public async Task<ActionResult> GetCageStatistics()
         {
-            var statistics = await _context.Cage
-                .Select(c => new
-                {
-                    CageName = c.Name,
-                    Capacity = c.Capacity,
-                    CurrentOccupancy = c.CurrentOccupancy,
-                    AvailableSlots = c.Capacity - c.CurrentOccupancy
-                })
-                .ToListAsync();
+            try
+            {
+                var statistics = await _context.Cage
+                    .Select(c => new CageStatistics
+                    {
+                        CageName = c.Name,
+                        Capacity = c.Capacity,
+                        CurrentOccupancy = c.CurrentOccupancy,
+                        AvailableSlots = c.Capacity - c.CurrentOccupancy,
+                        AnimalsInCage = _context.Animal.Count(a => a.CageId == c.Id), // Đếm số vật nuôi trong chuồng
+                        IsFull = c.CurrentOccupancy >= c.Capacity, // Kiểm tra chuồng đã đầy hay chưa
+                        MaintenanceDate = c.MaintenanceDate, // Ngày bảo trì chuồng (nếu có)
+                        RepairNotification = "" // Khởi tạo trường RepairNotification
+                    })
+                    .ToListAsync();
 
-            return Ok(statistics);
+                // Thêm thông báo nếu chuồng có lịch sửa chữa (lịch sửa chữa nếu MaintenanceDate có giá trị trong tương lai)
+                foreach (var stat in statistics)
+                {
+                    if (stat.MaintenanceDate.HasValue && stat.MaintenanceDate.Value > DateTime.Now)
+                    {
+                        stat.RepairNotification = $"Chuồng {stat.CageName} có lịch sửa chữa vào {stat.MaintenanceDate.Value:dd/MM/yyyy}.";
+                    }
+                    else
+                    {
+                        stat.RepairNotification = "Chuồng này không có lịch sửa chữa.";
+                    }
+                }
+
+                return Ok(statistics);
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi và trả về thông báo lỗi
+                return StatusCode(500, new { message = "Có lỗi xảy ra khi lấy thông tin thống kê.", error = ex.Message });
+            }
         }
+
+
         public class CageDto
         {
             public string Name { get; set; } // Tên chuồng
@@ -321,10 +332,21 @@ namespace QuanLyChanNuoi.Controllers
             public decimal Area { get; set; } // Diện tích chuồng (m²)
             public string Location { get; set; } // Vị trí
             public int Capacity { get; set; } // Sức chứa tối đa
-            public int CurrentOccupancy { get; set; } // Số lượng vật nuôi hiện tại
             public bool IsAvailable { get; set; } // Trạng thái sẵn sàng
             public string EnvironmentalConditions { get; set; } = "Đảm bảo tiêu chuẩn vệ sinh.";
             public string Notes { get; set; } // Ghi chú
         }
+        public class CageStatistics
+        {
+            public string CageName { get; set; }
+            public int Capacity { get; set; }
+            public int CurrentOccupancy { get; set; }
+            public int AvailableSlots { get; set; }
+            public int AnimalsInCage { get; set; }
+            public bool IsFull { get; set; }
+            public DateTime? MaintenanceDate { get; set; }
+            public string RepairNotification { get; set; }
+        }
+
     }
 }

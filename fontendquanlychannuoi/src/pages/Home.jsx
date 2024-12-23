@@ -25,6 +25,8 @@ import DietCalculator from '../components/Feed/DietCalculator';
 import AddAnimalCage from '../components/cage/AddAnimalToCage';
 import MenuCage from '../components/cage/CageDashboard';
 import HealthAnimalDashboard from "../components/HealthAnimal/HealthAnimalDashboard";
+import MenuEat from '../components/Feed/MenuEat';
+import SaleMenu  from '../components/sale/SaleMenu';
 function Home() {
   const navigate = useNavigate();
   useEffect(() => {
@@ -67,6 +69,9 @@ function Home() {
         <Route path="/DietCalculator" element={<DietCalculator />} />
         <Route path="/themvatnuoivaochuong" element={<AddAnimalCage />} />
         <Route path="/healthanimaldashboard" element={<HealthAnimalDashboard />} />
+        <Route path="/menueat" element={<MenuEat />} />
+        <Route path="/salemenu" element={<SaleMenu />} />
+
       </Routes>
     </Layout>
   );
