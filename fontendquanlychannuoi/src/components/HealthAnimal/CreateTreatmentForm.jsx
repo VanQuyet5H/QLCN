@@ -15,8 +15,10 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
+import Notification from "../utils/Notification";
 
 const CreateTreatmentForm = () => {
+  const [notification, setNotification] = useState({ message: "", type: "" });
   const [medications, setMedications] = useState([]); // Danh sách thuốc
   const [healthRecords, setHealthRecords] = useState([]); // Danh sách hồ sơ sức khỏe
   const [treatmentData, setTreatmentData] = useState({
@@ -164,11 +166,9 @@ const CreateTreatmentForm = () => {
     try {
       const response = await axios.post('https://localhost:7185/api/treatment', treatmentPayload);
       if (response.status === 200) {
-        console.log('Điều trị đã được tạo thành công:', response.data);
-        alert('Điều trị đã được tạo thành công!');
+        setNotification({ message: "Tạo điều trị thành công!", type: "success" });
       } else {
-        console.error('Tạo điều trị thất bại:', response.statusText);
-        alert('Tạo điều trị thất bại.');
+        setNotification({ message: "Tạo điều trị thất bại!", type: "error" });
       }
     } catch (error) {
       console.error('Lỗi khi tạo điều trị:', error);
@@ -184,6 +184,13 @@ const CreateTreatmentForm = () => {
       <IconButton color="primary" onClick={() => window.history.back()} sx={{ position: 'absolute', top: 80, right: 90 }}>
         <CloseIcon />
       </IconButton>
+      {notification.message && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification({ message: "", type: "" })}
+        />
+      )}
       <form onSubmit={handleSubmit}>
         <Grid container spacing={2}>
           {/* Tên điều trị */}

@@ -312,6 +312,8 @@ namespace QuanLyChanNuoi.Controllers
 
                 return Ok(recentActivities.OrderByDescending(a => a.Time)); // Sắp xếp theo thời gian
         }
+        
+
         public class AnimalReportDto
         {
             public DateTime? startDate { get; set; }

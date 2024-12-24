@@ -23,23 +23,23 @@ const ForgotPassword = () => {
   return (
     <div className="container">
       <form className="forgot-password-form" onSubmit={handleSubmit}>
-        <h1>Forgot Password</h1>
-        <p>Please enter your email address to reset your password.</p>
+      <h1>Quên Mật Khẩu</h1>
+      <p>Vui lòng nhập địa chỉ email của bạn để đặt lại mật khẩu.</p>
         <div className="form-group">
-          <label htmlFor="email">Email Address</label>
+          <label htmlFor="email">Địa chỉ Email</label>
           <input
             type="email"
             id="email"
-            placeholder="Enter your email"
+            placeholder="Nhập email của bạn"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
-        <button type="submit" className="btn"  >Send Reset Link</button>
+        <button type="submit" className="btn"  >Gửi lại liên kết đặt lại</button>
         <div className="back-links">
-          <a href="/login">Back to Login</a>
-          <a href="/signup">Create an Account</a>
+          <a href="/login">Quay lại đăng nhập</a>
+          <a href="/signup">Tạo tài khoản</a>
         </div>
       </form>
     </div>

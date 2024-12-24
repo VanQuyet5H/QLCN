@@ -186,14 +186,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       ],
     },
     {
-      icon: <FaChartBar />,
-      text: 'Thống kê',
-      submenu: [
-        { text: 'Báo cáo tổng hợp', path: '/reports/summary' },
-        { text: 'Phân tích dữ liệu', path: '/reports/analysis' },
-      ],
-    },
-    {
       icon: <FaUser />,
       text: 'Tài khoản',
       submenu: [
