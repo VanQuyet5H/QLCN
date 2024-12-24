@@ -6,7 +6,7 @@
   border: 1px solid #ddd;
   border-radius: 5px;
   margin-bottom: 20px;
-  padding: 10px;
+  padding: 0px;
   position: relative;
   box-sizing: border-box; /* Đảm bảo tính toán kích thước chính xác */
 }
@@ -305,3 +305,30 @@ select:hover {
 }
 
 
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Nền mờ */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Đảm bảo modal hiển thị trên cùng */
+}
+
+/* Nội dung modal */
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  width: 300px;
+  text-align: center;
+  z-index: 1001; /* Đảm bảo modal-content trên cùng */
+}
+
+.modal-actions button {
+  margin: 10px;
+}
