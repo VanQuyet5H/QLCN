@@ -5,6 +5,7 @@ using QuanLyChanNuoi.Models;
 using QuanLyChanNuoi.Models.Request;
 using QuanLyChanNuoi.Services;
 using System.ComponentModel.DataAnnotations;
+using static QuanLyChanNuoi.Models.Request.HoSoSkDto;
 
 namespace QuanLyChanNuoi.Controllers
 {
@@ -150,6 +151,7 @@ namespace QuanLyChanNuoi.Controllers
                 Duration = treatmentDto.Duration,
                 Effectiveness = treatmentDto.Effectiveness,
                 HealthRecordId = treatmentDto.HealthRecordId,
+                CreatedAt=DateTime.Now,
                 TreatmentMedication = new List<TreatmentMedication>()
             };
 
@@ -421,6 +423,39 @@ namespace QuanLyChanNuoi.Controllers
 
             return Ok(statistics);
         }
+        [HttpGet("{animalId}")]
+        public async Task<IActionResult> GetHealthRecord(int animalId)
+        {
+            var healthRecordQuery = await (from hr in _context.HealthRecord
+                                           join tm in _context.Treatment on hr.Id equals tm.HealthRecordId
+                                           join tmm in _context.TreatmentMedication on tm.Id equals tmm.TreatmentId
+                                           join m in _context.Medication on tmm.MedicationId equals m.Id
+                                           where hr.AnimalId ==animalId
+                                           select new
+                                           {
+                                               hr.AnimalId,
+                                               hr.CheckupDate,
+                                               hr.Diagnosis,
+                                               hr.Notes,
+                                               TreatmentId = tm.Id,
+                                               TreatmentName = tm.Name,
+                                               TreatmentCreatedAt = tm.CreatedAt,
+                                               MedicationName = m.Name,
+                                               Dosage = tmm.Dosage,
+                                               Frequency = tmm.Frequency,
+                                               MedicationDescription = m.Description,
+                                               TreatmentDescription = tm.Description
+                                           }).ToListAsync();
+
+            if (healthRecordQuery == null || !healthRecordQuery.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(healthRecordQuery);
+        }
+
+
 
         public class HealthStatistics
         {

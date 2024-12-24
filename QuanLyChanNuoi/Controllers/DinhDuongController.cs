@@ -136,6 +136,90 @@ namespace QuanLyChanNuoi.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<FeedDto>>> GetFeeds(
+    [FromQuery] string? foodType = null,
+    [FromQuery] string? animalName = null,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10)
+        {
+            // Lọc danh sách Feed theo các tiêu chí tìm kiếm (nếu có)
+            var feedsQuery = _context.Feed
+                .Include(f => f.Animal)
+                .Include(f => f.User)
+                .AsQueryable(); // Sử dụng AsQueryable() để xây dựng truy vấn động
+
+            // Tìm kiếm theo loại thức ăn (nếu có)
+            if (!string.IsNullOrEmpty(foodType))
+            {
+                feedsQuery = feedsQuery.Where(f => f.FoodType.Contains(foodType));
+            }
+
+            // Tìm kiếm theo tên vật nuôi (nếu có)
+            if (!string.IsNullOrEmpty(animalName))
+            {
+                feedsQuery = feedsQuery.Where(f => f.Animal.Name.Contains(animalName));
+            }
+
+            // Tính toán tổng số phần tử và tổng số trang
+            var totalFeeds = await feedsQuery.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalFeeds / (double)pageSize);
+
+            // Áp dụng phân trang (skip và take)
+            var feeds = await feedsQuery
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // Chuyển đổi các đối tượng Feed thành FeedDto
+            var feedDtos = feeds.Select(f => new FeedDto1
+            {
+                Id = f.Id,
+                FeedingDate = f.FeedingDate,
+                FoodType = f.FoodType,
+                Quantity = f.Quantity,
+                Cost = f.Cost,
+                Notes = f.Notes,
+                Calories = f.Calories,
+                Protein = f.Protein,
+                Fat = f.Fat,
+                Carbohydrates = f.Carbohydrates,
+                Vitamins = f.Vitamins,
+                Minerals = f.Minerals,
+                AnimalName = f.Animal.Name,
+                UserName = f.User.Username
+            }).ToList();
+
+            // Thêm thông tin phân trang vào header phản hồi
+            var paginationMetaData = new
+            {
+                TotalItems = totalFeeds,
+                TotalPages = totalPages,
+                CurrentPage = pageNumber,
+                PageSize = pageSize
+            };
+            Response.Headers.Add("X-Pagination", System.Text.Json.JsonSerializer.Serialize(paginationMetaData));
+
+            return Ok(feedDtos);
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteFeed(int id)
+        {
+            // Tìm feed trong cơ sở dữ liệu
+            var feed = await _context.Feed.FindAsync(id);
+
+            if (feed == null)
+            {
+                return NotFound(new { message = "Feed không tồn tại." });
+            }
+
+            // Xóa feed
+            _context.Feed.Remove(feed);
+            await _context.SaveChangesAsync();
+
+            // Trả về trạng thái 200 OK khi xóa thành công
+            return Ok(new { message = "Feed đã được xóa thành công." });
+        }
         public class FeedDto
         {
             public int AnimalId { get; set; }
@@ -150,6 +234,27 @@ namespace QuanLyChanNuoi.Controllers
             public decimal Minerals { get; set; }
             public decimal Protein { get; set; }
             public decimal Vitamins { get; set; }
+        }
+        public class FeedDto1
+        {
+            public int Id { get; set; }
+            public DateTime FeedingDate { get; set; }
+            public string FoodType { get; set; }
+            public decimal Quantity { get; set; }
+            public int Cost { get; set; }
+            public string Notes { get; set; }
+
+            // Dinh dưỡng
+            public decimal Calories { get; set; }
+            public decimal Protein { get; set; }
+            public decimal Fat { get; set; }
+            public decimal Carbohydrates { get; set; }
+            public decimal Vitamins { get; set; }
+            public decimal Minerals { get; set; }
+
+            // Tên vật nuôi và người dùng để trả về từ DTO
+            public string AnimalName { get; set; }
+            public string UserName { get; set; }
         }
 
     }

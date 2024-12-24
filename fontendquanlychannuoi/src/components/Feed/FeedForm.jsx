@@ -98,7 +98,7 @@ const FeedForm = () => {
     return (
         <Box sx={{ maxWidth: 900, margin: '0 auto', padding: 3 }}>
             <Typography variant="h5" align="center" gutterBottom>
-                Tạo Chế Độ Ăn Cho Vật Nuôi
+                Nhập thông tin thức ăn
             </Typography>
             <form onSubmit={handleSubmit}>
                 <Grid container spacing={2}>

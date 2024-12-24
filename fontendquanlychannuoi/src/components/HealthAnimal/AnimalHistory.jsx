@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, TablePagination, TextField, Button } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, TablePagination, TextField, Button, Dialog, DialogActions, DialogContent, DialogTitle, Box } from "@mui/material";
 
 const AnimalHistory = () => {
   const [animals, setAnimals] = useState([]); // Dữ liệu vật nuôi
@@ -8,7 +8,10 @@ const AnimalHistory = () => {
   const [page, setPage] = useState(0); // Trang hiện tại
   const [pageSize, setPageSize] = useState(10); // Số lượng bản ghi mỗi trang
   const [loading, setLoading] = useState(false); // Biến trạng thái để hiển thị loading
-  const [searchId, setSearchId] = useState(""); 
+  const [searchId, setSearchId] = useState("");
+  const [openModal, setOpenModal] = useState(false); // Trạng thái mở modal
+  const [selectedAnimal, setSelectedAnimal] = useState(null); // Thông tin vật nuôi đã chọn
+  const [healthRecordDetails, setHealthRecordDetails] = useState([]); // Thông tin hồ sơ điều trị
   // Hàm để gọi API với phân trang
   const fetchAnimals = async () => {
     setLoading(true);
@@ -44,14 +47,32 @@ const AnimalHistory = () => {
     setPageSize(parseInt(event.target.value, 10));
     setPage(0); // Reset lại trang khi thay đổi số bản ghi mỗi trang
   };
-   // Hàm xử lý tìm kiếm theo ID
-   const handleSearchChange = (event) => {
+  // Hàm xử lý tìm kiếm theo ID
+  const handleSearchChange = (event) => {
     setSearchId(event.target.value); // Lưu giá trị tìm kiếm vào state
   };
 
   const handleSearch = () => {
     setPage(0); // Reset lại trang khi thực hiện tìm kiếm
     fetchAnimals(); // Gọi lại API với tham số tìm kiếm
+  };
+  const handleOpenModal = async (animalId) => {
+    try {
+      const response = await axios.get(`https://localhost:7185/${animalId}`);
+      console.log('apihealthrecord', response.data);
+      setHealthRecordDetails(Array.isArray(response.data) ? response.data : []);
+      setSelectedAnimal(animalId);
+      setOpenModal(true);
+    } catch (error) {
+      console.error("Error fetching health records:", error);
+    }
+  };
+
+  // Hàm đóng modal
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedAnimal(null);
+    setHealthRecordDetails([]);
   };
 
   return (
@@ -60,28 +81,28 @@ const AnimalHistory = () => {
         Lịch sử theo dõi điều trị
       </Typography>
       <div style={{ marginBottom: '20px' }}>
-  <TextField
-    label="Tìm kiếm theo ID"
-    variant="outlined"
-    value={searchId}
-    onChange={handleSearchChange}
-    style={{ marginRight: '10px', width: '200px' }} // Đặt chiều rộng của TextField
-    size="small" // Kích thước nhỏ hơn
-  />
-  <Button
-  variant="contained"
-  onClick={handleSearch}
-  size="small"
-  sx={{
-    height: '40px', // Đặt chiều cao cho nút
-    padding: '0 16px', // Điều chỉnh padding bên trong nút
-    fontSize: '14px', // Điều chỉnh kích thước chữ nếu cần
-  }}
->
-  Tìm kiếm
-</Button>
+        <TextField
+          label="Tìm kiếm theo ID"
+          variant="outlined"
+          value={searchId}
+          onChange={handleSearchChange}
+          style={{ marginRight: '10px', width: '200px' }} // Đặt chiều rộng của TextField
+          size="small" // Kích thước nhỏ hơn
+        />
+        <Button
+          variant="contained"
+          onClick={handleSearch}
+          size="small"
+          sx={{
+            height: '40px', // Đặt chiều cao cho nút
+            padding: '0 16px', // Điều chỉnh padding bên trong nút
+            fontSize: '14px', // Điều chỉnh kích thước chữ nếu cần
+          }}
+        >
+          Tìm kiếm
+        </Button>
 
-</div>
+      </div>
 
       {/* Kiểm tra nếu mảng animals rỗng */}
       {loading ? (
@@ -106,6 +127,7 @@ const AnimalHistory = () => {
                 <TableCell>Cân Nặng</TableCell>
                 <TableCell>Giống</TableCell>
                 <TableCell>Ngày Tạo</TableCell>
+                <TableCell>Hành động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -120,6 +142,11 @@ const AnimalHistory = () => {
                   <TableCell>{animal.weight}</TableCell>
                   <TableCell>{animal.breed}</TableCell>
                   <TableCell>{new Date(animal.createdAt).toLocaleString()}</TableCell>
+                  <TableCell>
+                    <Button variant="outlined" onClick={() => handleOpenModal(animal.id)}>
+                      Xem chi tiết
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -135,6 +162,85 @@ const AnimalHistory = () => {
           />
         </TableContainer>
       )}
+      <Dialog open={openModal} onClose={handleCloseModal} maxWidth="md" fullWidth>
+        <DialogTitle>Chi Tiết Hồ Sơ Điều Trị</DialogTitle>
+        <DialogContent>
+          {healthRecordDetails && healthRecordDetails.length > 0 ? (
+            healthRecordDetails.map((record, index) => (
+              <Box key={index} sx={{ marginBottom: 4 }}>
+                <Typography variant="h6" sx={{ fontWeight: "bold", color: "#f50057", marginBottom: 2 }}>
+                  Lần khám: {index + 1}
+                </Typography>
+                {/* Chuẩn đoán */}
+                <Box sx={{ marginBottom: 3 }}>
+                  <Typography variant="h6" sx={{ fontWeight: "bold", color: "#3f51b5" }}>
+                    Chuẩn đoán
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Ngày khám:</strong> {new Date(record.checkupDate).toLocaleDateString()}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Chẩn đoán:</strong> {record.diagnosis}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Ghi chú:</strong> {record.notes}
+                  </Typography>
+                </Box>
+
+                {/* Điều trị */}
+                <Box sx={{ marginBottom: 3 }}>
+                  <Typography variant="h6" sx={{ fontWeight: "bold", color: "#3f51b5" }}>
+                    Điều trị
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Tên điều trị:</strong> {record.treatmentName}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Mô tả:</strong> {record.treatmentDescription || "Không có thông tin"}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Ngày tạo kế hoạch:</strong>{" "}
+                    {record.treatmentCreatedAt !== "0001-01-01T00:00:00"
+                      ? new Date(record.treatmentCreatedAt).toLocaleDateString()
+                      : "Không xác định"}
+                  </Typography>
+                </Box>
+
+                {/* Thuốc */}
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: "bold", color: "#3f51b5" }}>
+                    Thuốc
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Tên thuốc:</strong> {record.medicationName}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Liều dùng:</strong> {record.dosage} mg
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Tần suất:</strong> {record.frequency}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Mô tả thuốc:</strong> {record.medicationDescription || "Không có thông tin"}
+                  </Typography>
+                </Box>
+              </Box>
+            ))
+          ) : (
+            <Typography variant="body2" color="textSecondary">
+              Không có thông tin hồ sơ điều trị.
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseModal} color="primary" variant="contained">
+            Đóng
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+
+
     </div>
   );
 };

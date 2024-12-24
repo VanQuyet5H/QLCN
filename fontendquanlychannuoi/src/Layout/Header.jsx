@@ -168,7 +168,7 @@ function Header({ isExpanded }) {
   const [showNotificationDetail, setShowNotificationDetail] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [showNotificationMenu, setShowNotificationMenu] = useState(false);
-
+  const [expandedNotificationId, setExpandedNotificationId] = useState(null);
   const id = localStorage.getItem('id');
   const navigate = useNavigate();
   const fetchApiRecentAction = async () => {
@@ -191,14 +191,17 @@ function Header({ isExpanded }) {
     try {
       const data = await fetchApiRecentAction();
       if (Array.isArray(data)) {
+        const readNotifications = JSON.parse(localStorage.getItem('readNotifications')) || [];
         const formattedStats = data.map((item) => ({
           action: item.action,
           time: item.time,
           type: item.type,
           priority: item.priority,
-          isRead: false,
+          isRead: readNotifications.includes(item.id),
+          id: item.id
         }));
         setRecentActivities(formattedStats);
+        console.log("Thông báo đã được load:", formattedStats);
       }
     } catch (error) {
       console.error("Lỗi khi fetch dữ liệu:", error);
@@ -223,35 +226,85 @@ function Header({ isExpanded }) {
     fetchUserInfo();
   }, [id]);
 
+  useEffect(() => {
+    const storedNotifications = JSON.parse(localStorage.getItem('readNotifications')) || [];
+    
+    console.log("Dữ liệu từ localStorage:", storedNotifications);
+  
+    // Kiểm tra nếu dữ liệu hợp lệ trước khi sử dụng
+    if (Array.isArray(storedNotifications)) {
+      // Đồng bộ với state chỉ khi trạng thái đã thay đổi
+      setRecentActivities((prevActivities) => {
+        return prevActivities.map((activity) => {
+          // Cập nhật trạng thái thông báo đã đọc từ localStorage
+          if (storedNotifications.includes(activity.id)) {
+            return { ...activity, isRead: true };
+          }
+          return activity;
+        });
+      });
+      console.log("Thông báo đã đọc từ localStorage:", storedNotifications);
+    } else {
+      console.error("Dữ liệu không hợp lệ trong localStorage:", storedNotifications);
+    }
+  }, []);
+  
+  // Cập nhật sau khi xóa thông báo
   const removeNotification = (notification) => {
-    setRecentActivities((prevActivities) => 
-      prevActivities.filter((activity) => activity !== notification)
+    console.log("Xóa thông báo:", notification);
+  
+    // Xóa thông báo khỏi state
+    setRecentActivities((prevActivities) =>
+      prevActivities.filter((activity) => activity.id !== notification.id)
     );
-    handleCloseNotificationDetail(); // Close modal after removing notification
+  
+    // Cập nhật trạng thái trong localStorage
+    const readNotifications = JSON.parse(localStorage.getItem('readNotifications')) || [];
+    const updatedNotifications = readNotifications.filter((id) => id !== notification.id);
+  
+    if (Array.isArray(updatedNotifications)) {
+      // Cập nhật lại localStorage với các thông báo đã xóa
+      localStorage.setItem('readNotifications', JSON.stringify(updatedNotifications));
+      console.log("Cập nhật trong localStorage, thông báo đã xóa:", updatedNotifications);
+    } else {
+      console.error("Dữ liệu không hợp lệ khi lưu vào localStorage:", updatedNotifications);
+    }
   };
-
+  
+  // Cập nhật thông báo đã đọc khi người dùng nhấp vào
   const handleNotificationClick = (notification) => {
+    console.log("Nhấp vào thông báo:", notification);
+  
     setSelectedNotification(notification);
     setShowNotificationDetail(true);
-    markAsRead(notification);
-  };
-  const markAsRead = (notification) => {
-    setRecentActivities((prevActivities) => {
-      return prevActivities.map((activity) => 
-        activity === notification ? { ...activity, isRead: true } : activity
+  
+    if (!notification.isRead) {
+      console.log("Đánh dấu thông báo là đã đọc:", notification);
+  
+      setRecentActivities((prev) =>
+        prev.map((activity) =>
+          activity.id === notification.id ? { ...activity, isRead: true } : activity
+        )
       );
-    });
+  
+      // Cập nhật localStorage để lưu các ID thông báo đã đọc
+      const readNotifications = JSON.parse(localStorage.getItem('readNotifications')) || [];
+      if (!readNotifications.includes(notification.id)) {
+        readNotifications.push(notification.id);
+  
+        if (Array.isArray(readNotifications)) {
+          localStorage.setItem('readNotifications', JSON.stringify(readNotifications));
+          console.log("Cập nhật localStorage với thông báo đã đọc:", readNotifications);
+        } else {
+          console.error("Dữ liệu không hợp lệ khi lưu vào localStorage:", readNotifications);
+        }
+      }
+    }
   };
-  const handleCloseNotificationDetail = () => {
-    setShowNotificationDetail(false);
-    setSelectedNotification(null);
-  };
-  const removeReadNotifications = () => {
-    setRecentActivities((prevActivities) => 
-      prevActivities.filter((activity) => !activity.isRead)
-    );
-  };
+  
 
+  
+  
   const handleSettingsClick = (setting) => {
     console.log('Setting clicked:', setting);
     setShowSettingsMenu(false);
@@ -274,44 +327,64 @@ function Header({ isExpanded }) {
       </HeaderLeft>
 
       <HeaderRight>
-        <div style={{ position: 'relative' }}>
-          <IconButton title="Thông báo" onClick={() => setShowNotificationMenu(!showNotificationMenu)}>
+      <div style={{ position: 'relative' }}>
+          <IconButton title="Thông báo" onClick={() => setShowNotificationMenu((prev) => !prev)}>
             <FaBell />
-            {recentActivities.some((activity) => !activity.isRead) && (
-            <NotificationBadge>{recentActivities.filter((activity) => !activity.isRead).length}</NotificationBadge>
-            
+            {recentActivities.filter((activity) => !activity.isRead).length > 0 && (
+              <NotificationBadge>
+                {recentActivities.filter((activity) => !activity.isRead).length}
+              </NotificationBadge>
             )}
           </IconButton>
-          
+
           {showNotificationMenu && (
             <DropdownMenu>
-            {recentActivities.map((notification, index) => (
-              <MenuItem key={index} onClick={() => handleNotificationClick(notification)}>
-                <FaBell /> {notification.action}
-                {!notification.isRead && (
-                  <IconButton onClick={(e) => { e.stopPropagation(); removeNotification(notification); }}>
-                    <DeleteIcon style={{ color: 'red', fontSize: '1.25rem' }} />
-                  </IconButton>
-                )}
-              </MenuItem>
-            ))}
-          </DropdownMenu>
-          )}
+              {recentActivities.length > 0 ? (
+                recentActivities.map((notification) => (
+                  <div
+                    key={notification.id}
+                    onClick={() => handleNotificationClick(notification)}
+                    style={{
+                      borderBottom: '1px solid #ddd',
+                      padding: '8px 12px',
+                      backgroundColor: notification.isRead ? 'white' : '#f0f0f0',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      fontSize: '0.875rem',
+                      lineHeight: '1.5',
+                    }}
+                  >
+                    <div style={{ flex: 1, paddingRight: '10px', fontWeight: 'bold' }}>
+                      {notification.action}
+                    </div>
+                    <div style={{ textAlign: 'right', fontStyle: 'italic', fontSize: '0.75rem' }}>
+                      <div>{notification.time}</div>
+                      <div>{notification.priority}</div>
+                    </div>
 
+                    {!notification.isRead && (
+                      <IconButton onClick={(e) => {
+                        e.stopPropagation();
+                        removeNotification(notification);
+                      }}>
+                        <DeleteIcon style={{ color: 'red', fontSize: '1rem' }} />
+                      </IconButton>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p style={{ padding: '10px', textAlign: 'center', fontStyle: 'italic', color: '#777' }}>
+                  Không có thông báo
+                </p>
+              )}
+            </DropdownMenu>
+          )}
         </div>
-        {showNotificationDetail && (
-        <NotificationDetailModal>
-          <h3>{selectedNotification?.action}</h3>
-          <p><strong>Time:</strong> {selectedNotification?.time}</p>
-          <p><strong>Type:</strong> {selectedNotification?.type}</p>
-          <p><strong>Priority:</strong> {selectedNotification?.priority}</p>
-          <IconButton onClick={() => removeNotification(selectedNotification)}><DeleteIcon style={{ color: 'red', fontSize: '1.25rem' }} /></IconButton>
-          <IconButton onClick={handleCloseNotificationDetail}>Đóng</IconButton>
-        </NotificationDetailModal>
-      )}
-      
-     
-    
+
+
+  
         <div style={{ position: 'relative' }}>
           <IconButton title="Cài đặt hệ thống" onClick={() => setShowSettingsMenu(!showSettingsMenu)}>
             <FaCog />

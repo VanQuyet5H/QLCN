@@ -2,18 +2,15 @@ import React, { useState } from 'react';
 import { Tabs, Tab, Box, Typography } from '@mui/material';
 import SaleList from './SaleList';
 import AddSale from './AddSale';
-
+import SalesReport from './SalesReport';
+import SalesDetailReport from './SalesDetailReport';
 const BaoCaoBanHang = () => (
   <Typography variant="body1" p={2}>
     Nội dung Báo Cáo Bán Hàng sẽ có sau!
   </Typography>
 );
 
-const ThongKeDoanhThu = () => (
-  <Typography variant="body1" p={2}>
-    Nội dung Thống Kê Doanh Thu sẽ có sau!
-  </Typography>
-);
+
 
 const MenuBanHang = () => {
   const [currentTab, setCurrentTab] = useState(0);
@@ -29,9 +26,9 @@ const MenuBanHang = () => {
       case 1:
         return <AddSale />;
       case 2:
-        return <BaoCaoBanHang />;
+        return <SalesDetailReport />;
       case 3:
-        return <ThongKeDoanhThu />;
+        return <SalesReport />;
       default:
         return null;
     }
