@@ -59,6 +59,13 @@ namespace QuanLyChanNuoi.Models
                        .HasForeignKey(a => a.CageId) // Animal tham chiếu Cage thông qua CageId
                        .OnDelete(DeleteBehavior.Restrict)
                        .IsRequired(false);
+              modelBuilder.Entity<Sale>()
+                       .HasOne(a => a.Animal) 
+                       .WithMany(c => c.Sales) 
+                       .HasForeignKey(a => a.AnimalId) 
+                       .OnDelete(DeleteBehavior.Restrict)
+                       .IsRequired(false);
+
 
 
         }

@@ -65,6 +65,7 @@ namespace QuanLyChanNuoi.Controllers
                 Breed = animal.Breed,
                 Gender = animal.Gender,
                 BirthDate = animal.BirthDate,
+                CreatedAt=animal.CreatedAt,
                 Cage = animal.Cage != null ? new CageDto
                 {
                     Id = animal.Cage.Id,
@@ -196,7 +197,7 @@ namespace QuanLyChanNuoi.Controllers
             {
                 return NotFound(new { message = "Vật nuôi không tồn tại" });
             }
-
+            var relatedSales = await _context.Sale.Where(s => s.AnimalId == id).ToListAsync();
             var cage = await _context.Cage.FindAsync(animal.CageId);
             if (cage != null)
             {
@@ -281,6 +282,7 @@ namespace QuanLyChanNuoi.Controllers
             public string Breed { get; set; }
             public string Gender { get; set; }
             public DateTime BirthDate { get; set; }
+            public DateTime CreatedAt { get; set; }
             public CageDto Cage { get; set; }
         }
         public class AddDto

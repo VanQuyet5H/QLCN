@@ -3,8 +3,9 @@
     public class Sale
     {
         public int Id { get; set; }
-        public int AnimalId { get; set; }
+        public int? AnimalId { get; set; }
         public int UserId {  get; set; }
+        public string AnimalName { get; set; }
         public DateTime SaleDate { get; set; }
         public string BuyerName { get; set; }
         public decimal Price { get; set; }

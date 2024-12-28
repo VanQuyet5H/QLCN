@@ -22,7 +22,6 @@ const FeedForm = () => {
     useEffect(() => {
         // Lấy userId từ localStorage khi component load
         const storedUserId = localStorage.getItem('id');
-        console.log('id', storedUserId);
         if (storedUserId) {
             setUserId(storedUserId); // Cập nhật state với giá trị userId
         } else {

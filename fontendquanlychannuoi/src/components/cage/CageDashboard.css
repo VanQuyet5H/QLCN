@@ -6,6 +6,8 @@
   scrollbar-width: none;
   margin-top: 25px;
   width: 1000px;
+  margin-left: var(--sidebar-collapsed-width);
+  
 }
 
 .cage-dashboard .MuiTabs-root {

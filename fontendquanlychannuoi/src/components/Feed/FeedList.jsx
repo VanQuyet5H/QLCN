@@ -24,12 +24,7 @@ const FeedList = () => {
     const fetchFeeds = async (pageNumber = 1) => {
         setLoading(true);
         try {
-            console.log("Fetching data with params:", {
-                foodType: search.foodType,
-                animalName: search.animalName,
-                pageNumber,
-                pageSize: pagination.pageSize,
-            });
+           
 
             const { data, headers } = await axios.get("https://localhost:7185/api/DinhDuong", {
                 params: {
@@ -40,17 +35,16 @@ const FeedList = () => {
                 },
             });
 
-            console.log("Received data:", data);
-            console.log("Received headers:", headers);
+           
 
             // Kiểm tra xem header "x-pagination" có tồn tại và có thể parse được không
             let paginationData = {};
             if (headers["x-pagination"]) {
                 try {
                     paginationData = JSON.parse(headers["x-pagination"]);
-                    console.log("Pagination data:", paginationData);
+                    
                 } catch (error) {
-                    console.error("Error parsing pagination header:", error);
+                    
                 }
             }
 

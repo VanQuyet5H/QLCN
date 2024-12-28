@@ -11,7 +11,6 @@ import GeneralSettings from '../components/settings/GeneralSettings';
 import NotificationSettings from '../components/settings/NotificationSettings';
 import SecuritySettings from '../components/settings/SecuritySettings';
 import SickAnimalsList from "../components/HealthAnimal/SickAnimalsList";
-import AddHealthRecord from "../components/HealthAnimal/AddHealthRecord";
 import AddMedication from '../components/Medication/AddMedication';
 import MedicationStock from '../components/Medication/MedicationStock';
 import CreateTreatmentForm from '../components/HealthAnimal/CreateTreatmentForm';
@@ -52,7 +51,6 @@ function Home() {
         <Route path="/settings/notifications" element={<NotificationSettings />} />
         <Route path="/settings/security" element={<SecuritySettings />} />
         <Route path="/sick-animals" element={<SickAnimalsList />} />
-        <Route path="/add-health-record/:animalId" element={<AddHealthRecord />} />
         <Route path="/add-medication" element={<AddMedication />} />
         <Route path="/medication-stock" element={<MedicationStock />} />
         <Route path="/treatment" element={<CreateTreatmentForm />} />
