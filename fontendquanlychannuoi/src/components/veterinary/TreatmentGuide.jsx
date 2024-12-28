@@ -44,6 +44,13 @@ function TreatmentGuide() {
     }
   ]);
 
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter guides based on the search query
+  const filteredGuides = guides.filter((guide) =>
+    guide.disease.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="treatment-guide">
       <div className="guide-header">
@@ -53,43 +60,49 @@ function TreatmentGuide() {
           <input
             type="text"
             placeholder="Tìm kiếm bệnh..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)} // Update search query on input change
           />
         </div>
       </div>
 
       <div className="guide-content">
-        {guides.map(guide => (
-          <div key={guide.id} className="guide-card">
-            <h3>{guide.disease}</h3>
-            
-            <div className="guide-section">
-              <h4>Triệu chứng</h4>
-              <ul>
-                {guide.symptoms.map((symptom, index) => (
-                  <li key={index}>{symptom}</li>
-                ))}
-              </ul>
-            </div>
+        {filteredGuides.length > 0 ? (
+          filteredGuides.map((guide) => (
+            <div key={guide.id} className="guide-card">
+              <h3>{guide.disease}</h3>
 
-            <div className="guide-section">
-              <h4>Phương pháp điều trị</h4>
-              <ul>
-                {guide.treatment.map((step, index) => (
-                  <li key={index}>{step}</li>
-                ))}
-              </ul>
-            </div>
+              <div className="guide-section">
+                <h4>Triệu chứng</h4>
+                <ul>
+                  {guide.symptoms.map((symptom, index) => (
+                    <li key={index}>{symptom}</li>
+                  ))}
+                </ul>
+              </div>
 
-            <div className="guide-section">
-              <h4>Phòng ngừa</h4>
-              <ul>
-                {guide.prevention.map((method, index) => (
-                  <li key={index}>{method}</li>
-                ))}
-              </ul>
+              <div className="guide-section">
+                <h4>Phương pháp điều trị</h4>
+                <ul>
+                  {guide.treatment.map((step, index) => (
+                    <li key={index}>{step}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="guide-section">
+                <h4>Phòng ngừa</h4>
+                <ul>
+                  {guide.prevention.map((method, index) => (
+                    <li key={index}>{method}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p>Không tìm thấy hướng dẫn điều trị phù hợp.</p>
+        )}
       </div>
     </div>
   );

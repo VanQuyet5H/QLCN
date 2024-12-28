@@ -338,8 +338,12 @@ namespace QuanLyChanNuoi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("AnimalId")
+                    b.Property<int?>("AnimalId")
                         .HasColumnType("int");
+
+                    b.Property<string>("AnimalName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BuyerName")
                         .IsRequired()
@@ -607,10 +611,9 @@ namespace QuanLyChanNuoi.Migrations
             modelBuilder.Entity("QuanLyChanNuoi.Models.Sale", b =>
                 {
                     b.HasOne("QuanLyChanNuoi.Models.Animal", "Animal")
-                        .WithMany()
+                        .WithMany("Sales")
                         .HasForeignKey("AnimalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("QuanLyChanNuoi.Models.User", "User")
                         .WithMany()
@@ -662,6 +665,11 @@ namespace QuanLyChanNuoi.Migrations
                         .IsRequired();
 
                     b.Navigation("Animal");
+                });
+
+            modelBuilder.Entity("QuanLyChanNuoi.Models.Animal", b =>
+                {
+                    b.Navigation("Sales");
                 });
 
             modelBuilder.Entity("QuanLyChanNuoi.Models.Cage", b =>

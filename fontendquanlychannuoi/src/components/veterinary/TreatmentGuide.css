@@ -66,3 +66,41 @@
   .guide-section li:last-child {
     margin-bottom: 0;
   }
+  /* General styling for the search box */
+.search-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 25px;
+  padding: 5px 10px;
+  width: 100%;
+  max-width: 400px; /* Adjust the max-width to your preference */
+  margin: 20px 0;
+  background-color: #f9f9f9;
+}
+
+.search-icon {
+  font-size: 20px;
+  color: #777;
+  margin-right: 10px;
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 16px;
+  padding: 8px;
+  background-color: transparent;
+  color: #333;
+}
+
+.search-box input::placeholder {
+  color: #aaa;
+}
+
+/* Optional: Add focus effect */
+.search-box input:focus {
+  border: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}

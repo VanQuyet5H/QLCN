@@ -12,6 +12,14 @@ const AnimalHistory = () => {
   const [openModal, setOpenModal] = useState(false); // Trạng thái mở modal
   const [selectedAnimal, setSelectedAnimal] = useState(null); // Thông tin vật nuôi đã chọn
   const [healthRecordDetails, setHealthRecordDetails] = useState([]); // Thông tin hồ sơ điều trị
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0'); // Đảm bảo ngày có 2 chữ số
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Đảm bảo tháng có 2 chữ số (tháng bắt đầu từ 0)
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`; // Trả về theo định dạng dd/mm/yyyy
+  };
+  
   // Hàm để gọi API với phân trang
   const fetchAnimals = async () => {
     setLoading(true);
@@ -137,11 +145,11 @@ const AnimalHistory = () => {
                   <TableCell>{animal.name}</TableCell>
                   <TableCell>{animal.type}</TableCell>
                   <TableCell>{animal.gender}</TableCell>
-                  <TableCell>{new Date(animal.birthDate).toLocaleDateString()}</TableCell>
+                  <TableCell>{formatDate(animal.birthDate)}</TableCell>
                   <TableCell>{animal.status}</TableCell>
                   <TableCell>{animal.weight}</TableCell>
                   <TableCell>{animal.breed}</TableCell>
-                  <TableCell>{new Date(animal.createdAt).toLocaleString()}</TableCell>
+                  <TableCell>{formatDate(animal.createdAt).toLocaleString()}</TableCell>
                   <TableCell>
                     <Button variant="outlined" onClick={() => handleOpenModal(animal.id)}>
                       Xem chi tiết
@@ -163,81 +171,82 @@ const AnimalHistory = () => {
         </TableContainer>
       )}
       <Dialog open={openModal} onClose={handleCloseModal} maxWidth="md" fullWidth>
-        <DialogTitle>Chi Tiết Hồ Sơ Điều Trị</DialogTitle>
-        <DialogContent>
-          {healthRecordDetails && healthRecordDetails.length > 0 ? (
-            healthRecordDetails.map((record, index) => (
-              <Box key={index} sx={{ marginBottom: 4 }}>
-                <Typography variant="h6" sx={{ fontWeight: "bold", color: "#f50057", marginBottom: 2 }}>
-                  Lần khám: {index + 1}
-                </Typography>
-                {/* Chuẩn đoán */}
-                <Box sx={{ marginBottom: 3 }}>
-                  <Typography variant="h6" sx={{ fontWeight: "bold", color: "#3f51b5" }}>
-                    Chuẩn đoán
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Ngày khám:</strong> {new Date(record.checkupDate).toLocaleDateString()}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Chẩn đoán:</strong> {record.diagnosis}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Ghi chú:</strong> {record.notes}
-                  </Typography>
-                </Box>
+  <DialogTitle sx={{ fontWeight: 'bold', fontSize: '1.5rem' }}>Chi Tiết Hồ Sơ Điều Trị</DialogTitle>
+  <DialogContent sx={{ padding: 3 }}>
+    {healthRecordDetails && healthRecordDetails.length > 0 ? (
+      healthRecordDetails.map((record, index) => (
+        <Box key={index} sx={{ marginBottom: 4, padding: 2, border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold", color: "#f50057", marginBottom: 2 }}>
+            Lần khám: {index + 1}
+          </Typography>
 
-                {/* Điều trị */}
-                <Box sx={{ marginBottom: 3 }}>
-                  <Typography variant="h6" sx={{ fontWeight: "bold", color: "#3f51b5" }}>
-                    Điều trị
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Tên điều trị:</strong> {record.treatmentName}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Mô tả:</strong> {record.treatmentDescription || "Không có thông tin"}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Ngày tạo kế hoạch:</strong>{" "}
-                    {record.treatmentCreatedAt !== "0001-01-01T00:00:00"
-                      ? new Date(record.treatmentCreatedAt).toLocaleDateString()
-                      : "Không xác định"}
-                  </Typography>
-                </Box>
-
-                {/* Thuốc */}
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: "bold", color: "#3f51b5" }}>
-                    Thuốc
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Tên thuốc:</strong> {record.medicationName}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Liều dùng:</strong> {record.dosage} mg
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Tần suất:</strong> {record.frequency}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Mô tả thuốc:</strong> {record.medicationDescription || "Không có thông tin"}
-                  </Typography>
-                </Box>
-              </Box>
-            ))
-          ) : (
-            <Typography variant="body2" color="textSecondary">
-              Không có thông tin hồ sơ điều trị.
+          {/* Chuẩn đoán */}
+          <Box sx={{ marginBottom: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: "bold", color: "#3f51b5", marginBottom: 1 }}>
+              <strong>Chuẩn đoán</strong>
             </Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseModal} color="primary" variant="contained">
-            Đóng
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <Typography variant="body2">
+              <strong>Ngày khám:</strong> {formatDate(record.checkupDate)}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Chẩn đoán:</strong> {record.diagnosis}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Ghi chú:</strong> {record.notes}
+            </Typography>
+          </Box>
+
+          {/* Điều trị */}
+          <Box sx={{ marginBottom: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: "bold", color: "#3f51b5", marginBottom: 1 }}>
+              <strong>Điều trị</strong>
+            </Typography>
+            <Typography variant="body2">
+              <strong>Tên điều trị:</strong> {record.treatmentName}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Mô tả:</strong> {record.treatmentDescription || "Không có thông tin"}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Ngày tạo kế hoạch:</strong> {record.treatmentCreatedAt 
+                ? new Date(record.treatmentCreatedAt).toLocaleDateString()
+                : "Không xác định"}
+            </Typography>
+          </Box>
+
+          {/* Thuốc */}
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: "bold", color: "#3f51b5", marginBottom: 1 }}>
+              <strong>Thuốc</strong>
+            </Typography>
+            <Typography variant="body2">
+              <strong>Tên thuốc:</strong> {record.medicationName}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Liều dùng:</strong> {record.dosage} mg
+            </Typography>
+            <Typography variant="body2">
+              <strong>Tần suất:</strong> {record.frequency}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Mô tả thuốc:</strong> {record.medicationDescription || "Không có thông tin"}
+            </Typography>
+          </Box>
+        </Box>
+      ))
+    ) : (
+      <Typography variant="body2" color="textSecondary">
+        Không có thông tin hồ sơ điều trị.
+      </Typography>
+    )}
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={handleCloseModal} color="primary" variant="contained">
+      Đóng
+    </Button>
+  </DialogActions>
+</Dialog>
+
 
 
 

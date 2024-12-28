@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './DanhSachAccount.css';
 import axios from 'axios';
 import debounce from 'lodash.debounce';
@@ -24,7 +25,8 @@ const UserList = () => {
   // State cho modal
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-
+  const role = localStorage.getItem('role');
+  const navigate = useNavigate();
   // Hàm gọi API với debounce
   const debouncedFetchUsers = debounce(async (filters) => {
     setLoading(true);
@@ -60,7 +62,16 @@ const UserList = () => {
       debouncedFetchUsers.cancel();
     };
   }, [filters]);
-
+  //kiem tra role
+  useEffect(() => {
+    if (!role) {
+      // Nếu không có role, chuyển hướng về trang đăng nhập
+      navigate('/login');
+    } else if (role !== 'Admin') {
+      // Nếu role không phải là Admin, không cho phép truy cập
+      navigate('/');
+    }
+  }, [role, navigate]);
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({
       ...prev,

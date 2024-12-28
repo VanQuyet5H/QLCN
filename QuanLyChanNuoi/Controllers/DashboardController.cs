@@ -17,129 +17,42 @@ namespace QuanLyChanNuoi.Controllers
         {
             _context = context;
         }
-
-        // API lấy số lượng vật nuôi theo loại và những thay đổi so với tháng trước
-        [HttpGet("animal-count")]
-        public async Task<IActionResult> GetAnimalCount()
+        public class DashboardSummary
         {
-            var animalCount = await _context.Animal
-                .GroupBy(a => a.Type)
-                .Select(group => new
-                {
-                    Type = group.Key,
-                    Count = group.Count()
-                })
-                .ToListAsync();
-
-            return Ok(animalCount);
+            public int TotalAnimals { get; set; }
+            public int SickAnimals { get; set; }
+            public decimal TotalFeed { get; set; }
+            public decimal TotalRevenue { get; set; }
+            public int VaccinationCount { get; set; }
         }
 
-        //API lấy tình trạng sức khỏe vật nuôi
-        [HttpGet("health-status")]
-        public async Task<IActionResult> GetHealthStatus()
+        [HttpGet("dashboard/summary")]
+        public async Task<ActionResult<DashboardSummary>> GetDashboardSummary()
         {
-            try
+            var totalAnimals = await _context.Animal.CountAsync();
+            var sickAnimals = await _context.Animal
+                                             .Where(h => h.Status == "Sick")
+                                             .CountAsync();
+            var totalFeed =await _context.Feed.SumAsync(f => f.Quantity);
+            var totalRevenue = await _context.Sale
+                                              .SumAsync(s => s.Quantity);
+            var vaccinationCount = await _context.Vaccination.CountAsync();
+            
+            var summary = new DashboardSummary
             {
-                // Lấy dữ liệu từ bảng Animal, nhóm theo `Status`, và đếm số lượng
-                var healthStatusCounts = await _context.Animal
-                    .GroupBy(a => a.Status)
-                    .Select(group => new
-                    {
-                        Status = group.Key, // Trạng thái sức khỏe (Healthy, Sick, ...)
-                        Count = group.Count() // Số lượng vật nuôi trong trạng thái đó
-                    })
-                    .Where(a => a.Status.Equals("Khỏe mạnh"))
-                    .ToListAsync();
+                TotalAnimals = totalAnimals,
+                SickAnimals = sickAnimals,
+                TotalFeed = totalFeed,
+                TotalRevenue = totalRevenue,
+                VaccinationCount = vaccinationCount
+            };
 
-                return Ok(healthStatusCounts);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Đã xảy ra lỗi: {ex.Message}");
-            }
+            return Ok(summary);
         }
 
-        // API lấy tổng chi tiêu cho vật nuôi
-        [HttpGet("expenditures")]
-        public async Task<IActionResult> GetExpenditures()
-        {
-            var feedExpenditure = await _context.Feed
-                .SumAsync(f => f.Cost);
 
-            var treatmentExpenditure = await _context.Medication
-                .SumAsync(t => t.Cost);
 
-            var totalExpenditure = feedExpenditure + treatmentExpenditure;
 
-            return Ok(new
-            {
-                FeedExpenditure = feedExpenditure,
-                TreatmentExpenditure = treatmentExpenditure,
-                TotalExpenditure = totalExpenditure
-            });
-        }
-        //api lấy tổng số lượng vật nuôi và số lượng vật nuôi đã bán
-        [HttpGet("animal-treatment-sold")]
-        public async Task<IActionResult> GetAnimalTreatmentAndSoldCount()
-        {
-            try
-            {
-                // Tính tổng số lượng vật nuôi đang điều trị và đã bán
-                var treatmentAndSoldCounts = await _context.Animal
-                    .GroupBy(a => a.Status)
-                    .Where(g => g.Key == "Sick" || g.Key == "Sold")
-                    .Select(group => new
-                    {
-                        Status = group.Key, // Trạng thái (Sick hoặc Sold)
-                        Count = group.Count() // Số lượng vật nuôi trong trạng thái đó
-                    })
-                    .ToListAsync();
-
-                // Trả về dữ liệu tổng hợp
-                var result = new
-                {
-                    TotalSick = treatmentAndSoldCounts.FirstOrDefault(x => x.Status == "Sick")?.Count ?? 0,
-                    TotalSold = treatmentAndSoldCounts.FirstOrDefault(x => x.Status == "Sold")?.Count ?? 0
-                };
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Đã xảy ra lỗi: {ex.Message}");
-            }
-        }
-        [HttpGet("vaccination-notifications")]
-        public async Task<IActionResult> GetImportantVaccinationNotifications()
-        {
-            try
-            {
-                var today = DateTime.Today;
-
-                // Lọc các lịch tiêm phòng trong 7 ngày tới
-                var notifications = await _context.Vaccination
-                    .Where(v => v.VaccinationDate >= today && v.VaccinationDate <= today.AddDays(7))
-                    .Select(v => new
-                    {
-                        AnimalName = v.Animal.Name,       // Tên vật nuôi từ bảng Animal qua Navigation Property
-                        VaccineName = v.VaccineName,     // Tên vắc xin
-                        VaccinationDate = v.VaccinationDate, // Ngày tiêm
-                    })
-                    .ToListAsync();
-
-                // Nếu không có thông báo, trả về thông điệp
-                if (!notifications.Any())
-                {
-                    return Ok(new { Message = "Không có thông báo tiêm phòng quan trọng." });
-                }
-
-                return Ok(notifications);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Đã xảy ra lỗi: {ex.Message}");
-            }
-        }
         [HttpPost("AnimalByMonthGrouped")]
         public async Task<IActionResult> GetAnimalReportByMonthGrouped(AnimalReportDto animalReportDto)
         {
@@ -271,21 +184,24 @@ namespace QuanLyChanNuoi.Controllers
             var recentActivities = new List<RecentActivity>();
 
             // Lấy thông tin từ bảng HealthRecord (ví dụ: tiêm vaccine)
-            var healthActivities = await _context.HealthRecord.Where(h => h.CheckupDate >= DateTime.Now.AddDays(-2)) // Hoạt động trong 2 ngày qua
-            .Select(h => new RecentActivity
-            {
-                Action = $"Tiêm vaccine cho {h.Animal.Name}",
-                Time = $"{(DateTime.Now - h.CheckupDate).Hours} giờ trước",
-                Type = "health",
-                Priority = "high"
-            })
-            .ToListAsync();
+            var healthActivities = await _context.HealthRecord
+                .Where(h => h.CheckupDate >= DateTime.Now.AddDays(-2)) // Hoạt động trong 2 ngày qua
+                .Select(h => new RecentActivity
+                {
+                    Id = Guid.NewGuid().ToString(), // Tạo ID duy nhất
+                    Action = $"Tiêm vaccine cho {h.Animal.Name}",
+                    Time = $"{(DateTime.Now - h.CheckupDate).Hours} giờ trước",
+                    Type = "health",
+                    Priority = "high"
+                })
+                .ToListAsync();
 
             // Lấy thông tin từ bảng Sale (ví dụ: xuất bán)
             var saleActivities = await _context.Sale
                 .Where(s => s.SaleDate >= DateTime.Now.AddDays(-2))
                 .Select(s => new RecentActivity
                 {
+                    Id = Guid.NewGuid().ToString(), // Tạo ID duy nhất
                     Action = $"Xuất bán {s.Quantity} con {s.Animal.Name}",
                     Time = $"{(DateTime.Now - s.SaleDate).Hours} giờ trước",
                     Type = "sell",
@@ -298,6 +214,7 @@ namespace QuanLyChanNuoi.Controllers
                 .Where(f => f.FeedingDate >= DateTime.Now.AddDays(-1))
                 .Select(f => new RecentActivity
                 {
+                    Id = Guid.NewGuid().ToString(), // Tạo ID duy nhất
                     Action = $"Nhập {f.Quantity} tấn thức ăn",
                     Time = $"{(DateTime.Now - f.FeedingDate).Days} ngày trước",
                     Type = "food",
@@ -307,12 +224,104 @@ namespace QuanLyChanNuoi.Controllers
 
             // Kết hợp các hoạt động và trả về
             recentActivities.AddRange(healthActivities);
-                recentActivities.AddRange(saleActivities);
-                recentActivities.AddRange(feedActivities);
+            recentActivities.AddRange(saleActivities);
+            recentActivities.AddRange(feedActivities);
 
-                return Ok(recentActivities.OrderByDescending(a => a.Time)); // Sắp xếp theo thời gian
+            return Ok(recentActivities.OrderByDescending(a => a.Time)); // Sắp xếp theo thời gian
         }
-        
+        [HttpGet]
+        public async Task<IActionResult> GetGrowthInfoAsync(DateTime? startDate, DateTime? endDate, string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
+        {
+            var query = _context.Animal.AsQueryable();
+
+            // Lọc theo thời gian sinh
+            if (startDate.HasValue)
+            {
+                query = query.Where(a => a.BirthDate >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                query = query.Where(a => a.BirthDate <= endDate.Value);
+            }
+
+            // Lọc theo từ khóa tìm kiếm (tên vật nuôi)
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                query = query.Where(a => EF.Functions.Like(a.Name, $"%{searchQuery}%"));
+            }
+
+            // Lấy tổng số vật nuôi sau khi lọc
+            var totalAnimals = await query.CountAsync();
+
+            // Lấy danh sách vật nuôi với phân trang
+            var animals = await query
+                .Skip((pageNumber - 1) * pageSize) // Bỏ qua các phần tử trước trang hiện tại
+                .Take(pageSize) // Lấy số vật nuôi của trang hiện tại
+                .ToListAsync();
+
+            var growthInfoList = new List<GrowthInfoDTO>();
+
+            foreach (var animal in animals)
+            {
+                var feedRecords = await _context.Feed
+                    .Where(f => f.AnimalId == animal.Id)
+                    .ToListAsync();
+
+                var totalFeedConsumed = feedRecords.Sum(f => f.Quantity);
+                var totalCaloriesConsumed = feedRecords.Sum(f => f.Calories);
+
+                var growthInfo = new GrowthInfoDTO
+                {
+                    TenVatNuoi = animal.Name,
+                    NgaySinh = animal.BirthDate,
+                    CanNangHienTai = animal.Weight ?? 0,
+                    // Tính tăng cân trung bình mỗi ngày (cần logic tính toán)
+                    TangCanMoiNgayTrungBinh = CalculateDailyWeightGain(animal.BirthDate, animal.Weight ?? 0),
+                    TongLuongThucAnDaTieuThu = totalFeedConsumed,
+                    TongCalorieDaTieuThu = totalCaloriesConsumed,
+                    TrangThaiSucKhoe = animal.Status ?? "Không có dữ liệu"
+                };
+
+                growthInfoList.Add(growthInfo);
+            }
+
+            // Trả về kết quả phân trang
+            var result = new
+            {
+                TotalCount = totalAnimals,
+                Items = growthInfoList
+            };
+
+            return Ok(result);
+        }
+
+
+        private decimal CalculateDailyWeightGain(DateTime birthDate, decimal currentWeight)
+        {
+            var daysAlive = (DateTime.UtcNow - birthDate).Days;
+            return daysAlive > 0 ? currentWeight / daysAlive : 0;
+        }
+
+        public class RecentActivity
+        {
+            public string Id { get; set; } // Thêm ID
+            public string Action { get; set; }
+            public string Time { get; set; }
+            public string Type { get; set; }
+            public string Priority { get; set; }
+        }
+
+
+        public class GrowthInfoDTO
+        {
+            public string TenVatNuoi { get; set; }
+            public DateTime NgaySinh { get; set; }
+            public decimal CanNangHienTai { get; set; }
+            public decimal TangCanMoiNgayTrungBinh { get; set; }
+            public decimal TongLuongThucAnDaTieuThu { get; set; }
+            public decimal TongCalorieDaTieuThu { get; set; }
+            public string TrangThaiSucKhoe { get; set; }
+        }
 
         public class AnimalReportDto
         {

@@ -178,7 +178,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     },
     {
       icon: <FaShoppingCart/>,
-      text: 'Bán Vật Nuôi',
+      text: 'Bán vật nuôi',
       submenu: [
         
         { text: 'Danh sách vật nuôi đã bán', path: '/salemenu' },

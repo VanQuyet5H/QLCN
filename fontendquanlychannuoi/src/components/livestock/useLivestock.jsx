@@ -23,25 +23,36 @@ export const useLivestock = () => {
   });
 
   const fetchLivestock = async () => {
+    // Kiểm tra điều kiện để gọi API chỉ khi chưa có dữ liệu vật nuôi
+    if (livestock.length > 0) {
+      return; // Nếu dữ liệu đã có, không gọi lại API
+    }
+  
     try {
       setIsLoading(true);
       const params = {
         page: currentPage,
         pageSize: itemsPerPage,
-        search: searchTerm
+        search: searchTerm,
       };
+  
+      // Gọi API
       const response = await axios.get('https://localhost:7185/api/Animal', { params });
+      console.log('vatnuoi', response.data);
+  
       const { data, totalRecords } = response.data;
-      setLivestock(data);
-      setTotalRecords(totalRecords);
-      setFilteredLivestock(data);
+      setLivestock(data); // Cập nhật dữ liệu vật nuôi
+      setTotalRecords(totalRecords); // Cập nhật tổng số bản ghi
+      setFilteredLivestock(data); // Cập nhật dữ liệu đã lọc
     } catch (error) {
-      alert("Could not fetch livestock data. Please try again later.");
-      throw new Error('Failed to fetch livestock data');
+      console.error('Error fetching livestock:', error);
+      alert('Không thể tải dữ liệu vật nuôi. Vui lòng thử lại sau.');
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }
   };
+  
 
   const handleSort = (key) => {
     setSortConfig({

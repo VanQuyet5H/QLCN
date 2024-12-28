@@ -23,7 +23,7 @@ namespace QuanLyChanNuoi.Models
         public string Breed { get; set; }  // Giống (nếu cần)
         public DateTime CreatedAt { get; set; }
 
-
+        public ICollection<Sale> Sales { get; set; }
         public int? CageId { get; set; }
         public Cage Cage { get; set; }
     }
