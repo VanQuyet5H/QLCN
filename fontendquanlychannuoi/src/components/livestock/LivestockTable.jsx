@@ -97,7 +97,7 @@ function LivestockTable({ livestock, onSort, sortConfig, onView, onEdit, onDelet
             Giới tính {getSortIcon('gender')}
           </TableCell>
           <TableCell onClick={() => onSort('birthDate')} sx={{ cursor: 'pointer' }}>
-            Ngày sinh {getSortIcon('birthDate')}
+            Ngày đẻ {getSortIcon('birthDate')}
           </TableCell>
           <TableCell onClick={() => onSort('status')} sx={{ cursor: 'pointer' }}>
             Trạng thái {getSortIcon('status')}
