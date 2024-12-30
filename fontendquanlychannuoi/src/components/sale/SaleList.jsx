@@ -68,6 +68,7 @@ const SaleList = () => {
   const fetchSaleDetails = async (saleId) => {
     try {
       const response = await axios.get(`https://localhost:7185/api/Sale/group-by-buyer/${saleId}`);
+      console.log(response.data);
       setSaleDetails(response.data[0]); // Get first item since API returns array
       setOpenDialog(true);
     } catch (error) {

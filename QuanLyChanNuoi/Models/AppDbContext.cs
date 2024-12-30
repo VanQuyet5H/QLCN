@@ -63,7 +63,7 @@ namespace QuanLyChanNuoi.Models
                        .HasOne(a => a.Animal) 
                        .WithMany(c => c.Sales) 
                        .HasForeignKey(a => a.AnimalId) 
-                       .OnDelete(DeleteBehavior.Restrict)
+                       .OnDelete(DeleteBehavior.Cascade)
                        .IsRequired(false);
 
 

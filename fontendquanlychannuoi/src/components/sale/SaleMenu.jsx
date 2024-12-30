@@ -3,7 +3,6 @@ import { Tabs, Tab, Box, Typography } from '@mui/material';
 import SaleList from './SaleList';
 import AddSale from './AddSale';
 import SalesReport from './SalesReport';
-import SalesDetailReport from './SalesDetailReport';
 const BaoCaoBanHang = () => (
   <Typography variant="body1" p={2}>
     Nội dung Báo Cáo Bán Hàng sẽ có sau!
@@ -26,8 +25,6 @@ const MenuBanHang = () => {
       case 1:
         return <AddSale />;
       case 2:
-        return <SalesDetailReport />;
-      case 3:
         return <SalesReport />;
       default:
         return null;
@@ -50,8 +47,7 @@ const MenuBanHang = () => {
       >
         <Tab label="Danh Sách Giao Dịch" />
         <Tab label="Thêm Giao Dịch" />
-        <Tab label="Báo Cáo Bán Hàng" />
-        <Tab label="Thống Kê Doanh Thu" />
+        <Tab label="Báo Cáo Bán Hàng Và Thống Kê Doanh Thu" />
       </Tabs>
       <Box sx={{ p: 3 }}>{renderTabContent()}</Box>
     </Box>

@@ -90,7 +90,7 @@ function Dashboard() {
       { startDate, endDate },
       'POST'
     );
-
+    
     if (data?.length > 0) {
       const months = [...new Set(data.map(item => item.month))];
       const animalTypes = [...new Set(data.map(item => item.animalType))];

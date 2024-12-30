@@ -188,7 +188,7 @@ function AddLivestock({ onClose }) {
             <TextField
               fullWidth
               type="date"
-              label="Ngày sinh *"
+              label="Ngày nhập/Ngày Đẻ *"
               variant="outlined"
               name="birthDate"
               value={formData.birthDate}

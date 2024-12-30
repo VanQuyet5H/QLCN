@@ -613,7 +613,7 @@ namespace QuanLyChanNuoi.Migrations
                     b.HasOne("QuanLyChanNuoi.Models.Animal", "Animal")
                         .WithMany("Sales")
                         .HasForeignKey("AnimalId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("QuanLyChanNuoi.Models.User", "User")
                         .WithMany()
