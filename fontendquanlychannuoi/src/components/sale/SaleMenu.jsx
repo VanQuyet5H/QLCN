@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Tabs, Tab, Box, Typography } from '@mui/material';
 import SaleList from './SaleList';
 import AddSale from './AddSale';
+import './SaleMenu.css';
 import SalesReport from './SalesReport';
 const BaoCaoBanHang = () => (
   <Typography variant="body1" p={2}>
@@ -32,6 +33,7 @@ const MenuBanHang = () => {
   };
 
   return (
+    <div class="SaleMenu">
     <Box sx={{ width: '100%', typography: 'body1' }}>
       <Typography variant="h4" gutterBottom>
         Bán vật nuôi
@@ -51,6 +53,7 @@ const MenuBanHang = () => {
       </Tabs>
       <Box sx={{ p: 3 }}>{renderTabContent()}</Box>
     </Box>
+    </div>
   );
 };
 

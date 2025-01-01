@@ -1,9 +1,20 @@
 .livestock-dashboard {
   display: flex;
   flex-direction: column;
-  padding: 0;
-  margin: 0;
+  height: 100vh; /* Chiều cao toàn màn hình */
+  overflow: auto; /* Ngăn tràn nội dung */
+  scrollbar-width: none;
+  margin-top: var(--header-height);
+  width: 1000px;
+  margin-left: var(--sidebar-collapsed-width);
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
   width: 100%;
+  min-height: calc(100vh - var(--header-height));
+   @media (max-width: 768px) {
+    padding-left: 1rem; /* Add some space on left side */
+  }
 }
 
 .dashboard-content {
@@ -12,6 +23,7 @@
   box-sizing: border-box;
   width: 100%;
   scrollbar-width: none;
+  
 }
 
 /* Optional: Fix overflow issues in the Tabs */

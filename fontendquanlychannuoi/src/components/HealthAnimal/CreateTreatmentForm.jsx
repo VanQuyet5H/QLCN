@@ -181,7 +181,7 @@ const CreateTreatmentForm = () => {
       <Typography variant="h4" mb={2}>
         Nhập thông tin điều trị
       </Typography>
-      <IconButton color="primary" onClick={() => window.history.back()} sx={{ position: 'absolute', top: 80, right: 90 }}>
+      <IconButton color="primary" onClick={() => window.history.back()} sx={{ position: 'absolute', top: 60, right: 90 }}>
         <CloseIcon />
       </IconButton>
       {notification.message && (
