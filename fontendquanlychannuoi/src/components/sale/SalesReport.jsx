@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Paper, Typography, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { TextField, Button,Box,Paper,Typography, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import axios from 'axios';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
@@ -129,7 +129,7 @@ const SalesReport = () => {
     };
 
     return (
-        <Paper elevation={3} style={{ padding: 20, marginTop: 20 }}>
+        <Box sx={{ p: 3, mt: 2, boxShadow: 2, bgcolor: 'white' }}>
             <Typography variant="h5" style={{ marginBottom: 20 }}>
                 Báo Cáo Doanh Thu
             </Typography>
@@ -200,7 +200,7 @@ const SalesReport = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
-        </Paper>
+        </Box>
     );
 };
 

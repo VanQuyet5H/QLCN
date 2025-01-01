@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TextField, Button, Paper, Typography, Stack, Alert, MenuItem, Select, InputLabel, FormControl, Snackbar, AlertTitle
+  TextField, Button,Box, Typography, Stack, Alert, MenuItem, Select, InputLabel, FormControl, Snackbar, AlertTitle
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -158,7 +158,7 @@ const AddSale = () => {
   };
 
   return (
-    <Paper elevation={3} style={{ padding: 20, marginTop: 20 }}>
+    <Box sx={{ p: 3, mt: 2, boxShadow: 2, bgcolor: 'white' }}>
       <Typography variant="h5" style={{ marginBottom: 20 }}>Thêm Mới Giao Dịch</Typography>
 
       {error && (
@@ -251,7 +251,7 @@ const AddSale = () => {
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </Paper>
+      </Box>
   );
 };
 
