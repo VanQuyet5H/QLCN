@@ -32,7 +32,7 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
     if (livestock) {
       setFormData({
         ...livestock,
-        type: ['Gia cầm','Gia súc','Bò', 'Lợn','Gà','Khác'].includes(livestock.type) ? livestock.type : '',
+        type: ['Gia cầm','Gia súc','Khác'].includes(livestock.type) ? livestock.type : '',
         otherType: livestock.type === 'Khác' ? livestock.otherType : '',
         birthDate: livestock.birthDate ? livestock.birthDate.split('T')[0] : '',
       });
@@ -119,9 +119,6 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
                 <MenuItem value="">Chọn loại</MenuItem>
                 <MenuItem value="Gia súc">Gia súc</MenuItem>
                 <MenuItem value="Gia cầm">Gia cầm</MenuItem>
-                <MenuItem value="Lợn">Heo</MenuItem>
-                <MenuItem value="Gà">Gà</MenuItem>
-                <MenuItem value="Bò">Bò</MenuItem>
                 <MenuItem value="Khác">Khác</MenuItem>
               </Select>
             </FormControl>

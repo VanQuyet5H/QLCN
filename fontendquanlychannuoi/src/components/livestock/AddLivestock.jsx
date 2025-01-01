@@ -19,12 +19,12 @@ function AddLivestock({ onClose }) {
   const [formData, setFormData] = useState({
     name: "",
     type: "",
-    gender: "Male",
+    gender: "Đực",
     birthDate: "",
     status: "",
     weight: "",
     breed: "",
-    otherType: "", // Thêm trường otherType
+    Khác: "", // Thêm trường otherType
     otherStatus: "",
   });
 
@@ -47,8 +47,8 @@ function AddLivestock({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const finalType = formData.type === "Other" && formData.otherType ? formData.otherType : formData.type;
-    const finalStatus = formData.status === "Other" && formData.otherStatus ? formData.otherStatus : formData.status;
+    const finalType = formData.type === "Khác" && formData.otherType ? formData.otherType : formData.type;
+    const finalStatus = formData.status === "Khác" && formData.otherStatus ? formData.otherStatus : formData.status;
     if (validateForm()) {
       const formattedData = {
         ...formData,
@@ -72,9 +72,9 @@ function AddLivestock({ onClose }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "type" && value !== "Other") {
+    if (name === "type" && value !== "Khác") {
       setFormData((prev) => ({ ...prev, [name]: value, otherType: "" }));
-    } else if (name === "status" && value !== "Other") {
+    } else if (name === "status" && value !== "Khác") {
       setFormData((prev) => ({ ...prev, [name]: value, otherStatus: "" }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -85,17 +85,16 @@ function AddLivestock({ onClose }) {
     }
   };
 
-
   const handleCancel = () => {
     setFormData({
       name: "",
       type: "",
-      gender: "Male",
+      gender: "Đực",
       birthDate: "",
       status: "",
       weight: "",
       breed: "",
-      otherType: "", // Reset otherType khi hủy
+      Khác: "", // Reset otherType khi hủy
       otherStatus: "",
     });
     if (onClose) {
@@ -144,9 +143,7 @@ function AddLivestock({ onClose }) {
                 <MenuItem value="">Chọn loại</MenuItem>
                 <MenuItem value="Gia súc">Gia súc</MenuItem>
                 <MenuItem value="Gia cầm">Gia cầm</MenuItem>
-                <MenuItem value="Lợn">Heo</MenuItem>
-                <MenuItem value="Gà">Gà</MenuItem>
-                <MenuItem value="Bò">Bò</MenuItem>
+        
                 <MenuItem value="Khác">Khác</MenuItem>
               </Select>
               {errors.type && <Typography color="error">{errors.type}</Typography>}
@@ -154,7 +151,7 @@ function AddLivestock({ onClose }) {
           </Grid>
 
           {/* Hiển thị trường nhập loại nếu chọn "Khác" */}
-          {formData.type === "Other" && (
+          {formData.type === "Khác" && (
             <Grid item xs={6} sm={12}>
               <TextField
                 fullWidth
@@ -224,7 +221,8 @@ function AddLivestock({ onClose }) {
             </FormControl>
           </Grid>
 
-          {formData.status === "Other" && (
+          {/* Hiển thị trường nhập trạng thái nếu chọn "Khác" */}
+          {formData.status === "Khác" && (
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -278,7 +276,6 @@ function AddLivestock({ onClose }) {
                 color="error"
                 startIcon={<FaTimes />}
                 onClick={handleCancel}
-                
               >
                 Hủy
               </Button>

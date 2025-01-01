@@ -22,7 +22,6 @@ namespace QuanLyChanNuoi.Models
         [StringLength(50, ErrorMessage = "Giống không được vượt quá 50 ký tự.")]
         public string Breed { get; set; }  // Giống (nếu cần)
         public DateTime CreatedAt { get; set; }
-
         public ICollection<Sale> Sales { get; set; }
         public int? CageId { get; set; }
         public Cage Cage { get; set; }

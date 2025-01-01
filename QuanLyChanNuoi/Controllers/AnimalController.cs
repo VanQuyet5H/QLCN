@@ -272,6 +272,7 @@ namespace QuanLyChanNuoi.Controllers
                 unassignedCount = unassignedAnimals.Count
             });
         }
+
         public class AnimalDto
         {
             public int Id { get; set; }

@@ -24,6 +24,7 @@ const CreateCage = () => {
     isAvailable: true,
     notes: '',
     environmentalConditions: '',
+    otherPurpose: '', // Thêm trường 'otherPurpose' cho mục đích "Khác"
   });
 
   const [loading, setLoading] = useState(false);
@@ -40,7 +41,7 @@ const CreateCage = () => {
   };
 
   const validateForm = () => {
-    const { name, area, capacity} = formData;
+    const { name, area, capacity } = formData;
 
     if (!name.trim() || name.length > 50) {
       setNotification({ message: 'Tên chuồng phải từ 1 đến 50 ký tự!', type: 'error' });
@@ -57,8 +58,6 @@ const CreateCage = () => {
       return false;
     }
 
-    
-
     return true;
   };
 
@@ -69,12 +68,16 @@ const CreateCage = () => {
     setLoading(true);
     try {
       const checkResponse = await axios.get(`https://localhost:7185/api/Cage/CheckCage?name=${formData.name}`);
-    if (checkResponse.data.exists) {
-      setNotification({ message: 'Chuồng đã tồn tại!', type: 'warning' });
-      setLoading(false);
-      return;
-    }
-      const response = await axios.post(`https://localhost:7185/api/Cage/NhapChuong`, formData);
+      if (checkResponse.data.exists) {
+        setNotification({ message: 'Chuồng đã tồn tại!', type: 'warning' });
+        setLoading(false);
+        return;
+      }
+      
+      // Nếu 'Khác' được chọn, sử dụng giá trị nhập vào từ 'otherPurpose'
+      const finalPurpose = formData.purpose === 'Khác' ? formData.otherPurpose : formData.purpose;
+
+      const response = await axios.post(`https://localhost:7185/api/Cage/NhapChuong`, { ...formData, purpose: finalPurpose });
       setNotification({ message: 'Thêm chuồng thành công!', type: 'success' });
       setFormData({
         name: '',
@@ -85,6 +88,7 @@ const CreateCage = () => {
         isAvailable: true,
         notes: '',
         environmentalConditions: '',
+        otherPurpose: '', // Reset lại 'otherPurpose' khi form đã submit thành công
       });
     } catch (error) {
       const errorMessage =
@@ -106,6 +110,7 @@ const CreateCage = () => {
         isAvailable: true,
         notes: '',
         environmentalConditions: '',
+        otherPurpose: '', // Reset 'otherPurpose' khi hủy form
       });
     }
   };
@@ -151,6 +156,20 @@ const CreateCage = () => {
               <MenuItem value="Lấy thịt">Lấy thịt</MenuItem>
               <MenuItem value="Khác">Khác</MenuItem>
             </TextField>
+
+            {/* Hiển thị trường nhập liệu nếu 'Khác' được chọn */}
+            {formData.purpose === 'Khác' && (
+              <TextField
+                fullWidth
+                label="Nhập mục đích khác"
+                variant="outlined"
+                name="otherPurpose"
+                value={formData.otherPurpose}
+                onChange={handleChange}
+                sx={{ mt: 2 }}
+              />
+            )}
+
             <TextField
               fullWidth
               label="Diện tích (m²)"
@@ -162,7 +181,6 @@ const CreateCage = () => {
               required
               sx={{ mt: 2 }}
             />
-
           </Grid>
           <Grid item xs={12} md={6}>
             <TextField
@@ -195,7 +213,7 @@ const CreateCage = () => {
               sx={{ mt: 2 }}
             />
           </Grid>
-          <Grid item xs={12} >
+          <Grid item xs={12}>
             <TextField
               fullWidth
               label="Ghi chú"
