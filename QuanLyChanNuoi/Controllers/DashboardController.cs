@@ -59,15 +59,14 @@ namespace QuanLyChanNuoi.Controllers
             try
             {
                 var data = await _context.Animal
-                    .Join(_context.Sale, a => a.Id, s => s.AnimalId, (a, s) => new { Animal = a, Sale = s })
-                    .Where(data => data.Sale.SaleDate >= animalReportDto.startDate && data.Sale.SaleDate <= animalReportDto.endDate)
+                    .Where(data => data.BirthDate >= animalReportDto.startDate && data.BirthDate <= animalReportDto.endDate)
                     .ToListAsync(); // Lấy dữ liệu trước, xử lý sau
 
                 var report = data
                     .GroupBy(data => new
                     {
-                        Month = data.Sale.SaleDate.ToString("yyyy-MM"),
-                        Type = data.Animal.Type
+                        Month = data.BirthDate.ToString("yyyy-MM"),
+                        Type = data.Type
                     })
                     .Select(g => new
                     {

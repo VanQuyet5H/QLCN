@@ -25,7 +25,7 @@ namespace QuanLyChanNuoi.Controllers
         {
             // Lấy danh sách vật nuôi có trạng thái "ốm"
             var sickAnimals = _context.Animal
-                                      .Where(a => a.Status == "Sick")  // Giả sử trạng thái "Sick" đại diện cho vật nuôi bị ốm
+                                      .Where(a => a.Status == "Ốm")  // Giả sử trạng thái "Sick" đại diện cho vật nuôi bị ốm
                                       .ToList();
 
             return sickAnimals;
