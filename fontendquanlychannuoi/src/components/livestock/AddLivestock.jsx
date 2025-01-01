@@ -142,10 +142,12 @@ function AddLivestock({ onClose }) {
                 name="type"
               >
                 <MenuItem value="">Chọn loại</MenuItem>
-                <MenuItem value="Cattle">Gia súc</MenuItem>
-                <MenuItem value="Pig">Heo</MenuItem>
-                <MenuItem value="Chicken">Gà</MenuItem>
-                <MenuItem value="Other">Khác</MenuItem>
+                <MenuItem value="Gia súc">Gia súc</MenuItem>
+                <MenuItem value="Gia cầm">Gia cầm</MenuItem>
+                <MenuItem value="Lợn">Heo</MenuItem>
+                <MenuItem value="Gà">Gà</MenuItem>
+                <MenuItem value="Bò">Bò</MenuItem>
+                <MenuItem value="Khác">Khác</MenuItem>
               </Select>
               {errors.type && <Typography color="error">{errors.type}</Typography>}
             </FormControl>
@@ -178,8 +180,8 @@ function AddLivestock({ onClose }) {
                 label="Giới tính"
                 name="gender"
               >
-                <MenuItem value="Male">Đực</MenuItem>
-                <MenuItem value="Female">Cái</MenuItem>
+                <MenuItem value="Đực">Đực</MenuItem>
+                <MenuItem value="Cái">Cái</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -213,10 +215,10 @@ function AddLivestock({ onClose }) {
                 name="status"
               >
                 <MenuItem value="">Chọn trạng thái</MenuItem>
-                <MenuItem value="Healthy">Khỏe mạnh</MenuItem>
-                <MenuItem value="Sick">Ốm</MenuItem>
-                <MenuItem value="Recovering">Đang hồi phục</MenuItem>
-                <MenuItem value="Other">Khác</MenuItem>
+                <MenuItem value="Khỏe mạnh">Khỏe mạnh</MenuItem>
+                <MenuItem value="Ốm">Ốm</MenuItem>
+                <MenuItem value="Đang phục hồi">Đang hồi phục</MenuItem>
+                <MenuItem value="Khác">Khác</MenuItem>
               </Select>
               {errors.status && <Typography color="error">{errors.status}</Typography>}
             </FormControl>
