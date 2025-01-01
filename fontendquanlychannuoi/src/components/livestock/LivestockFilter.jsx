@@ -92,8 +92,8 @@ function LivestockFilter({ onApplyFilters }) {
         <label>Giới tính</label>
         <select name="gender" value={filters.gender} onChange={handleFilterChange}>
           <option value="">Tất cả</option>
-          <option value="Male">Đực</option>
-          <option value="Female">Cái</option>
+          <option value="Đực">Đực</option>
+          <option value="Cái">Cái</option>
         </select>
       </div>
 
@@ -113,8 +113,8 @@ function LivestockFilter({ onApplyFilters }) {
         <label>Tình trạng</label>
         <select name="status" value={filters.status} onChange={handleFilterChange}>
           <option value="">Tất cả</option>
-          <option value="Healthy">Khỏe mạnh</option>
-          <option value="Sick">Đang điều trị</option>
+          <option value="Khỏe mạnh">Khỏe mạnh</option>
+          <option value="Ốm">Đang điều trị</option>
         </select>
       </div>
 
