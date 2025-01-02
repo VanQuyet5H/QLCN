@@ -18,8 +18,8 @@ import SearchIcon from "@mui/icons-material/Search";
 
 function Dashboard() {
   // State management
-  const [startDate, setStartDate] = useState("2024-01-01");
-  const [endDate, setEndDate] = useState("2024-12-31");
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [feedConsumptionData, setFeedConsumptionData] = useState([]);
@@ -31,6 +31,12 @@ function Dashboard() {
   const [totalAnimals, setTotalAnimals] = useState(0);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const getLastMonthDateRange = () => {
+    const currentDate = new Date();
+    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1); // Ngày đầu tháng hiện tại
+    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0); // Ngày cuối tháng hiện tại
+    return { startOfMonth, endOfMonth };
+  };
 
   useEffect(() => {
     const fetchAnimals = async () => {
@@ -90,7 +96,7 @@ function Dashboard() {
       { startDate, endDate },
       'POST'
     );
-    
+
     if (data?.length > 0) {
       const months = [...new Set(data.map(item => item.month))];
       const animalTypes = [...new Set(data.map(item => item.animalType))];
@@ -109,6 +115,14 @@ function Dashboard() {
     }
     setLoading(false);
   };
+  useEffect(() => {
+    const { startOfMonth, endOfMonth } = getLastMonthDateRange();
+    setStartDate(startOfMonth.toISOString().split('T')[0]);
+    setEndDate(endOfMonth.toISOString().split('T')[0]);
+
+    // Gọi API để lấy dữ liệu của tháng gần nhất (hoặc khoảng thời gian mặc định)
+    loadGrowthData(startOfMonth.toISOString().split('T')[0], endOfMonth.toISOString().split('T')[0]);
+  }, []);
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
@@ -179,7 +193,13 @@ function Dashboard() {
   const handlePageChange = (event, newPage) => {
     setPage(newPage);
   };
-
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = ("0" + date.getDate()).slice(-2);
+    const month = ("0" + (date.getMonth() + 1)).slice(-2);
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
   useEffect(() => {
     fetchStats();
     loadGrowthData();
@@ -190,7 +210,7 @@ function Dashboard() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
       {/* Main Content */}
-      <Box sx={{ flex: 1, overflowY: 'auto', p: 3, marginTop: '50px',scrollbarWidth:'none' }}>
+      <Box sx={{ flex: 1, overflowY: 'auto', p: 3, marginTop: '50px', scrollbarWidth: 'none' }}>
         {/* Header */}
         <Grid container alignItems="center" sx={{ mb: 3 }}>
           <Grid item xs={8}>
@@ -265,10 +285,17 @@ function Dashboard() {
                   sx={{ width: 150 }}
                 />
               </Box>
-              <Box sx={{ height: 300 }}>
-                {chartData && <ChartJSBar data={chartData} options={{ maintainAspectRatio: false }} />}
+              <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {chartData && chartData.datasets && chartData.datasets.length > 0 ? (
+                  <ChartJSBar data={chartData} options={{ maintainAspectRatio: false }} />
+                ) : (
+                  <Typography variant="body1" color="textSecondary">
+                    Không có dữ liệu để hiển thị.
+                  </Typography>
+                )}
               </Box>
             </Paper>
+
           </Grid>
 
           {/* Feed Consumption Chart */}
@@ -284,18 +311,25 @@ function Dashboard() {
                 onChange={(e) => setYear(Number(e.target.value))}
                 sx={{ width: 150, mb: 3 }}
               />
-              <Box sx={{ height: 300 }}>
-                <ResponsiveContainer>
-                  <BarChart data={feedConsumptionData}>
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <Tooltip />
-                    <Bar dataKey="thức_ăn" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
+              <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {feedConsumptionData && feedConsumptionData.length > 0 ? (
+                  <ResponsiveContainer>
+                    <BarChart data={feedConsumptionData}>
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <Tooltip />
+                      <Bar dataKey="thức_ăn" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <Typography variant="body1" color="textSecondary">
+                    Không có dữ liệu để hiển thị.
+                  </Typography>
+                )}
               </Box>
             </Paper>
+
           </Grid>
         </Grid>
 
@@ -347,7 +381,7 @@ function Dashboard() {
                     animals.map((row, index) => (
                       <TableRow key={index}>
                         <TableCell>{row.tenVatNuoi}</TableCell>
-                        <TableCell align="right">{new Date(row.ngaySinh).toLocaleDateString()}</TableCell>
+                        <TableCell align="right">{formatDate(row.ngaySinh)}</TableCell>
                         <TableCell align="right">{row.canNangHienTai}</TableCell>
                         <TableCell align="right">{row.tangCanMoiNgayTrungBinh}</TableCell>
                         <TableCell align="right">{row.tongLuongThucAnDaTieuThu}</TableCell>

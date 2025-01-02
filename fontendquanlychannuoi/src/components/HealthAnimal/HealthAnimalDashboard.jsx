@@ -39,7 +39,7 @@ function HealthAnimalDashboard() {
         </Tabs>
       </Box>
 
-      <div className="healthanimal-dashboard-content" style={{ padding: '16px' }}>
+      <div className="healthanimal" style={{ padding: '16px' }}>
         {renderContent()} {/* Render nội dung dựa trên tab đang được chọn */}
       </div>
     </div>

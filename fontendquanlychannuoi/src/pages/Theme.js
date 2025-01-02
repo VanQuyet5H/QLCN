@@ -9,11 +9,11 @@ export const theme = {
     danger: '#ef4444',
     background: {
       light: '#f8fafc',
-      dark: '#1e293b'
+      dark: '#FDF4DC' // Thay đổi màu nền tối thành vàng nhạt
     },
     text: {
       light: '#1e293b',
-      dark: '#f8fafc'
+      dark: '#1e293b' // Đổi màu chữ trong chế độ tối để phù hợp với nền vàng
     }
   },
   spacing: {
@@ -34,8 +34,8 @@ export const theme = {
     color: "#000000",
   },
   dark: {
-    background: "#000000",
-    color: "#ffffff",
+    background: "#FDF4DC", // Cập nhật màu nền tối
+    color: "#1e293b", // Màu chữ phù hợp với nền vàng nhạt
   },
 };
 
@@ -68,9 +68,6 @@ export const GlobalStyle = createGlobalStyle`
       props.theme === "dark" ? theme.colors.background.dark : theme.colors.background.light};
     color: ${(props) =>
       props.theme === "dark" ? theme.colors.text.dark : theme.colors.text.light};
-    color: var(--text-light);
     transition: background-color 0.3s ease, color 0.3s ease;
   }
-
-  
 `;

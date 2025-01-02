@@ -119,32 +119,63 @@ namespace QuanLyChanNuoi.Controllers
         [HttpGet("growth-statistics")]
         public async Task<IActionResult> GetGrowthStatistics()
         {
-            // Truy vấn dữ liệu QualityControl
+            // Tính toán phạm vi ngày cho 30 ngày gần nhất
+            var endDate = DateTime.UtcNow;
+            var startDate = endDate.AddDays(-30);
+
             var growthData = await _context.QualityControl
-                .Include(q => q.Animal) // Include để lấy thông tin liên quan đến động vật
-                .GroupBy(q => q.Animal.Type) // Group theo loại động vật
+                .Include(q => q.Animal) // Bao gồm thông tin động vật
+                .Where(q => q.InspectionDate >= startDate && q.InspectionDate <= endDate) // Lọc theo ngày kiểm tra
+                .GroupBy(q => new { q.AnimalId, q.Animal.Type, q.Animal.Name }) // Nhóm theo AnimalId, Type, Name
                 .Select(group => new
                 {
-                    AnimalType = group.Key,
-                    BestGrowthAnimals = group
-                        .OrderByDescending(q => q.Weight)
-                        .Take(3)
-                        .Select(q => new
+                    AnimalId = group.Key.AnimalId,
+                    AnimalType = group.Key.Type,
+                    AnimalName = group.Key.Name,
+                    // Tính tỷ lệ tăng trưởng: (trọng lượng cuối - trọng lượng đầu) / số ngày
+                    GrowthRate = (
+                        group.OrderByDescending(q => q.InspectionDate).First().Weight -
+                        group.OrderBy(q => q.InspectionDate).First().Weight
+                    ) / (
+                        (group.Max(q => q.InspectionDate) - group.Min(q => q.InspectionDate)).Days
+                    ),
+                    InitialWeight = group.OrderBy(q => q.InspectionDate).First().Weight,
+                    CurrentWeight = group.OrderByDescending(q => q.InspectionDate).First().Weight,
+                    DaysTracked = (group.Max(q => q.InspectionDate) - group.Min(q => q.InspectionDate)).Days,
+                    LatestHealthStatus = group.OrderByDescending(q => q.InspectionDate).First().HealthStatus
+                })
+                .GroupBy(x => x.AnimalType) // Nhóm theo loại động vật
+                .Select(typeGroup => new
+                {
+                    AnimalType = typeGroup.Key,
+                    AverageGrowthRate = typeGroup.Average(x => x.GrowthRate), // Tính tỷ lệ tăng trưởng trung bình
+                    BestGrowthAnimals = typeGroup
+                        .OrderByDescending(x => x.GrowthRate) // Sắp xếp theo tỷ lệ tăng trưởng giảm dần
+                        .Take(3) // Lấy 3 động vật có tăng trưởng tốt nhất
+                        .Select(a => new
                         {
-                            AnimalId = q.AnimalId,
-                            AnimalName = q.Animal.Name,
-                            Growth = q.Weight,
-                            HealthStatus = q.HealthStatus
+                            AnimalId = a.AnimalId,
+                            AnimalName = a.AnimalName,
+                            GrowthRatePerDay = Math.Round(a.GrowthRate, 2), // Làm tròn tỷ lệ tăng trưởng
+                            InitialWeight = Math.Round(a.InitialWeight, 2),
+                            CurrentWeight = Math.Round(a.CurrentWeight, 2),
+                            TotalGrowth = Math.Round(a.CurrentWeight - a.InitialWeight, 2), // Tính tổng mức tăng trưởng
+                            DaysTracked = a.DaysTracked,
+                            HealthStatus = a.LatestHealthStatus
                         }),
-                    WorstGrowthAnimals = group
-                        .OrderBy(q => q.Weight)
-                        .Take(3)
-                        .Select(q => new
+                    WorstGrowthAnimals = typeGroup
+                        .OrderBy(x => x.GrowthRate) // Sắp xếp theo tỷ lệ tăng trưởng tăng dần
+                        .Take(3) // Lấy 3 động vật có tăng trưởng kém nhất
+                        .Select(a => new
                         {
-                            AnimalId = q.AnimalId,
-                            AnimalName = q.Animal.Name,
-                            Growth = q.Weight,
-                            HealthStatus = q.HealthStatus
+                            AnimalId = a.AnimalId,
+                            AnimalName = a.AnimalName,
+                            GrowthRatePerDay = Math.Round(a.GrowthRate, 2),
+                            InitialWeight = Math.Round(a.InitialWeight, 2),
+                            CurrentWeight = Math.Round(a.CurrentWeight, 2),
+                            TotalGrowth = Math.Round(a.CurrentWeight - a.InitialWeight, 2),
+                            DaysTracked = a.DaysTracked,
+                            HealthStatus = a.LatestHealthStatus
                         })
                 })
                 .ToListAsync();
@@ -152,14 +183,16 @@ namespace QuanLyChanNuoi.Controllers
             return Ok(new
             {
                 success = true,
-                message = "Thống kê tăng trưởng vật nuôi.",
+                message = "Thống kê tăng trưởng vật nuôi trong 30 ngày gần nhất.",
                 data = growthData
             });
         }
-    
 
-    // DTO for tracking animals in a cage
-    public class TrackCageRequest
+
+
+
+        // DTO for tracking animals in a cage
+        public class TrackCageRequest
         {
             public int UserId { get; set; }
             public List<AnimalTrackDetail> AnimalDetails { get; set; }

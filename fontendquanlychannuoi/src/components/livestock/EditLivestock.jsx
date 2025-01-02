@@ -32,7 +32,7 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
     if (livestock) {
       setFormData({
         ...livestock,
-        type: ['Gia cầm','Gia súc','Khác'].includes(livestock.type) ? livestock.type : '',
+        type: ['Gia cầm', 'Gia súc', 'Khác'].includes(livestock.type) ? livestock.type : '',
         otherType: livestock.type === 'Khác' ? livestock.otherType : '',
         birthDate: livestock.birthDate ? livestock.birthDate.split('T')[0] : '',
       });
@@ -43,6 +43,9 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
     const newErrors = {};
     if (!formData.name) newErrors.name = 'Vui lòng nhập tên vật nuôi';
     if (!formData.type) newErrors.type = 'Vui lòng chọn loại vật nuôi';
+    if (formData.type === 'Khác' && !formData.otherType) {
+      newErrors.otherType = 'Vui lòng nhập loại vật nuôi khác';
+    }
     if (!formData.weight || formData.weight <= 0) newErrors.weight = 'Cân nặng không hợp lệ';
     if (!formData.birthDate) newErrors.birthDate = 'Vui lòng nhập ngày sinh';
     setErrors(newErrors);
@@ -68,7 +71,7 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
     e.preventDefault();
     if (validateForm()) {
       setIsSubmitting(true);
-      const finalData = formData.type === 'other' ? { ...formData, type: formData.otherType } : formData;
+      const finalData = formData.type === 'Khác' ? { ...formData, type: formData.otherType } : formData;
       try {
         await onSubmit(finalData);
         setIsSubmitting(false);
@@ -121,10 +124,11 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
                 <MenuItem value="Gia cầm">Gia cầm</MenuItem>
                 <MenuItem value="Khác">Khác</MenuItem>
               </Select>
+              {errors.type && <Typography color="error">{errors.type}</Typography>}
             </FormControl>
           </Grid>
 
-          {formData.type === 'other' && (
+          {formData.type === 'Khác' && (
             <Grid item xs={12} sm={6}>
               <TextField
                 label="Nhập loại khác"
@@ -132,6 +136,8 @@ function EditLivestock({ livestock, onSubmit, onCancel }) {
                 value={formData.otherType || ''}
                 onChange={handleChange}
                 fullWidth
+                error={!!errors.otherType}
+                helperText={errors.otherType}
               />
             </Grid>
           )}

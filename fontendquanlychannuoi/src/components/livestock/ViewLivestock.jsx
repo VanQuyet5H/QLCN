@@ -1,6 +1,6 @@
 import { FaTimes } from 'react-icons/fa';
 import { Card, CardContent, Typography, Grid, Button, Divider, Box } from '@mui/material';
-import { Pets, HealthAndSafety, Storefront } from '@mui/icons-material';
+import { Pets, HealthAndSafety, Storefront, Restore, HelpOutline } from '@mui/icons-material';
 import './ViewLivestock.css';
 
 function ViewLivestock({ livestock, onClose }) {
@@ -12,6 +12,21 @@ function ViewLivestock({ livestock, onClose }) {
     const month = ("0" + (date.getMonth() + 1)).slice(-2);
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'Khỏe mạnh':
+        return <HealthAndSafety color="success" fontSize="large" />;
+      case 'Ốm':
+        return <HealthAndSafety color="error" fontSize="large" />;
+      case 'Đang phục hồi':
+        return <Restore color="warning" fontSize="large" />;
+      case 'Khác':
+        return <HelpOutline color="info" fontSize="large" />;
+      default:
+        return <HelpOutline color="info" fontSize="large" />;
+    }
   };
 
   return (
@@ -102,7 +117,7 @@ function ViewLivestock({ livestock, onClose }) {
                 </Typography>
                 <Grid container spacing={2} alignItems="center">
                   <Grid item xs={2}>
-                    <HealthAndSafety color={livestock.status === 'Sick' ? 'error' : 'success'} fontSize="large" />
+                    {getStatusIcon(livestock.status)}
                   </Grid>
                   <Grid item xs={10}>
                     <Typography variant="body1" noWrap>

@@ -1,0 +1,18 @@
+.menueat{
+    display: flex;
+  flex-direction: column;
+  height: 100vh; /* Chiều cao toàn màn hình */
+  overflow: auto; /* Ngăn tràn nội dung */
+  scrollbar-width: none;
+  margin-top: 25px;
+  width: 1000px;
+  margin-left: var(--sidebar-collapsed-width);
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  min-height: calc(100vh - var(--header-height));
+   @media (max-width: 768px) {
+    padding-left: 1rem; /* Add some space on left side */
+  }
+}

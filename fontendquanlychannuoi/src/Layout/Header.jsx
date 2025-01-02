@@ -169,8 +169,8 @@ function Header({ isExpanded }) {
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [showNotificationMenu, setShowNotificationMenu] = useState(false);
   const [expandedNotificationId, setExpandedNotificationId] = useState(null);
-  const id = localStorage.getItem('id');
   const navigate = useNavigate();
+  const id = localStorage.getItem('id');
   const fetchRecentActivities = async () => {
     try {
       const response = await axios.get("https://localhost:7185/api/Dashboard/recent-activities");
