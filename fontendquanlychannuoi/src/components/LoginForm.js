@@ -1,13 +1,18 @@
 import React, { useState } from "react";
 import './LoginForm.css'
 import { useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 const LoginForm = () => {
   const navigate=useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword); // Toggle trạng thái hiển thị mật khẩu
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,16 +61,25 @@ const LoginForm = () => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="password">Mật khẩu</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
+            <label htmlFor="password">Mật khẩu</label>
+            <div className="password-input-container">
+              <input
+                type={showPassword ? "text" : "password"} // Toggle giữa text và password
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="toggle-password-btn"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />} {/* Hiển thị icon */}
+              </button>
+            </div>
+          </div>
         <button type="submit" className="btn-login">Đăng Nhập</button>
       </form>
       <div className="extra-links">

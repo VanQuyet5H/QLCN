@@ -39,10 +39,11 @@ namespace QuanLyChanNuoi.Controllers
             var animal = await _context.Animal.FindAsync(request.AnimalId);
             if (animal == null)
                 return NotFound("Vật nuôi không tồn tại.");
-            if (animal.Status != "Sick")
+            if (animal.Status != "Ốm" && animal.Status != "Đang điều trị")
             {
-                return BadRequest("Chỉ có thể thêm lịch sử chăm sóc cho những vật nuôi bị ốm.");
+                return BadRequest("Chỉ có thể thêm lịch sử chăm sóc cho những vật nuôi bị ốm hoặc vật nuôi đang điều trị.");
             }
+
             var user = await _context.User.FindAsync(request.UserId);
             if (user == null)
                 return NotFound("Người dùng không tồn tại.");
@@ -101,9 +102,22 @@ namespace QuanLyChanNuoi.Controllers
             }
             else if (request.Status == "Chết")
             {
-                // Xóa vật nuôi nếu chết
-                _context.Animal.Remove(animal);
+                if (animal != null)
+                {
+                    // Cập nhật số lượng vật nuôi trong chuồng
+                    var cage = _context.Cage.FirstOrDefault(c => c.Id == animal.CageId);
+                    if (cage != null)
+                    {
+                        cage.CurrentOccupancy--;  // Giảm số lượng vật nuôi trong chuồng
+                        _context.Cage.Update(cage);  // Lưu thay đổi trong chuồng
+                    }
+
+                    // Xóa vật nuôi nếu chết
+                    _context.Animal.Remove(animal);
+                    _context.SaveChanges();  // Lưu thay đổi vào cơ sở dữ liệu
+                }
             }
+
             else
             {
                 return BadRequest("Trạng thái không hợp lệ.");
