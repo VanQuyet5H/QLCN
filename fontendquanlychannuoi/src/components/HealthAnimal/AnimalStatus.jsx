@@ -29,9 +29,9 @@ const AnimalStatus = ({ animalId, currentStatus }) => {
         disabled={loading}
         className="status-select"
       >
-        <option value="Sick">Bệnh</option>
-        <option value="Healthy">Khỏe mạnh</option>
-        <option value="Dead">Chết</option>
+        <option value="Ốm">Bệnh</option>
+        <option value="Khỏe mạnh">Khỏe mạnh</option>
+        <option value="Chết">Chết</option>
       </select>
 
       {loading && <p>Đang cập nhật trạng thái...</p>}
