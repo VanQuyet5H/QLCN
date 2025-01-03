@@ -188,7 +188,7 @@ namespace QuanLyChanNuoi.Controllers
                 .Select(h => new RecentActivity
                 {
                     Id = Guid.NewGuid().ToString(), // Tạo ID duy nhất
-                    Action = $"Tiêm vaccine cho {h.Animal.Name}",
+                    Action = $"Đã theo dõi vật nuôi {h.Animal.Name}",
                     Time = $"{(DateTime.Now - h.CheckupDate).Hours} giờ trước",
                     Type = "health",
                     Priority = "high"

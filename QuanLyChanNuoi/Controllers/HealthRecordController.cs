@@ -39,10 +39,11 @@ namespace QuanLyChanNuoi.Controllers
             var animal = await _context.Animal.FindAsync(request.AnimalId);
             if (animal == null)
                 return NotFound("Vật nuôi không tồn tại.");
-            if (animal.Status != "Sick")
+            if (animal.Status != "Ốm" && animal.Status != "Đang điều trị")
             {
-                return BadRequest("Chỉ có thể thêm lịch sử chăm sóc cho những vật nuôi bị ốm.");
+                return BadRequest("Chỉ có thể thêm lịch sử chăm sóc cho những vật nuôi bị ốm hoặc vật nuôi đang điều trị.");
             }
+
             var user = await _context.User.FindAsync(request.UserId);
             if (user == null)
                 return NotFound("Người dùng không tồn tại.");

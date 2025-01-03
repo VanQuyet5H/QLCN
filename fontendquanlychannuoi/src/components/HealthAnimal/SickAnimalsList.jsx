@@ -73,7 +73,9 @@ const SickAnimalsList = () => {
 
     try {
       const response = await axios.post("https://localhost:7185/add", healthRecord);
+      console.log(response);
       setSuccessMessage(response.data.Message);
+      alert("Lịch sử chăm sóc đã được thêm thành công!");
       handleCloseModal(); // Close modal after success
     } catch (error) {
       setError(error.response?.data || "Đã có lỗi xảy ra");
