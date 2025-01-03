@@ -183,3 +183,18 @@ body {
 .extra-links .link:hover {
   color: #0056b3;
 }
+.password-input-container {
+  position: relative;
+}
+
+.toggle-password-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #007bff;
+  font-size: 20px; /* Điều chỉnh kích thước icon */
+}

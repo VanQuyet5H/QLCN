@@ -102,9 +102,22 @@ namespace QuanLyChanNuoi.Controllers
             }
             else if (request.Status == "Chết")
             {
-                // Xóa vật nuôi nếu chết
-                _context.Animal.Remove(animal);
+                if (animal != null)
+                {
+                    // Cập nhật số lượng vật nuôi trong chuồng
+                    var cage = _context.Cage.FirstOrDefault(c => c.Id == animal.CageId);
+                    if (cage != null)
+                    {
+                        cage.CurrentOccupancy--;  // Giảm số lượng vật nuôi trong chuồng
+                        _context.Cage.Update(cage);  // Lưu thay đổi trong chuồng
+                    }
+
+                    // Xóa vật nuôi nếu chết
+                    _context.Animal.Remove(animal);
+                    _context.SaveChanges();  // Lưu thay đổi vào cơ sở dữ liệu
+                }
             }
+
             else
             {
                 return BadRequest("Trạng thái không hợp lệ.");

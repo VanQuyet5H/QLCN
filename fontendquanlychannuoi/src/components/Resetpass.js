@@ -1,11 +1,13 @@
 import React, { useState,useEffect } from "react";
 import { useSearchParams,useNavigate } from "react-router-dom"; // Sử dụng React Router để lấy token từ URL
-import './Resetpass.css'
+import './Resetpass.css';
+import axios from 'axios'; // Import axios
 function Resetpass() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [token,setToken]=useState(null);
@@ -26,21 +28,24 @@ function Resetpass() {
       return;
     }
 
+    setLoading(true); // Bắt đầu loading khi yêu cầu gửi đi
+
     try {
-      const response = await fetch("https://localhost:7185/api/Auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, newPassword }),
+      const response = await axios.post("https://localhost:7185/api/Auth/reset-password", {
+        token, 
+        newPassword
       });
-      const data = await response.json();
-      if (response.ok) {
-        setSuccess(data.message ||"Đặt lại mật khẩu thành công!");
+
+      if (response.status === 200) {
+        setSuccess(response.data.message || "Đặt lại mật khẩu thành công!");
         setTimeout(() => navigate("/login"), 3000);
       } else {
-        setTimeout(() => {setError("Token không hợp lệ hoặc đã hết hạn.");}, 3000);
+        setError("Token không hợp lệ hoặc đã hết hạn.");
       }
     } catch (error) {
-      setError("Đã xảy ra lỗi. Vui lòng thử lại.");
+      setError(error.response?.data || "Đã xảy ra lỗi. Vui lòng thử lại.");
+    } finally {
+      setLoading(false); // Kết thúc loading
     }
   };
 
@@ -73,7 +78,7 @@ function Resetpass() {
             required
           />
         </div>
-        <button type="submit" className="btn-login">Đổi Mật Khẩu</button>
+        <button type="submit" onClick={handleSubmit} className="btn-login">Đổi Mật Khẩu</button>
       </form>
     </div>
   </div>
