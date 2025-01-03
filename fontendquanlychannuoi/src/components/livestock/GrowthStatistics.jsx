@@ -29,7 +29,7 @@ import {
 } from "chart.js";
 import axios from "axios";
 import { BarChart, ErrorOutline } from '@mui/icons-material';
-ChartJS.register(CategoryScale, LinearScale,BarChart,BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale,BarElement, Title, Tooltip, Legend);
 
 const API_URL = "https://localhost:7185/api/QualityControl/tang-truong";
 

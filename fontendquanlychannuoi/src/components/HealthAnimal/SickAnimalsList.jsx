@@ -15,7 +15,7 @@ const SickAnimalsList = () => {
   const [medication, setMedication] = useState("");
   const [notes, setNotes] = useState("");
   const [successMessage, setSuccessMessage] = useState(null);
-  
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
@@ -120,7 +120,7 @@ const SickAnimalsList = () => {
                   <AnimalStatus animalId={animal.id} currentStatus={animal.status} />
                 </td>
                 <td>
-                  {animal.status === "Ốm" && (
+                  {(animal.status === "Ốm" || animal.status === "Đang điều trị") && (
                     <Button
                       variant="contained"
                       color="primary"
@@ -130,6 +130,7 @@ const SickAnimalsList = () => {
                     </Button>
                   )}
                 </td>
+
               </tr>
             ))}
           </tbody>
@@ -181,7 +182,7 @@ const SickAnimalsList = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          
+
           <Button
             onClick={handleSubmit}
             variant="contained"

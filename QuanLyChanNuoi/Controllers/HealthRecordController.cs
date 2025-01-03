@@ -25,7 +25,7 @@ namespace QuanLyChanNuoi.Controllers
         {
             // Lấy danh sách vật nuôi có trạng thái "ốm"
             var sickAnimals = _context.Animal
-                                      .Where(a => a.Status == "Ốm")  // Giả sử trạng thái "Sick" đại diện cho vật nuôi bị ốm
+                                      .Where(a => a.Status == "Ốm"||a.Status=="Đang điều trị")  // Giả sử trạng thái "Sick" đại diện cho vật nuôi bị ốm
                                       .ToList();
 
             return sickAnimals;
@@ -89,12 +89,17 @@ namespace QuanLyChanNuoi.Controllers
             if (animal == null)
                 return NotFound("Vật nuôi không tồn tại.");
 
-            if (request.Status == "Healthy")
+            if (request.Status == "Khỏe mạnh")
             {
                 // Cập nhật trạng thái thành Khỏe mạnh
-                animal.Status = "Healthy";
+                animal.Status = "Khỏe mạnh";
             }
-            else if (request.Status == "Dead")
+            else if (request.Status == "Đang điều trị")
+            {
+                // Cập nhật trạng thái thành đang điều trị
+                animal.Status = "Đang điều trị";
+            }
+            else if (request.Status == "Chết")
             {
                 // Xóa vật nuôi nếu chết
                 _context.Animal.Remove(animal);
