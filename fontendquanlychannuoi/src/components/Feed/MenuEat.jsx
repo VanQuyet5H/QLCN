@@ -17,7 +17,8 @@ const FeedTabs = () => {
     };
 
     return (
-        <Box sx={{ width: '100%', marginTop:10}}>
+        <div className='menueat'>
+        <Box sx={{ width: '100%'}}>
             <Tabs
                 value={activeTab}
                 onChange={(event, newTab) => setActiveTab(newTab)}
@@ -33,7 +34,7 @@ const FeedTabs = () => {
             <Box sx={{ padding:0 }} className="custom-content">
                 {renderContent()} {/* Render nội dung dựa trên activeTab */}
             </Box>
-        </Box>
+        </Box></div>
     );
 };
 

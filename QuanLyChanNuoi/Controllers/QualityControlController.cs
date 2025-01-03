@@ -116,50 +116,133 @@ namespace QuanLyChanNuoi.Controllers
                 Passed = (animalDetail.Weight ?? animal.Weight ?? 0) >= 50  // Check if the animal passes based on weight
             };
         }
-        [HttpGet("growth-statistics")]
-        public async Task<IActionResult> GetGrowthStatistics()
+        [HttpGet("tang-truong")]
+        public async Task<IActionResult> LayTangTruong([FromQuery] int? ngay = 30)
         {
-            // Truy vấn dữ liệu QualityControl
-            var growthData = await _context.QualityControl
-                .Include(q => q.Animal) // Include để lấy thông tin liên quan đến động vật
-                .GroupBy(q => q.Animal.Type) // Group theo loại động vật
-                .Select(group => new
-                {
-                    AnimalType = group.Key,
-                    BestGrowthAnimals = group
-                        .OrderByDescending(q => q.Weight)
-                        .Take(3)
-                        .Select(q => new
-                        {
-                            AnimalId = q.AnimalId,
-                            AnimalName = q.Animal.Name,
-                            Growth = q.Weight,
-                            HealthStatus = q.HealthStatus
-                        }),
-                    WorstGrowthAnimals = group
-                        .OrderBy(q => q.Weight)
-                        .Take(3)
-                        .Select(q => new
-                        {
-                            AnimalId = q.AnimalId,
-                            AnimalName = q.Animal.Name,
-                            Growth = q.Weight,
-                            HealthStatus = q.HealthStatus
-                        })
-                })
-                .ToListAsync();
-
-            return Ok(new
+            try
             {
-                success = true,
-                message = "Thống kê tăng trưởng vật nuôi.",
-                data = growthData
-            });
-        }
-    
+                // Đảm bảo giá trị ngày hợp lệ
+                if (!ngay.HasValue || ngay.Value <= 0)
+                {
+                    ngay = 30;
+                }
 
-    // DTO for tracking animals in a cage
-    public class TrackCageRequest
+                // Bước 1: Lấy dữ liệu thô
+                var duLieuGoc = await _context.QualityControl
+                                .Include(qc => qc.Animal)
+                                .Where(qc => qc.InspectionDate >= DateTime.Now.AddDays(-ngay.Value))
+                                .GroupBy(qc => new { qc.AnimalId, qc.Animal.Type, qc.Animal.Breed })
+                                .Select(g => new
+                                {
+                                    LoaiVatNuoi = g.Key.Type,
+                                    Giong = g.Key.Breed,
+                                    MaVatNuoi = g.Key.AnimalId,
+                                    CanNangBanDau = g.OrderBy(qc => qc.InspectionDate).FirstOrDefault().Weight,
+                                    CanNangHienTai = g.OrderByDescending(qc => qc.InspectionDate).FirstOrDefault().Weight,
+                                    SoNgay = (g.Max(qc => qc.InspectionDate) - g.Min(qc => qc.InspectionDate)).Days,
+                                    SoLanKiemTra = g.Count()
+                                })
+                                .OrderBy(d => d.LoaiVatNuoi)
+                                .ThenBy(d => d.Giong)
+                                .ToListAsync();
+                // Nếu không có dữ liệu
+                if (!duLieuGoc.Any())
+                {
+                    return Ok(new
+                    {
+                        ThongBao = "Không có dữ liệu phù hợp với điều kiện tìm kiếm."
+                    });
+                }
+
+                // Bước 2: Tính toán các giá trị cần thiết
+                var phanTich = duLieuGoc.GroupBy(a => new { a.LoaiVatNuoi, a.Giong })
+                    .Select(nhomLoai => new PhanTichTangTruongDTO
+                    {
+                        LoaiVatNuoi = nhomLoai.Key.LoaiVatNuoi,
+                        Giong = nhomLoai.Key.Giong,
+                        TiLeTangTruongTB = nhomLoai.Average(a =>
+                            a.SoNgay > 0 ? ((a.CanNangHienTai - a.CanNangBanDau) / a.CanNangBanDau * 100) / a.SoNgay : 0),
+                        TongSoVatNuoi = nhomLoai.Count(),
+                        ChiTiet = nhomLoai.Select(a => new TiLeTangTruongDTO
+                        {
+                            MaVatNuoi = a.MaVatNuoi,
+                            TiLeTangTruong = a.SoNgay > 0 ? ((a.CanNangHienTai - a.CanNangBanDau) / a.CanNangBanDau * 100) / a.SoNgay : 0,
+                            CanNangBanDau = a.CanNangBanDau,
+                            CanNangHienTai = a.CanNangHienTai,
+                            SoNgay = a.SoNgay,
+                            SoLanKiemTra = a.SoLanKiemTra
+                        }).OrderByDescending(d => d.TiLeTangTruong)
+                    })
+                    .OrderByDescending(pt => pt.TiLeTangTruongTB)
+                    .ToList();
+
+                // Bước 3: Chuẩn bị phản hồi
+                var ketQua = new
+                {
+                    VatNuoiTangTruongTot = phanTich.Where(pt => pt.TiLeTangTruongTB > 0)
+                        .Take(3)
+                        .Select(pt => new
+                        {
+                            pt.LoaiVatNuoi,
+                            pt.Giong,
+                            TiLeTangTruong = Math.Round(pt.TiLeTangTruongTB, 2),
+                            pt.TongSoVatNuoi,
+                            TrangThai = "Tăng trưởng tốt"
+                        }),
+                    VatNuoiTangTruongKem = phanTich.Where(pt => pt.TiLeTangTruongTB <= 0)
+                        .Take(3)
+                        .Select(pt => new
+                        {
+                            pt.LoaiVatNuoi,
+                            pt.Giong,
+                            TiLeTangTruong = Math.Round(pt.TiLeTangTruongTB, 2),
+                            pt.TongSoVatNuoi,
+                            TrangThai = "Tăng trưởng kém"
+                        }),
+                    PhanTichChiTiet = phanTich.Select(pt => new
+                    {
+                        pt.LoaiVatNuoi,
+                        pt.Giong,
+                        TiLeTangTruongTB = Math.Round(pt.TiLeTangTruongTB, 2),
+                        pt.TongSoVatNuoi,
+                        TrangThai = pt.TiLeTangTruongTB > 0 ? "Tăng trưởng tốt" : "Tăng trưởng kém",
+                        VatNuoiTotNhat = pt.ChiTiet.OrderByDescending(d => d.TiLeTangTruong).Take(3).Select(d => new
+                        {
+                            d.MaVatNuoi,
+                            d.TiLeTangTruong,
+                            d.CanNangBanDau,
+                            d.CanNangHienTai,
+                            d.SoNgay,
+                            d.SoLanKiemTra
+                        }),
+                        VatNuoiKemNhat = pt.ChiTiet.OrderBy(d => d.TiLeTangTruong).TakeLast(3).Select(d => new
+                        {
+                            d.MaVatNuoi,
+                            d.TiLeTangTruong,
+                            d.CanNangBanDau,
+                            d.CanNangHienTai,
+                            d.SoNgay,
+                            d.SoLanKiemTra
+                        })
+                    })
+                };
+
+                return Ok(ketQua);
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi và trả về thông báo lỗi
+                Console.WriteLine($"Lỗi: {ex.Message}");
+                return StatusCode(500, new
+                {
+                    ThongBao = "Đã xảy ra lỗi khi xử lý yêu cầu. Vui lòng thử lại sau."
+                });
+            }
+        }
+
+
+        // DTO for tracking animals in a cage
+        public class TrackCageRequest
         {
             public int UserId { get; set; }
             public List<AnimalTrackDetail> AnimalDetails { get; set; }
@@ -218,6 +301,37 @@ namespace QuanLyChanNuoi.Controllers
             public string Mode { get; set; } // "individual" hoặc "cage"
             public List<int> Ids { get; set; } // Danh sách ID vật nuôi hoặc chuồng
         }
+        //Dto bao cao
+        public class TiLeTangTruongDTO
+        {
+            public string LoaiVatNuoi { get; set; } // Loại vật nuôi
+            public string Giong { get; set; } // Giống
+            public int MaVatNuoi { get; set; } // Mã vật nuôi
+            public decimal TiLeTangTruong { get; set; } // Tỷ lệ tăng trưởng
+            public decimal CanNangBanDau { get; set; } // Cân nặng ban đầu
+            public decimal CanNangHienTai { get; set; } // Cân nặng hiện tại
+            public int SoNgay { get; set; } // Số ngày đã trôi qua
+            public int SoLanKiemTra { get; set; } // Số lần kiểm tra
+        }
+
+        public class PhanTichTangTruongDTO
+        {
+            public string LoaiVatNuoi { get; set; } // Loại vật nuôi
+            public string Giong { get; set; } // Giống
+            public decimal TiLeTangTruongTB { get; set; } // Tỷ lệ tăng trưởng trung bình
+            public int TongSoVatNuoi { get; set; } // Tổng số vật nuôi
+            public IEnumerable<TiLeTangTruongDTO> ChiTiet { get; set; } // Danh sách chi tiết
+        }
+
+        public class PhanHoiTangTruongDTO
+        {
+            public IEnumerable<PhanTichTangTruongDTO> VatNuoiTangTruongTot { get; set; } // Các vật nuôi tăng trưởng tốt
+            public IEnumerable<PhanTichTangTruongDTO> VatNuoiTangTruongKem { get; set; } // Các vật nuôi tăng trưởng kém
+            public IEnumerable<PhanTichTangTruongDTO> PhanTichChiTiet { get; set; } // Phân tích chi tiết
+        }
+
+
+
 
     }
 }

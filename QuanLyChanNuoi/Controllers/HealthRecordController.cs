@@ -395,16 +395,17 @@ namespace QuanLyChanNuoi.Controllers
 
             // Thống kê dữ liệu
             var totalAnimals = query.Count();
-            var totalSickAnimals = query.Count(a => a.Status == "Sick");
-            var totalHealthyAnimals = query.Count(a => a.Status == "Healthy");
+            var totalSickAnimals = query.Count(a => a.Status == "Ốm");
+            var totalHealthyAnimals = query.Count(a => a.Status == "Khỏe mạnh");
 
-            var sickAnimalIds = query
-                .Where(a => a.Status == "Sick")
-                .Select(a => a.Id)
-                .ToList();
+            var sickAnimals = query
+                        .Where(a => a.Status == "Ốm")
+                        .Select(a => new { a.Id, a.Name })
+                        .ToList();
+
 
             var healthyAnimalIds = query
-                .Where(a => a.Status == "Healthy")
+                .Where(a => a.Status == "Khỏe mạnh")
                 .Select(a => a.Id)
                 .ToList();
 
@@ -416,7 +417,7 @@ namespace QuanLyChanNuoi.Controllers
                 TotalAnimals = totalAnimals,
                 TotalSickAnimals = totalSickAnimals,
                 TotalHealthyAnimals = totalHealthyAnimals,
-                SickAnimals = sickAnimalIds,
+                SickAnimals = sickAnimals,
                 HealthyAnimals = healthyAnimalIds,
                 TotalRecords = totalRecords
             };

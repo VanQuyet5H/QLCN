@@ -120,7 +120,7 @@ const SickAnimalsList = () => {
                   <AnimalStatus animalId={animal.id} currentStatus={animal.status} />
                 </td>
                 <td>
-                  {animal.status === "Sick" && (
+                  {animal.status === "Ốm" && (
                     <Button
                       variant="contained"
                       color="primary"

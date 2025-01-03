@@ -31,7 +31,7 @@ namespace QuanLyChanNuoi.Controllers
         {
             var totalAnimals = await _context.Animal.CountAsync();
             var sickAnimals = await _context.Animal
-                                             .Where(h => h.Status == "Sick")
+                                             .Where(h => h.Status == "Ốm")
                                              .CountAsync();
             var totalFeed =await _context.Feed.SumAsync(f => f.Quantity);
             var totalRevenue = await _context.Sale

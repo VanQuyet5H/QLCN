@@ -33,7 +33,7 @@ function DeleteConfirmation({ livestock, onConfirm, onCancel }) {
         <div className="livestock-summary">
           <div>Loại: <strong>{livestock.type}</strong></div>
           <div>Giống: <strong>{livestock.breed}</strong></div>
-          <div>BirthDate: <strong>{calculateAge(livestock.birthDate)}</strong></div>
+          <div>Thời gian sinh trưởng: <strong>{calculateAge(livestock.birthDate)}</strong></div>
         </div>
 
         <div className="confirmation-actions">

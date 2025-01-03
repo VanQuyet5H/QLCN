@@ -56,6 +56,13 @@ const VaccinationSchedule = () => {
   const handleChangePage = (event, newPage) => {
     setCurrentPage(newPage + 1);
   };
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = ("0" + date.getDate()).slice(-2);
+    const month = ("0" + (date.getMonth() + 1)).slice(-2);
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
 
   // Xử lý thay đổi kích thước trang
   const handleChangeRowsPerPage = (event) => {
@@ -140,7 +147,7 @@ const VaccinationSchedule = () => {
                 <TableCell>{vaccination.animalName}</TableCell>
                 <TableCell>{vaccination.animalType}</TableCell>
                 <TableCell>{vaccination.vaccineName}</TableCell>
-                <TableCell>{new Date(vaccination.vaccinationDate).toLocaleDateString()}</TableCell>
+                <TableCell>{formatDate(vaccination.vaccinationDate)}</TableCell>
                 <TableCell>{vaccination.status}</TableCell>
                 <TableCell>{vaccination.note}</TableCell>
                 <TableCell>
