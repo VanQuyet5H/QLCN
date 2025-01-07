@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Box, Typography, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, FormControl, InputLabel, Select, MenuItem, IconButton, Paper } from '@mui/material';
+import { Grid, Box, Typography, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, Checkbox, IconButton, Paper } from '@mui/material';
 import axios from 'axios';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
@@ -14,8 +14,8 @@ const VaccinationSchedule = () => {
   const [pageSize, setPageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [openForm, setOpenForm] = useState(false);
-  const [animalTypes, setAnimalTypes] = useState(['Chó', 'Mèo']); // Loại vật nuôi ví dụ
-  const navigate=useNavigate();
+  const [includeHistory, setIncludeHistory] = useState(false);
+  const navigate = useNavigate();
   // Lấy danh sách tiêm chủng từ API
   useEffect(() => {
     const fetchVaccinations = async () => {
@@ -25,15 +25,25 @@ const VaccinationSchedule = () => {
             page: currentPage,
             pageSize: pageSize,
             search: searchTerm,
+            includeHistory: includeHistory,
           },
         });
-  
+
         // In ra để kiểm tra cấu trúc của response
         console.log('API Response:', response.data);
-  
+
         // Kiểm tra xem response có thuộc tính data và nó có phải là mảng không
         if (response.data && Array.isArray(response.data.data)) {
-          setVaccinations(response.data.data); // Gán mảng vào state
+          const data = response.data.data;
+          // Phân loại danh sách: Đã tiêm và chưa tiêm
+          const completed = data.filter((v) => v.status === 'Đã Tiêm');
+          const pending = data.filter((v) => v.status !== 'Đã Tiêm');
+
+          // Sắp xếp theo ngày tiêm chủng
+          completed.sort((a, b) => new Date(a.vaccinationDate) - new Date(b.vaccinationDate));
+          pending.sort((a, b) => new Date(a.vaccinationDate) - new Date(b.vaccinationDate));
+
+          setVaccinations([...pending, ...completed]); // Đẩy "Đã tiêm" xuống cuối
           setTotalRecords(response.data.totalRecords);
           setTotalPages(response.data.totalPages);
         } else {
@@ -45,7 +55,7 @@ const VaccinationSchedule = () => {
     };
 
     fetchVaccinations();
-  }, [currentPage, pageSize, searchTerm]);
+  }, [currentPage, pageSize, searchTerm, includeHistory]);
 
   // Xử lý thay đổi từ ô tìm kiếm
   const handleSearchChange = (e) => {
@@ -77,6 +87,9 @@ const VaccinationSchedule = () => {
     setOpenForm(true);
     navigate('/add-schedule');
   };
+  const handleIncludeHistoryChange = (event) => {
+    setIncludeHistory(event.target.checked);
+  };
 
   // Đóng form nhập thông tin tiêm
   const handleCloseForm = () => {
@@ -84,7 +97,7 @@ const VaccinationSchedule = () => {
   };
 
   return (
-    <Box className="hide-scrollbar" sx={{ maxHeight: 500, overflowY: 'auto'}}>
+    <Box className="hide-scrollbar" sx={{ maxHeight: 500, overflowY: 'auto' }}>
       <Typography variant="h4" mb={3} align="center" sx={{ fontWeight: 'bold', color: '#3f51b5' }}>
         Danh Sách Tiêm Chủng
       </Typography>
@@ -119,7 +132,9 @@ const VaccinationSchedule = () => {
             sx={{ borderRadius: 1 }}
           />
         </Grid>
+
       </Grid>
+
 
 
       {/* Bảng Danh Sách Tiêm Chủng */}
@@ -133,35 +148,46 @@ const VaccinationSchedule = () => {
               <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#1976d2', color: '#fff' }}>Loại</TableCell>
               <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#1976d2', color: '#fff' }}>Vaccine</TableCell>
               <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#1976d2', color: '#fff' }}>Ngày Tiêm</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#1976d2', color: '#fff' }}>Trạng Thái</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#1976d2', color: '#fff' }}>Trạng Thái
+                <Checkbox
+                  checked={includeHistory}
+                  onChange={handleIncludeHistoryChange}
+                  color="default"
+                  sx={{
+                    color: '#fff', // Đảm bảo checkbox màu trắng
+                    '& .MuiSvgIcon-root': {
+                      fontSize: 24, // Điều chỉnh kích thước của checkbox
+                    },
+                  }}
+                /></TableCell>
               <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#1976d2', color: '#fff' }}>Ghi Chú</TableCell>
               <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#1976d2', color: '#fff' }}>Hành Động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-          {Array.isArray(vaccinations) && vaccinations.length > 0 ? (
-            vaccinations.map((vaccination,index) => (
-              <TableRow key={vaccination.vaccinationId} sx={{ '&:hover': { backgroundColor: '#f5f5f5' } }}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{vaccination.animalId}</TableCell>
-                <TableCell>{vaccination.animalName}</TableCell>
-                <TableCell>{vaccination.animalType}</TableCell>
-                <TableCell>{vaccination.vaccineName}</TableCell>
-                <TableCell>{formatDate(vaccination.vaccinationDate)}</TableCell>
-                <TableCell>{vaccination.status}</TableCell>
-                <TableCell>{vaccination.note}</TableCell>
-                <TableCell>
-          <IconButton onClick={() => handleEditVaccination(vaccination)}>
-            <EditIcon />
-          </IconButton>
-        </TableCell>
+            {Array.isArray(vaccinations) && vaccinations.length > 0 ? (
+              vaccinations.map((vaccination, index) => (
+                <TableRow key={vaccination.vaccinationId} sx={{ '&:hover': { backgroundColor: '#f5f5f5' } }}>
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{vaccination.animalId}</TableCell>
+                  <TableCell>{vaccination.animalName}</TableCell>
+                  <TableCell>{vaccination.animalType}</TableCell>
+                  <TableCell>{vaccination.vaccineName}</TableCell>
+                  <TableCell>{formatDate(vaccination.vaccinationDate)}</TableCell>
+                  <TableCell>{vaccination.status}</TableCell>
+                  <TableCell>{vaccination.note}</TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => handleEditVaccination(vaccination)}>
+                      <EditIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} align="center">Không có dữ liệu</TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={7} align="center">Không có dữ liệu</TableCell>
-            </TableRow>
-          )}
+            )}
           </TableBody>
         </Table>
       </TableContainer>

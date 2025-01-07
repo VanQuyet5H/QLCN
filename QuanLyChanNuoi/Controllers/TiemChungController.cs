@@ -18,9 +18,10 @@ namespace QuanLyChanNuoi.Controllers
         }
         [HttpGet("GetVaccinations")]
         public async Task<IActionResult> GetVaccinations(
-         int page = 1,
-         int pageSize = 10,
-         string? search = "")
+        int page = 1,
+        int pageSize = 10,
+        string? search = "",
+        bool includeHistory = false)  // Thêm tham số nếu muốn lấy cả lịch sử
         {
             try
             {
@@ -50,13 +51,23 @@ namespace QuanLyChanNuoi.Controllers
                         v.AnimalType.Contains(search));
                 }
 
+                // Lọc lịch sử nếu cần
+                if (!includeHistory)
+                {
+                    query = query.Where(v => v.Status != "Đã Tiêm");
+                }
+
+                // Sắp xếp: "Đã tiêm" xuống cuối, sắp xếp theo ngày
+                query = query.OrderBy(v => v.Status == "Đã Tiêm")
+                             .ThenBy(v => v.VaccinationDate);
+
                 // Tính tổng số bản ghi
                 var totalRecords = await query.CountAsync();
 
                 // Phân trang dữ liệu
                 var vaccinations = await query
-                    .Skip((page - 1) * pageSize)  // Bỏ qua số bản ghi đã xem
-                    .Take(pageSize)  // Lấy số bản ghi theo kích thước trang
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
                     .ToListAsync();
 
                 // Trả về dữ liệu phân trang
@@ -76,6 +87,7 @@ namespace QuanLyChanNuoi.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
 
         [HttpGet("animal/{animalId}")]
         public async Task<ActionResult<IEnumerable<Vaccination>>> GetVaccinationByAnimal(int animalId)

@@ -34,6 +34,8 @@ const SaleList = () => {
   const [endDate, setEndDate] = useState('');
   const [saleDetails, setSaleDetails] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [salesByBuyer, setSalesByBuyer] = useState([]);
+
   const infoFarm = {
     farm: {
       farmName: "Trang Trại ABC",
@@ -52,7 +54,8 @@ const SaleList = () => {
           endDate
         }
       });
-      setSales(response.data.sales);
+      console.log(response.data);
+      setSalesByBuyer(response.data.salesByBuyer);
       setTotalRecords(response.data.totalRecords);
     } catch (err) {
       setError('Có lỗi xảy ra khi tải dữ liệu');
@@ -60,14 +63,16 @@ const SaleList = () => {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchSales();
   }, [page, rowsPerPage, startDate, endDate]);
 
-  const fetchSaleDetails = async (saleId) => {
+  const fetchSaleDetails = async (buyerId) => {
     try {
-      const response = await axios.get(`https://localhost:7185/api/Sale/group-by-buyer/${saleId}`);
+      console.log(buyerId);
+      const response = await axios.get(`https://localhost:7185/api/Sale/group-by-buyer/${buyerId}`);
       console.log(response.data);
       setSaleDetails(response.data[0]); // Get first item since API returns array
       setOpenDialog(true);
@@ -86,17 +91,17 @@ const SaleList = () => {
     setPage(0);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (buyerId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa giao dịch này?")) {
       try {
-        await axios.delete(`https://localhost:7185/api/sale/${id}`);
+        await axios.delete(`https://localhost:7185/api/sale/buyer/${buyerId}`);
         fetchSales();
       } catch (err) {
         alert("Có lỗi xảy ra khi xóa giao dịch. Vui lòng thử lại.");
       }
     }
   };
-
+  
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSaleDetails(null);
@@ -113,7 +118,7 @@ const SaleList = () => {
   if (error) {
     return <div style={{ textAlign: 'center', color: 'red' }}>{error}</div>;
   }
-
+  
   return (
     <Paper elevation={3} sx={{ padding: 3, marginTop: 3 }}>
       <Typography variant="h6" sx={{ marginBottom: 2 }}>
@@ -147,59 +152,66 @@ const SaleList = () => {
       </Stack>
 
       <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Tên Vật Nuôi</TableCell>
-              <TableCell>Tên Người Mua</TableCell>
-              <TableCell>Giá</TableCell>
-              <TableCell>Số Lượng</TableCell>
-              <TableCell>Ngày Giao Dịch</TableCell>
-              <TableCell>Hành Động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sales.length > 0 ? (
-              sales.map((sale) => (
-                <TableRow key={sale.id}>
-                  <TableCell>{sale.id}</TableCell>
-                  <TableCell>{sale.animalName}</TableCell>
-                  <TableCell>{sale.buyerName}</TableCell>
-                  <TableCell>{sale.price.toLocaleString()} VNĐ</TableCell>
-                  <TableCell>{sale.quantity}</TableCell>
-                  <TableCell>{formatDate(sale.saleDate)}</TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={1}>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        onClick={() => fetchSaleDetails(sale.id)}
-                      >
-                        Chi Tiết
-                      </Button>
-                      <Button
+  <Table>
+    <TableHead>
+      <TableRow>
+        <TableCell>Tên Người Mua</TableCell>
+        <TableCell>Tổng Số Lượng</TableCell>
+        <TableCell>Tổng Doanh Thu</TableCell>
+        <TableCell>Ngày Giao Dịch</TableCell>
+        <TableCell>Hành Động</TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+  {Array.isArray(salesByBuyer) && salesByBuyer.length > 0 ? (
+    salesByBuyer.map((group) => (
+      <React.Fragment key={group.saleDate}>
+        {group.salesByBuyer.map((buyerGroup) => (
+          <TableRow key={buyerGroup.buyerId}>
+            <TableCell>{buyerGroup.buyerName}</TableCell>
+            <TableCell>{buyerGroup.totalQuantity}</TableCell>
+            <TableCell>{buyerGroup.totalRevenue.toLocaleString()} VNĐ</TableCell>
+            <TableCell>{formatDate(group.saleDate)}</TableCell>
+            <TableCell>
+            <Stack direction="row" spacing={1}>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => {
+                  if (buyerGroup.buyerId) {
+                    fetchSaleDetails(buyerGroup.buyerId); // Gọi API với buyerId
+                  } else {
+                    alert("Không có buyerId hợp lệ.");
+                  }
+                }}
+              >
+                Chi Tiết
+              </Button>
+              <Button
                         variant="contained"
                         color="error"
                         size="small"
-                        onClick={() => handleDelete(sale.id)}
+                        onClick={() => handleDelete(buyerGroup.buyerId)}
                       >
                         Xóa
-                      </Button>
-                    </Stack>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} align="center">
-                  Không có dữ liệu để hiển thị
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                      </Button></Stack>
+            </TableCell>
+          </TableRow>
+        ))}
+      </React.Fragment>
+    ))
+  ) : (
+    <TableRow>
+      <TableCell colSpan={5} align="center">
+        Không có dữ liệu để hiển thị
+      </TableCell>
+    </TableRow>
+  )}
+</TableBody>
+
+  </Table>
+</TableContainer>
+
 
       <TablePagination
         component="div"

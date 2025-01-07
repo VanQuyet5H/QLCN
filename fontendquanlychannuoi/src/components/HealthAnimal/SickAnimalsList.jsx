@@ -122,7 +122,7 @@ const SickAnimalsList = () => {
                   <AnimalStatus animalId={animal.id} currentStatus={animal.status} />
                 </td>
                 <td>
-                  {(animal.status === "Ốm" || animal.status === "Đang điều trị") && (
+                  {(animal.status.toLowerCase() === "ốm" || animal.status.toLowerCase() === "đang điều trị") && (
                     <Button
                       variant="contained"
                       color="primary"
@@ -131,6 +131,7 @@ const SickAnimalsList = () => {
                       Điều trị
                     </Button>
                   )}
+
                 </td>
 
               </tr>

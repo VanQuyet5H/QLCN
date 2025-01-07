@@ -4,6 +4,7 @@
     {
         public int Id { get; set; }
         public int? AnimalId { get; set; }
+        public int BuyerId { get; set; }
         public int UserId {  get; set; }
         public string AnimalName { get; set; }
         public DateTime SaleDate { get; set; }
