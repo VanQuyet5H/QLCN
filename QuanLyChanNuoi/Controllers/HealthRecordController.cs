@@ -425,7 +425,7 @@ namespace QuanLyChanNuoi.Controllers
 
             var healthyAnimalIds = query
                 .Where(a => a.Status == "Khỏe mạnh")
-                .Select(a => a.Id)
+                .Select(a => new {a.Id,a.Name })
                 .ToList();
 
             var totalRecords = _context.Animal.Count(); // Tổng số bản ghi không áp dụng bộ lọc

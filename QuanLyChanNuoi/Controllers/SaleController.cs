@@ -214,7 +214,15 @@ namespace QuanLyChanNuoi.Controllers
                 return StatusCode(500, "Đã xảy ra lỗi trong khi xử lý yêu cầu.");
             }
         }
+        [HttpGet("layidvaten")]
+        public async Task<ActionResult<IEnumerable<Animal>>> GetAnimals()
+        {
+            var animals = await _context.Animal
+                .Select(a => new { a.Id, a.Name }) // Lấy chỉ Id và Name
+                .ToListAsync();
 
+            return Ok(animals);
+        }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSaleById(int id)
         {
