@@ -201,7 +201,7 @@ namespace QuanLyChanNuoi.Controllers
                 .Select(s => new RecentActivity
                 {
                     Id = Guid.NewGuid().ToString(), // Tạo ID duy nhất
-                    Action = $"Xuất bán {s.Quantity} con {s.Animal.Name}",
+                    Action = $"Xuất bán {s.Quantity} con {s.AnimalName}",
                     Time = $"{(DateTime.Now - s.SaleDate).Hours} giờ trước",
                     Type = "sell",
                     Priority = "high"

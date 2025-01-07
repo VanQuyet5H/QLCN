@@ -70,7 +70,7 @@ const VaccinationForm = () => {
     try {
       const response = await axios.post(`https://localhost:7185/api/TiemChung/nhapthongtintiem`, vaccinationData);
       if (response.status === 200) {
-        alert('Vaccine created successfully!');
+        alert('Thông tin tiêm vaccine đã được tạo thành công!');
         setVaccinationData({
           animalId: '',
           vaccineName: '',
@@ -81,7 +81,8 @@ const VaccinationForm = () => {
         });
         setAnimalName('');
       } else {
-        alert('Failed to create vaccination.');
+        alert('Tạo tiêm chủng thất bại.');
+
       }
     } catch (error) {
       console.error('Error creating vaccination:', error);

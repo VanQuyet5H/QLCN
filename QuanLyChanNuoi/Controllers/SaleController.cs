@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using QuanLyChanNuoi.Models;
+using System;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static QuanLyChanNuoi.Controllers.SaleController;
 
@@ -30,63 +31,84 @@ namespace QuanLyChanNuoi.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // Kiểm tra tổng số lượng vật nuôi theo tên
-                var totalQuantity = await _context.Animal
-                    .Where(a => a.Name == saleDto.AnimalName)
-                    .CountAsync();
+                var errorMessages = new List<string>();
 
-                if (saleDto.Quantity > totalQuantity)
+                foreach (var animalSale in saleDto.Animals)
                 {
-                    return BadRequest(new { Message = $"Not enough animals available with the name {saleDto.AnimalName}. Current stock: {totalQuantity}." });
+                    // Kiểm tra tổng số lượng vật nuôi theo tên
+                    var totalQuantity = await _context.Animal
+                        .Where(a => a.Name == animalSale.AnimalName)
+                        .CountAsync();
+
+                    // Kiểm tra nếu số lượng cần bán vượt quá số lượng tồn kho
+                    if (animalSale.Quantity > totalQuantity)
+                    {
+                        errorMessages.Add($"Số lượng vật nuôi không đủ với tên {animalSale.AnimalName}. Số lượng hiện tại: {totalQuantity}.");
+                    }
+                    else
+                    {
+                        // Lấy chuồng chứa vật nuôi
+                        var cage = await (from animal in _context.Animal
+                                          join c in _context.Cage on animal.CageId equals c.Id
+                                          where animal.Name == animalSale.AnimalName
+                                          select c).FirstOrDefaultAsync();
+
+                        if (cage == null)
+                        {
+                            errorMessages.Add($"Không tìm thấy chuồng cho vật nuôi với tên {animalSale.AnimalName}.");
+                            continue;
+                        }
+
+                        // Cập nhật số lượng vật nuôi trong chuồng
+                        cage.CurrentOccupancy -= animalSale.Quantity;
+                        if (cage.CurrentOccupancy < 0) cage.CurrentOccupancy = 0;
+                        _context.Cage.Update(cage);
+                        await _context.SaveChangesAsync();
+
+                        // Xóa số lượng vật nuôi yêu cầu từ bảng Animal
+                        var deleteQuery = @"
+                            DELETE FROM Animal
+                            WHERE Id IN (
+                                SELECT TOP (@Quantity) Id
+                                FROM Animal
+                                WHERE Name = @AnimalName
+                            )";
+                        await _context.Database.ExecuteSqlRawAsync(deleteQuery,
+                            new SqlParameter("@Quantity", animalSale.Quantity),
+                            new SqlParameter("@AnimalName", animalSale.AnimalName));
+                        var nextBuyerId = _context.Sale.Any()
+                                        ? _context.Sale.Max(s => s.BuyerId) + 1
+                                        : 1; // Nếu bảng rỗng, bắt đầu từ 1
+
+                        // Thêm giao dịch vào bảng Sale
+                        var sale = new Sale
+                        {
+                            AnimalName = animalSale.AnimalName,
+                            UserId = saleDto.UserId,
+                            BuyerId = nextBuyerId,
+                            BuyerName = saleDto.BuyerName,
+                            Price = animalSale.Price,
+                            Quantity = animalSale.Quantity,
+                            SaleDate = saleDto.SaleDate
+                        };
+
+                        _context.Sale.Add(sale);
+                    }
                 }
 
-                // Lấy chuồng chứa vật nuôi
-                var cage = await (from animal in _context.Animal
-                                  join c in _context.Cage on animal.CageId equals c.Id
-                                  where animal.Name == saleDto.AnimalName
-                                  select c).FirstOrDefaultAsync();
-
-                if (cage == null)
+                // Nếu có lỗi, trả về danh sách các lỗi
+                if (errorMessages.Any())
                 {
-                    return NotFound(new { Message = $"No cage found for animals with name {saleDto.AnimalName}." });
+                    return BadRequest(new { Message = string.Join(", ", errorMessages) });
                 }
 
-                // Cập nhật số lượng vật nuôi trong chuồng
-                cage.CurrentOccupancy -= saleDto.Quantity;
-                if (cage.CurrentOccupancy < 0) cage.CurrentOccupancy = 0;
-                _context.Cage.Update(cage);
-                await _context.SaveChangesAsync();
-
-                // Xóa số lượng vật nuôi yêu cầu từ bảng Animal
-                var deleteQuery = @"
-                                    DELETE FROM Animal
-                                    WHERE Id IN (
-                                        SELECT TOP (@Quantity) Id
-                                        FROM Animal
-                                        WHERE Name = @AnimalName
-                                    )";
-                await _context.Database.ExecuteSqlRawAsync(deleteQuery,
-                    new SqlParameter("@Quantity", saleDto.Quantity),
-                    new SqlParameter("@AnimalName", saleDto.AnimalName));
-
-                // Thêm giao dịch vào bảng Sale
-                var sale = new Sale
-                {
-                    AnimalName = saleDto.AnimalName,
-                    UserId = saleDto.UserId,
-                    BuyerName = saleDto.BuyerName,
-                    Price = saleDto.Price,
-                    Quantity = saleDto.Quantity,
-                    SaleDate = saleDto.SaleDate
-                };
-
-                _context.Sale.Add(sale);
+                // Lưu tất cả các giao dịch
                 await _context.SaveChangesAsync();
 
                 // Commit giao dịch
                 await transaction.CommitAsync();
 
-                return CreatedAtAction(nameof(GetSaleById), new { id = sale.Id }, sale);
+                return CreatedAtAction(nameof(GetSaleById), new { id = saleDto.UserId }, saleDto);
             }
             catch (Exception ex)
             {
@@ -95,7 +117,6 @@ namespace QuanLyChanNuoi.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
 
         //hien thi du lieu
         [HttpGet]
@@ -120,8 +141,8 @@ namespace QuanLyChanNuoi.Controllers
             try
             {
                 var query = _context.Sale
-    .Include(s => s.Animal) // Bao gồm thông tin Animal
-    .AsQueryable(); // Đảm bảo có thể tiếp tục truy vấn LINQ
+                    .Include(s => s.Animal) // Bao gồm thông tin Animal
+                    .AsQueryable(); // Đảm bảo có thể tiếp tục truy vấn LINQ
 
                 // Lọc theo ngày bắt đầu nếu có
                 if (startDate.HasValue)
@@ -135,36 +156,56 @@ namespace QuanLyChanNuoi.Controllers
                     query = query.Where(s => s.SaleDate <= endDate.Value);
                 }
 
-                // Tính tổng số bản ghi trước khi phân trang
-                var totalRecords = await query.CountAsync();
+                // Lấy toàn bộ dữ liệu
+                var salesData = await query.ToListAsync();
 
-                // Phân trang và lấy dữ liệu
-                var sales = await query
-                    .OrderBy(s => s.SaleDate) // Sắp xếp theo ngày bán
-                    .Skip((pageNumber - 1) * pageSize) // Bỏ qua số lượng bản ghi đã tải
-                    .Take(pageSize) // Lấy số lượng bản ghi theo kích thước trang
-                    .Select(s => new SaleDto1 // Ánh xạ sang DTO
+                // Nhóm theo ngày giao dịch
+                var groupedSales = salesData
+                    .GroupBy(s => s.SaleDate.Date) // Nhóm theo ngày giao dịch
+                    .Select(g => new
                     {
-                        Id = s.Id,
-                        AnimalName=s.AnimalName,
-                        BuyerName = s.BuyerName,
-                        SaleDate = s.SaleDate,
-                        Price = s.Price,
-                        Quantity = s.Quantity
+                        SaleDate = g.Key, // Ngày giao dịch
+                        SalesByBuyer = g.GroupBy(s => new { s.BuyerId, s.BuyerName }) // Nhóm theo BuyerId và BuyerName
+                            .Select(buyerGroup => new
+                            {
+                                BuyerId = buyerGroup.Key.BuyerId, // Mã người mua
+                                BuyerName = buyerGroup.Key.BuyerName, // Tên người mua
+                                TotalQuantity = buyerGroup.Sum(s => s.Quantity), // Tổng số lượng bán
+                                TotalRevenue = buyerGroup.Sum(s => s.Price * s.Quantity), // Tổng doanh thu
+                                Sales = buyerGroup.OrderBy(s => s.SaleDate) // Sắp xếp theo ngày bán
+                                    .Skip((pageNumber - 1) * pageSize) // Bỏ qua số lượng bản ghi đã tải
+                                    .Take(pageSize) // Lấy số lượng bản ghi theo kích thước trang
+                                    .Select(s => new SaleDto1 // Ánh xạ sang DTO
+                                    {
+                                        Id = s.Id,
+                                        BuyerId = s.BuyerId, // Thêm BuyerId vào DTO
+                                        AnimalName = s.AnimalName,
+                                        SaleDate = s.SaleDate,
+                                        Price = s.Price,
+                                        Quantity = s.Quantity
+                                    })
+                                    .ToList()
+                            })
+                            .ToList()
                     })
-                    .ToListAsync();
+                    .ToList();
+
+                // Tính tổng số bản ghi trong tất cả các nhóm để phân trang chính xác
+                var totalGroupedRecords = groupedSales
+                    .SelectMany(g => g.SalesByBuyer) // Lấy tất cả các nhóm người mua trong tất cả các ngày
+                    .SelectMany(gb => gb.Sales) // Lấy tất cả các giao dịch trong các nhóm người mua
+                    .Count(); // Đếm tổng số bản ghi
 
                 // Tạo kết quả trả về
                 var result = new
                 {
-                    TotalRecords = totalRecords,
+                    TotalRecords = totalGroupedRecords,
                     PageNumber = pageNumber,
                     PageSize = pageSize,
-                    Sales = sales
+                    SalesByBuyer = groupedSales
                 };
 
                 return Ok(result);
-
             }
             catch (Exception ex)
             {
@@ -174,34 +215,6 @@ namespace QuanLyChanNuoi.Controllers
             }
         }
 
-        [HttpGet("CheckAnimalQuantity/{animalId}")]
-        public async Task<ActionResult<int>> KiemTraSoLuongAnimal(int animalId)
-        {
-            // Tính số lượng vật nuôi với animalId được chỉ định
-            var animalCount = await _context.Animal
-                .Where(a => a.Id == animalId) // Tìm vật nuôi theo animalId
-                .CountAsync();
-
-            // Nếu không tìm thấy vật nuôi
-            if (animalCount == 0)
-            {
-                return NotFound(new { Message = "Không tìm thấy vật nuôi với ID này." });
-            }
-
-            // Trả về số lượng vật nuôi
-            return Ok(animalCount);
-        }
-
-
-        [HttpGet("layidvaten")]
-        public async Task<ActionResult<IEnumerable<Animal>>> GetAnimals()
-        {
-            var animals = await _context.Animal
-                .Select(a => new { a.Id, a.Name }) // Lấy chỉ Id và Name
-                .ToListAsync();
-            
-            return Ok(animals);
-        }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSaleById(int id)
         {
@@ -211,33 +224,48 @@ namespace QuanLyChanNuoi.Controllers
         }
 
         // Xem chi tiết giao dịch bán
-        [HttpGet("group-by-buyer/{saleId}")]
-        public async Task<IActionResult> GetSalesGroupedByBuyer(int saleId)
+        [HttpGet("group-by-buyer/{buyerId}")]
+        public async Task<IActionResult> GetSalesGroupedByBuyer(int buyerId)
         {
-            // Lọc giao dịch theo saleId và nhóm theo tên người mua
-            var salesGroupedByBuyer = await _context.Sale
-                .Where(s => s.Id == saleId)  // Lọc theo saleId
-                .Include(s => s.Animal)  // Bao gồm thông tin vật nuôi
-                .GroupBy(s => s.BuyerName) // Nhóm theo tên người mua
-                .Select(group => new
-                {
-                    BuyerName = group.Key,  // Tên người mua
-                    Sales = group.Select(sale => new
+            try
+            {
+                // Tìm các giao dịch dựa trên buyerId và nhóm theo BuyerId
+                var salesGroupedByBuyer = await _context.Sale
+                    .Where(s => s.BuyerId == buyerId) // Lọc theo buyerId
+                    .Include(s => s.Animal)           // Bao gồm thông tin vật nuôi
+                    .GroupBy(s => new { s.BuyerId, s.BuyerName }) // Nhóm theo BuyerId và BuyerName
+                    .Select(group => new
                     {
-                        SaleId = sale.Id,
-                        AnimalName = sale.AnimalName,  // Tên vật nuôi
-                        SaleDate = sale.SaleDate,
-                        Price = sale.Price,
-                        Quantity = sale.Quantity
-                    }).ToList()  // Danh sách các giao dịch của người mua này
-                })
-                .ToListAsync();
+                        BuyerId = group.Key.BuyerId,         // Id của người mua
+                        BuyerName = group.Key.BuyerName,     // Tên người mua
+                        TotalQuantity = group.Sum(s => s.Quantity), // Tổng số lượng giao dịch
+                        TotalRevenue = group.Sum(s => s.Price * s.Quantity), // Tổng doanh thu
+                        Sales = group.Select(sale => new
+                        {
+                            SaleId = sale.Id,
+                            AnimalName = sale.AnimalName, // Tên vật nuôi
+                            SaleDate = sale.SaleDate,
+                            Price = sale.Price,
+                            Quantity = sale.Quantity
+                        }).ToList() // Danh sách giao dịch chi tiết
+                    })
+                    .ToListAsync();
 
-            // Nếu không tìm thấy giao dịch nào
-            if (salesGroupedByBuyer == null || !salesGroupedByBuyer.Any())
-                return NotFound("Không tìm thấy giao dịch nào.");
+                // Nếu không tìm thấy giao dịch nào
+                if (salesGroupedByBuyer == null || !salesGroupedByBuyer.Any())
+                    return NotFound(new { Message = "Không tìm thấy giao dịch nào cho buyerId đã cho." });
 
-            return Ok(salesGroupedByBuyer);  // Trả về kết quả đã nhóm theo người mua
+                // Trả về kết quả nhóm theo người mua
+                return Ok(salesGroupedByBuyer);
+            }
+            catch (Exception ex)
+            {
+                // Ghi log lỗi (nếu cần)
+                Console.WriteLine($"Error in GetSalesGroupedByBuyer: {ex.Message}");
+
+                // Trả về mã lỗi 500 với thông báo lỗi
+                return StatusCode(500, new { Message = "Đã xảy ra lỗi khi xử lý yêu cầu.", Details = ex.Message });
+            }
         }
 
 
@@ -254,26 +282,26 @@ namespace QuanLyChanNuoi.Controllers
         }
 
         // Xóa giao dịch bán
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSale(int id)
+        [HttpDelete("buyer/{buyerId}")]
+        public async Task<IActionResult> DeleteSale(int buyerId)
         {
             try
             {
-                // Tìm bản ghi theo ID
-                var sale = await _context.Sale.FindAsync(id);
+                // Tìm tất cả các bản ghi có buyerId
+                var sales = await _context.Sale.Where(s => s.BuyerId == buyerId).ToListAsync();
 
-                // Kiểm tra nếu sale không tồn tại
-                if (sale == null)
+                // Kiểm tra nếu không tìm thấy bản ghi nào với buyerId
+                if (sales == null || !sales.Any())
                 {
-                    return NotFound(new { Message = "Không tìm thấy bản ghi với ID được cung cấp." });
+                    return NotFound(new { Message = "Không tìm thấy bản ghi với buyerId được cung cấp." });
                 }
 
-                // Thực hiện xóa bản ghi
-                _context.Sale.Remove(sale);
+                // Thực hiện xóa tất cả các bản ghi tìm thấy
+                _context.Sale.RemoveRange(sales);
                 await _context.SaveChangesAsync();
 
                 // Trả về phản hồi thành công
-                return Ok(new { Message = "Xóa thành công." });
+                return Ok(new { Message = "Xóa thành công tất cả giao dịch của buyerId." });
             }
             catch (Exception ex)
             {
@@ -281,6 +309,7 @@ namespace QuanLyChanNuoi.Controllers
                 return StatusCode(500, new { Message = "Đã xảy ra lỗi khi xóa bản ghi.", Details = ex.Message });
             }
         }
+
 
 
         // Báo cáo doanh thu
@@ -347,6 +376,7 @@ namespace QuanLyChanNuoi.Controllers
         {
             public int Id { get; set; }
             public int? AnimalId { get; set; }
+            public int BuyerId { get; set; }
             public string BuyerName { get; set; }
             public DateTime SaleDate { get; set; }
             public decimal Price { get; set; }
@@ -358,14 +388,19 @@ namespace QuanLyChanNuoi.Controllers
 
         public class SaleDTO
         {
-            public int AnimalId { get; set; }
-            public int UserId { get; set; } 
+            public int UserId { get; set; }
             public string BuyerName { get; set; }
-            public string AnimalName { get; set; }
-            public decimal Price { get; set; }
-            public int Quantity { get; set; }
             public DateTime SaleDate { get; set; }
+            public List<AnimalSaleDTO> Animals { get; set; }
         }
+
+        public class AnimalSaleDTO
+        {
+            public string AnimalName { get; set; }
+            public int Quantity { get; set; }
+            public decimal Price { get; set; }
+        }
+
 
     }
 }
