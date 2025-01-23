@@ -1,5 +1,5 @@
 trigger:
--07/01/2025  # Hoặc branch bạn muốn kích hoạt pipeline
+-main  # Hoặc branch bạn muốn kích hoạt pipeline
 
 pool:
   vmImage: 'windows-latest' # Nếu dùng Self-Hosted Agent, thay bằng tên Agent Pool của bạn.
