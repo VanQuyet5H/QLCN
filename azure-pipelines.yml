@@ -1,0 +1,75 @@
+trigger:
+-07/01/2025  # Hoặc branch bạn muốn kích hoạt pipeline
+
+pool:
+  vmImage: 'windows-latest' # Nếu dùng Self-Hosted Agent, thay bằng tên Agent Pool của bạn.
+
+variables:
+  buildConfiguration: 'Release'
+  reactAppFolder: 'frontend' # Thư mục chứa React code
+  backendFolder: 'backend'   # Thư mục chứa .NET API
+
+steps:
+# 1. Cài đặt Node.js cho frontend
+- task: NodeTool@0
+  inputs:
+    versionSpec: '16.x' # Phiên bản Node.js
+  displayName: 'Set up Node.js'
+
+# 2. Cài đặt và build frontend
+- script: |
+    cd $(reactAppFolder)
+    npm install
+    npm run build
+  displayName: 'Install and Build React App'
+
+# 3. Publish frontend build artifacts
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(reactAppFolder)/build'
+    artifactName: 'react-artifacts'
+  displayName: 'Publish React Artifacts'
+
+# 4. Restore NuGet packages cho backend
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(backendFolder)/**/*.sln'
+
+# 5. Build backend .NET API
+- task: VSBuild@1
+  inputs:
+    solution: '$(backendFolder)/**/*.sln'
+    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\Backend.zip"'
+    platform: 'Any CPU'
+    configuration: '$(buildConfiguration)'
+  displayName: 'Build .NET API'
+
+# 6. Publish backend build artifacts
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(build.artifactStagingDirectory)'
+    artifactName: 'backend-artifacts'
+  displayName: 'Publish Backend Artifacts'
+
+# 7. Deploy frontend lên IIS
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      $source = "$(Pipeline.Workspace)/react-artifacts"
+      $destination = "C:\inetpub\wwwroot\ReactApp" # Thư mục IIS
+      if (-not (Test-Path $destination)) {
+          New-Item -ItemType Directory -Path $destination
+      }
+      Copy-Item -Path $source\* -Destination $destination -Recurse -Force
+  displayName: 'Deploy React to IIS'
+
+# 8. Deploy backend lên IIS
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      $source = "$(Pipeline.Workspace)/backend-artifacts/Backend.zip"
+      $destination = "C:\inetpub\wwwroot\BackendAPI" # Thư mục IIS
+      Expand-Archive -Path $source -DestinationPath $destination -Force
+  displayName: 'Deploy .NET API to IIS'
