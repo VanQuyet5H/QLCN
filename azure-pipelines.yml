@@ -18,7 +18,7 @@ steps:
 
 - script: |
     cd $(reactAppFolder)
-    npm install
+    npm install --force
     npm run build
   displayName: 'Build React App'
 
