@@ -10,6 +10,13 @@ variables:
   backendFolder: 'backend'   # Thư mục chứa .NET API
 
 steps:
+- checkout: self
+  
+  # 2. Kiểm tra thư mục React
+  - script: |
+      echo "Listing files in $(reactAppFolder)"
+      dir $(reactAppFolder)
+    displayName: 'List files in React App Folder'
 # 1. Build Frontend React
 - task: NodeTool@0
   inputs:
