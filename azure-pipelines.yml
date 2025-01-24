@@ -2,7 +2,7 @@ trigger:
 - 07/01/2025  # Kích hoạt pipeline khi có thay đổi trên nhánh main
 
 pool:
-  name: 'Default'  # Tên Agent Pool hoặc 'Default' cho Self-Hosted Agent
+  name: 'AgentSelfHosted'  # Tên Agent Pool hoặc 'Default' cho Self-Hosted Agent
 
 variables:
   buildConfiguration: 'Release'
