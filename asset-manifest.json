@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/QLCN/static/css/main.40e112ed.css",
+    "main.js": "/QLCN/static/js/main.6511ccbd.js",
+    "static/js/453.9e3fc6ff.chunk.js": "/QLCN/static/js/453.9e3fc6ff.chunk.js",
+    "static/media/cow.png": "/QLCN/static/media/cow.61baee752e076fe4f792.png",
+    "index.html": "/QLCN/index.html",
+    "main.40e112ed.css.map": "/QLCN/static/css/main.40e112ed.css.map",
+    "main.6511ccbd.js.map": "/QLCN/static/js/main.6511ccbd.js.map",
+    "453.9e3fc6ff.chunk.js.map": "/QLCN/static/js/453.9e3fc6ff.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.40e112ed.css",
+    "static/js/main.6511ccbd.js"
+  ]
+}
