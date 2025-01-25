@@ -1,81 +1,87 @@
 trigger:
-- 07/01/2025  # Kích hoạt pipeline khi có thay đổi trên nhánh main
+  branches:
+    include:
+      - 07/01/2025  # Kích hoạt pipeline khi có thay đổi trên nhánh main
 
 pool:
   name: 'Default'  # Tên Agent Pool hoặc 'Default' cho Self-Hosted Agent
 
 variables:
   buildConfiguration: 'Release'
-  reactAppFolder: 'frontend' # Thư mục chứa React code
-  backendFolder: 'backend'   # Thư mục chứa .NET API
+  reactAppFolder: 'frontend'   # Thư mục chứa React code
+  backendFolder: 'backend'     # Thư mục chứa .NET API
 
 steps:
-- checkout: self
-  
+  # 1. Kiểm tra mã nguồn (checkout code)
+  - checkout: self
+
   # 2. Kiểm tra thư mục React
   - script: |
       echo "Listing files in $(reactAppFolder)"
       dir $(reactAppFolder)
     displayName: 'List files in React App Folder'
-# 1. Build Frontend React
-- task: NodeTool@0
-  inputs:
-    versionSpec: '16.x' # Phiên bản Node.js
-  displayName: 'Set up Node.js'
 
-- script: |
-    cd $(reactAppFolder)
-    npm install --force
-    npm run build
-  displayName: 'Build React App'
+  # 3. Set up Node.js (Lấy phiên bản Node.js)
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '16.x'  # Phiên bản Node.js
+    displayName: 'Set up Node.js'
 
-# 2. Publish Frontend Artifacts
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathtoPublish: '$(reactAppFolder)/build'
-    artifactName: 'react-artifacts'
-  displayName: 'Publish React Artifacts'
+  # 4. Cài đặt và Build React App
+  - script: |
+      cd $(reactAppFolder)
+      npm install --force
+      npm run build
+    displayName: 'Build React App'
 
-# 3. Restore NuGet packages cho Backend
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(backendFolder)/**/*.sln'
+  # 5. Publish React Artifacts
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(reactAppFolder)/build'
+      artifactName: 'react-artifacts'
+    displayName: 'Publish React Artifacts'
 
-# 4. Build Backend
-- task: VSBuild@1
-  inputs:
-    solution: '$(backendFolder)/**/*.sln'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\Backend.zip"'
-    platform: 'Any CPU'
-    configuration: '$(buildConfiguration)'
-  displayName: 'Build Backend'
+  # 6. Restore NuGet packages cho Backend
+  - task: NuGetCommand@2
+    inputs:
+      restoreSolution: '$(backendFolder)/**/*.sln'
+    displayName: 'Restore NuGet Packages for Backend'
 
-# 5. Publish Backend Artifacts
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathtoPublish: '$(build.artifactStagingDirectory)'
-    artifactName: 'backend-artifacts'
-  displayName: 'Publish Backend Artifacts'
+  # 7. Build Backend (.NET API)
+  - task: VSBuild@1
+    inputs:
+      solution: '$(backendFolder)/**/*.sln'
+      msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\Backend.zip"'
+      platform: 'Any CPU'
+      configuration: '$(buildConfiguration)'
+    displayName: 'Build Backend'
 
-# 6. Deploy React to IIS
-- task: PowerShell@2
-  inputs:
-    targetType: 'inline'
-    script: |
-      $source = "$(Pipeline.Workspace)/react-artifacts"
-      $destination = "C:\inetpub\wwwroot\ReactApp"
-      if (-not (Test-Path $destination)) {
-          New-Item -ItemType Directory -Path $destination
-      }
-      Copy-Item -Path $source\* -Destination $destination -Recurse -Force
-  displayName: 'Deploy React to IIS'
+  # 8. Publish Backend Artifacts
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(build.artifactStagingDirectory)'
+      artifactName: 'backend-artifacts'
+    displayName: 'Publish Backend Artifacts'
 
-# 7. Deploy Backend to IIS
-- task: PowerShell@2
-  inputs:
-    targetType: 'inline'
-    script: |
-      $source = "$(Pipeline.Workspace)/backend-artifacts/Backend.zip"
-      $destination = "C:\inetpub\wwwroot\BackendAPI"
-      Expand-Archive -Path $source -DestinationPath $destination -Force
-  displayName: 'Deploy Backend to IIS'
+  # 9. Deploy React to IIS
+  - task: PowerShell@2
+    inputs:
+      targetType: 'inline'
+      script: |
+        $source = "$(Pipeline.Workspace)/react-artifacts"
+        $destination = "C:\inetpub\wwwroot\ReactApp"
+        if (-not (Test-Path $destination)) {
+            New-Item -ItemType Directory -Path $destination
+        }
+        Copy-Item -Path $source\* -Destination $destination -Recurse -Force
+    displayName: 'Deploy React to IIS'
+
+  # 10. Deploy Backend to IIS
+  - task: PowerShell@2
+    inputs:
+      targetType: 'inline'
+      script: |
+        $source = "$(Pipeline.Workspace)/backend-artifacts/Backend.zip"
+        $destination = "C:\inetpub\wwwroot\BackendAPI"
+        Expand-Archive -Path $source -DestinationPath $destination -Force
+    displayName: 'Deploy Backend to IIS'
