@@ -8,8 +8,8 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
-  reactAppFolder: 'frontend'   # Thư mục chứa React code
-  backendFolder: 'backend'     # Thư mục chứa .NET API
+  reactAppFolder: 'frontendquanlychannuoi'   # Thư mục chứa React code
+  backendFolder: 'QuanLyChanNuoi'     # Thư mục chứa .NET API
 
 steps:
   # 1. Kiểm tra mã nguồn (checkout code)
